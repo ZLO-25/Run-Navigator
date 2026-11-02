@@ -6,7 +6,7 @@
  *                           │  示範模式照計畫跑完全程（時間快轉）
  *                           ▼
  *        檢查：每 1K 語音、進區段語音、每個地標分段、每個水站提醒、終點自動完賽、畫面沒有 NaN
- *        再用最窄的手機寬度（320 px）跑一次，邊跑邊量：任何一格字超出框 → 失敗
+ *        再用比最窄手機還窄一點的寬度（300 px）跑一次，邊跑邊量：任何一格字超出框 → 失敗
  *                           │
  *                           ▼
  *        把畫面算出的 course JSON 存到 build/selftest/，給 Java 端（TrackerCheck）再跑一次對位
@@ -64,15 +64,15 @@ const { chromium } = require('playwright');
   for (const r of races) {
     // 窄螢幕：示範跑全程，每 0.2 秒量一次，最後每個分頁再量一次
     {
-      const { p, ctx } = await open('race=' + r.id + '&selftest', 320); const seen = new Set();
+      const { p, ctx } = await open('race=' + r.id + '&selftest', 300); const seen = new Set();
       for (let k = 0; k < 600; k++) {
         (await overflow(p)).forEach(x => seen.add(x));
         if (await p.evaluate(() => !!window.__selftest)) break;
         await p.waitForTimeout(200);
       }
       for (const t of ['tRace', 'tPrep', 'tPlan', 'tMap']) { if (await p.isVisible('#' + t)) { await p.click('#' + t); await p.waitForTimeout(200); (await overflow(p)).forEach(x => seen.add(x)); } }
-      if (seen.size) { fails++; console.log(`❌ ${r.id} 窄螢幕 320 px 字超出框：\n   - ` + [...seen].slice(0, 12).join('\n   - ')); }
-      else console.log(`✅ ${r.id}：320 px 窄螢幕沒有字超出框`);
+      if (seen.size) { fails++; console.log(`❌ ${r.id} 窄螢幕 300 px 字超出框：\n   - ` + [...seen].slice(0, 12).join('\n   - ')); }
+      else console.log(`✅ ${r.id}：300 px 窄螢幕沒有字超出框`);
       await ctx.close();
     }
     const { p, ctx, errs } = await open('race=' + r.id + '&selftest');

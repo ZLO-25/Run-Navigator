@@ -57,10 +57,11 @@ canvas{display:block;width:100%}
 
 /* 瞄一眼卡：里程 + 快慢 + 區段對照線 */
 .glance .row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
-.km{font-size:72px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px}
-.km small{font-size:30px;margin-left:3px;letter-spacing:0;color:var(--sub)}
-.dbig{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.dsub{font-size:15px;color:var(--sub);text-align:right;margin-top:4px;white-space:nowrap}
+.km{font-size:clamp(50px,18vw,72px);white-space:nowrap;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.km small{font-size:.42em;margin-left:3px;letter-spacing:0;color:var(--sub)}
+.dbig{font-size:clamp(28px,11vw,44px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.dsub{font-size:15px;color:var(--sub);text-align:right;margin-top:4px}
+.glance .row>div:last-child{min-width:0}   /* 右欄可縮、說明字可換行：窄手機不撐出左右捲動 */
 #cvSec{height:118px}
 #cvAll{height:34px;margin-top:2px}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-top:2px}
