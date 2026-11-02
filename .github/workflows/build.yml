@@ -27,6 +27,7 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.47.2
           npx playwright install --with-deps chromium
+          sudo apt-get install -y -q fonts-noto-cjk   # 跟 Android 手機同一套中日文字型，量字寬才準
       - name: ② 畫面示範模式：每個賽事包跑完全程
         run: node tools/selftest.js
       - name: 示範模式截圖（首頁、準備頁、完賽頁）
