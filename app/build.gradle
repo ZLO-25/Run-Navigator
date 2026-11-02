@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'zl.runnav.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
+        minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
+        targetSdk 34
+        versionCode 1
+        versionName '0.1'   // M1
+    }
+    signingConfigs {
+        release {
+            // 金鑰由 GitHub Actions 在編譯時產生並快取，不放在程式碼裡
+            def ks = System.getenv('KEYSTORE_PATH')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('KEYSTORE_PASS')
+                keyAlias 'runnav'
+                keyPassword System.getenv('KEYSTORE_PASS')
+            }
+        }
+    }
+    buildTypes {
+        release { minifyEnabled false; signingConfig signingConfigs.release }
+        debug { applicationIdSuffix '.debug'; versionNameSuffix '-test' }   // PR 測試版：可以跟正式版同時裝
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    lint { abortOnError false }
+}

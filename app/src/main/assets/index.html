@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f11">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Run Navigator</title>
+<style>
+/* 深色優先（Pixel 是 OLED，黑底省電）；戶外太亮可切亮色 */
+:root{
+  --bg:#0b0f11;--card:#161c1f;--line:#28323a;--fg:#f4f6f5;--sub:#9fb0b6;
+  --ok:#3ddc97;--bad:#ff6b5e;--warn:#ffc24a;--btn:#20292e;--plan:#c9a7ff;
+  --aid:#5ab8ff;--up3:#ff5f52;--up2:#f58a6e;--up1:#a9605a;--flat:#4b575c;--dn1:#4f7fae;--dn2:#4a9bf0;--dn3:#7dc0ff;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f3f4f1;--card:#ffffff;--line:#d9ddd8;--fg:#101312;--sub:#5a6460;
+    --ok:#0f8a5c;--bad:#c93a30;--warn:#8f5f00;--btn:#e7eae6;--aid:#1c6fbf;--plan:#6b3fc4;
+    --up3:#a8302f;--up2:#e34948;--up1:#f2a3a2;--flat:#c9c8c2;--dn1:#9ec5f4;--dn2:#3987e5;--dn3:#184f95;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f3f4f1;--card:#ffffff;--line:#d9ddd8;--fg:#101312;--sub:#5a6460;
+  --ok:#0f8a5c;--bad:#c93a30;--warn:#8f5f00;--btn:#e7eae6;--aid:#1c6fbf;--plan:#6b3fc4;
+  --up3:#a8302f;--up2:#e34948;--up1:#f2a3a2;--flat:#c9c8c2;--dn1:#9ec5f4;--dn2:#3987e5;--dn3:#184f95;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:18px/1.4 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));
+  -webkit-text-size-adjust:100%;overscroll-behavior:none}
+main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:10px;padding-bottom:76px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.chip{font-size:15px;font-weight:700;padding:5px 11px;border-radius:99px;background:var(--btn);color:var(--sub);white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)} .chip.warn{color:var(--warn)}
+.right{display:flex;gap:10px;align-items:center;color:var(--sub);font-size:15px}
+#bat.low{color:var(--bad);font-weight:800}
+#alert{display:none;border-radius:14px;padding:12px 14px;font-size:21px;font-weight:800;line-height:1.3}
+#alert.show{display:block}
+#alert.gel{background:var(--warn);color:#161200}
+#alert.aid{background:var(--aid);color:#04121f}
+#alert.off,#alert.cut{background:var(--btn);color:var(--bad);border:2px solid var(--bad)}
+#arrive{display:none;border-radius:14px;padding:12px 14px;font-size:20px;font-weight:800;background:var(--ok);color:#06251a}
+#arrive.show{display:block}
+.lab{font-size:14px;color:var(--sub);font-weight:600}
+.pos{color:var(--ok)} .neg{color:var(--bad)} .mid{color:var(--warn)}
+h2{margin:0 0 6px;font-size:15px;color:var(--sub);font-weight:700}
+canvas{display:block;width:100%}
+
+/* 瞄一眼卡：里程 + 快慢 + 區段對照線 */
+.glance .row{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.km{font-size:72px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-2px}
+.km small{font-size:30px;margin-left:3px;letter-spacing:0;color:var(--sub)}
+.dbig{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.dsub{font-size:15px;color:var(--sub);text-align:right;margin-top:4px;white-space:nowrap}
+#cvSec{height:118px;margin-top:10px}
+#cvAll{height:34px;margin-top:2px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-top:2px}
+.legend i{font-style:normal;font-weight:800}
+
+/* 區段卡 */
+.sec{border-left:10px solid var(--flat)}
+.sechead{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.secno{font-size:13px;font-weight:800;color:var(--sub);background:var(--btn);border-radius:99px;padding:2px 9px;white-space:nowrap}
+.secname{font-size:21px;font-weight:800;line-height:1.25}
+.secterr{font-size:16px;color:var(--sub);margin-top:4px}
+.secnow{font-size:16px;margin-top:6px;font-variant-numeric:tabular-nums}
+.act{font-size:24px;font-weight:800;line-height:1.3;margin-top:8px}
+.tgt{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.tgt div{background:var(--btn);border-radius:10px;padding:6px 8px;min-width:0}
+.tgt .t{font-size:12px;color:var(--sub);font-weight:700;white-space:nowrap}
+.tgt .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15;white-space:nowrap}
+.tgt .v.cutv{color:var(--bad)}
+.tgtTo{font-size:15px;color:var(--sub);margin-top:8px}
+.tgtTo b{color:var(--fg)}
+
+/* 下一個地標 / 補給 */
+.lm{display:flex;gap:12px;align-items:center}
+.lmnum{flex:none;width:46px;height:46px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:17px}
+.lmnum.cut{background:var(--bad);color:#fff}
+.lmname{font-size:21px;font-weight:800;line-height:1.2}
+.lmdist{margin-left:auto;font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lmnote{margin-top:8px;font-size:17px}
+.eta{margin-top:8px;font-size:17px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.eta b{font-size:21px;font-variant-numeric:tabular-nums}
+.gel{margin-top:8px;font-size:17px;color:var(--sub)} .gel b{color:var(--fg)}
+.aidrow{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aidrow:empty{display:none}
+.aidrow .drop{color:var(--aid);font-size:22px;line-height:1}
+.aidrow .an{font-size:18px;font-weight:800}
+.aidrow .ad{margin-left:auto;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.aidrow.near{background:color-mix(in srgb,var(--aid) 18%,transparent);border:0;border-radius:10px;padding:8px 10px}
+.aidrow .sub{flex-basis:100%;font-size:15px;color:var(--sub);margin-top:-4px}
+.tag{display:inline-block;font-size:13px;font-weight:800;padding:1px 7px;border-radius:999px;border:1.5px solid currentColor;margin-right:4px;white-space:nowrap}
+.tag.w{color:var(--aid)} .tag.f{color:var(--ok)} .tag.s{color:var(--warn)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.cut{margin-top:10px;font-size:17px;border-top:1px solid var(--line);padding-top:10px}
+#cvZoom{height:184px}
+#zoomSel button{min-height:34px;padding:4px 10px;font-size:14px} #cvFull{height:170px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button,select{font:inherit;font-weight:700;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;padding:11px 8px;min-height:48px}
+button.on{background:var(--fg);color:var(--bg)}
+button.small{font-size:15px;min-height:42px;padding:8px}
+button.wide{width:100%}
+.ctl{display:flex;flex-direction:column;gap:10px}
+input[type=range]{width:100%;height:40px}
+input[type=text]{font:inherit;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0;width:100%}
+.stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-height:38px;padding:6px 10px;font-size:15px}
+.note{font-size:15px;color:var(--sub)} .note b{color:var(--fg)}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px}
+.kv select{min-height:42px;padding:6px 8px;font-size:16px}
+table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+td,th{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child,th:first-child{text-align:left}
+th{font-size:13px;color:var(--sub);font-weight:600}
+table.aid td,table.aid th{text-align:left}
+table.aid td.num{font-weight:800;color:var(--aid);text-align:center}
+tr.cur td{background:var(--btn);font-weight:800} tr.past td{opacity:.45}
+ul.tips{margin:0;padding-left:20px;font-size:16px;color:var(--sub)} ul.tips li{margin:3px 0} ul.tips b{color:var(--fg)}
+details>summary{cursor:pointer;font-size:17px;font-weight:700;padding:12px 14px;list-style:none;display:flex;justify-content:space-between}
+details>summary::after{content:'＋';color:var(--sub)} details[open]>summary::after{content:'－'}
+details.card{padding:0} details.card>div{padding:0 14px 14px}
+[hidden]{display:none!important}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-top:1px solid var(--line);padding:6px max(12px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));gap:6px;z-index:5}
+nav.tabs button{min-height:50px;font-size:18px;border:none;background:transparent;color:var(--sub);border-radius:12px}
+nav.tabs button.on{background:var(--btn);color:var(--fg)}
+.mapwrap{position:relative;overflow:hidden;border-radius:12px;background:#f9f9f7;touch-action:none;height:70vh}
+.mapwrap img{position:absolute;left:0;top:0;transform-origin:0 0;width:100%;user-select:none;-webkit-user-drag:none}
+.phase{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.phase>b{flex:none;width:86px;font-size:15px;color:var(--sub)}
+.phase div{font-size:16px} .phase div b{display:block;color:var(--fg);font-size:17px}
+.warnbox{border:2px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:16px;margin-bottom:8px}
+.warnbox.bad{border-color:var(--bad)}
+/* ---------- 首頁：賽事清單（MVP 畫面 1） ---------- */
+.hhead{display:flex;justify-content:space-between;align-items:center;padding-top:8px}
+.brand{font-size:14px;font-weight:800;letter-spacing:1px;color:var(--sub)}
+.htitle{margin:4px 0 4px;font-size:30px;font-weight:800}
+.hsec{font-size:13px;font-weight:700;color:var(--sub);margin-top:6px}
+.rcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--fg);font-weight:400;min-height:0}
+.rcard.next{border:2px solid var(--ok)}
+.rcard .rtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.rcard .rmid{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.rcard .rname{font-size:23px;font-weight:800;line-height:1.2}
+.rcard .rsub{font-size:14px;color:var(--sub);margin-top:2px}
+.rcard .rcd{text-align:right;white-space:nowrap} .rcard .rcd b{display:block;font-size:38px;line-height:1;font-variant-numeric:tabular-nums} .rcard .rcd span{font-size:13px;color:var(--sub)}
+.rcard .rres{font-size:22px;font-weight:800;color:var(--ok);font-variant-numeric:tabular-nums}
+.pill{font-size:12px;font-weight:800;border-radius:99px;padding:2px 9px;white-space:nowrap;border:1.5px solid var(--sub);color:var(--sub)}
+.pill.ok{background:var(--ok);border-color:var(--ok);color:#06251a}
+.pill.live{background:var(--warn);border-color:var(--warn);color:#161200}
+.pcard{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:104px;opacity:.6}
+.pcard.dashed{border-style:dashed}
+.pcard .pill{align-self:flex-start}
+/* ---------- 賽事頁頂端、準備頁（MVP 畫面 2） ---------- */
+#topbar{display:flex;align-items:center;gap:6px}
+#topbar .back{min-height:44px;padding:6px 10px;background:transparent;border:none;color:var(--fg);font-size:16px}
+#topbar span{color:var(--sub);font-size:15px;margin-left:auto}
+.ptitle{margin:0;font-size:28px;font-weight:800;line-height:1.2}
+.cdcard{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cuttiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cuttiles.four{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}
+.cuttiles>div{background:var(--btn);border-radius:10px;padding:8px;min-width:0}
+.cuttiles .t{font-size:12px;color:var(--sub);font-weight:700}
+.cuttiles .v{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.cuttiles .cutv{color:var(--bad)}
+button.go{background:var(--ok);color:#06251a;border:none;min-height:60px;font-size:21px;font-weight:800}
+button.linkish{background:transparent;border:none;color:var(--sub);font-size:15px}
+/* ---------- 跑步中：接近終點、我完賽了；完賽頁（MVP 畫面 3、4） ---------- */
+#nearFin{display:none;border-radius:14px;padding:12px 14px;font-size:18px;font-weight:800;background:var(--ok);color:#06251a;line-height:1.35}
+#nearFin.show{display:block}
+.fhead{display:flex;align-items:center;gap:10px;padding-top:8px} .fhead .flag{font-size:32px}
+.ftitle{font-size:30px;font-weight:800;line-height:1.1}
+.fbig{font-size:56px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ok)}
+.tgt3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.tgt3>div{background:var(--btn);border-radius:10px;padding:8px;min-width:0}
+.tgt3 .t{font-size:12px;color:var(--sub);font-weight:700} .tgt3 .v{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){#alert.show{animation:pop .25s ease-out}}
+@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<main>
+ <!-- 首頁：賽事與路線（MVP 畫面 1）。每次打開 App 先出現這裡，手動選一場 -->
+ <div class="page" id="pgHome" hidden>
+  <div class="hhead"><span class="brand">RUN NAVIGATOR</span><span class="note" id="homeDate"></span></div>
+  <h1 class="htitle">要跑哪一場？</h1>
+  <div class="hsec">賽事</div>
+  <div id="raceList" class="ctl"></div>
+  <div class="hsec">練習</div>
+  <div class="grid2">
+   <div class="pcard"><b style="font-size:18px">自由跑</b><span class="note">不用路線，報距離與配速</span><span class="pill">即將推出</span></div>
+   <div class="pcard dashed"><b style="font-size:18px">匯入路線</b><span class="note">My Maps KML、GPX</span><span class="pill">即將推出</span></div>
+  </div>
+  <div class="note" style="text-align:center;margin-top:4px">匯入賽事包（GPX＋賽事設定檔）也會在之後的版本加入。</div>
+ </div>
+
+ <div id="topbar" hidden><button class="back" id="bBack">‹ 賽事清單</button><span id="topName"></span></div>
+
+ <!-- 賽事準備（MVP 畫面 2）：這一場的參數、關門提醒、開始定位、練習模擬 -->
+ <div class="page" id="pgPrep" hidden>
+  <section>
+   <h1 class="ptitle" id="prepName"></h1>
+   <div class="note" id="prepSub" style="margin-top:2px"></div>
+  </section>
+  <div id="busyBox" class="warnbox bad" hidden></div>
+  <div id="finBox" class="warnbox" hidden></div>
+  <section class="card cdcard"><div><div class="lab" id="cdLab">距離鳴槍</div><div class="big" id="cdVal">—</div></div><div class="note" id="checkin" style="text-align:right;white-space:pre-line"></div></section>
+  <section class="card ctl">
+   <div class="kv"><b>這一場的參數</b><span class="note" id="isoNote"></span></div>
+   <div class="kv"><label for="target">目標完賽時間</label><select id="target"></select></div>
+   <div class="kv"><label for="delay">預估過起跑線延遲</label><select id="delay"></select></div>
+   <div class="note" id="delayNote"></div>
+  </section>
+  <div id="prepWarn"></div>
+  <div class="cuttiles" id="cutTiles"></div>
+  <div class="grid2"><button id="bToPlan">計畫表</button><button id="bToMap">路線地圖</button></div>
+  <section class="ctl" style="margin-top:4px">
+   <button class="wide go" id="bPrepGo">開始定位（比賽）</button>
+   <button class="wide" id="bPrepDemo">練習模擬：在這條路線上試跑（示範）</button>
+   <div class="note" style="text-align:center">同時只能有一場在定位：別場正在定位時，會先請你停止那一場。</div>
+  </section>
+ </div>
+
+ <!-- 完賽（MVP 畫面 4） -->
+ <div class="page" id="pgFinish" hidden>
+  <div class="fhead"><span class="flag">🏁</span><div><div class="ftitle" id="finTitle">完賽！</div><div class="note" id="finSub"></div></div></div>
+  <section class="card"><div class="lab">淨時間（過起跑線起算）</div><div class="fbig" id="finNet">—</div>
+   <div class="tgt3"><div><div class="t">vs 計畫</div><div class="v" id="finVs">—</div></div><div><div class="t">平均配速</div><div class="v" id="finPace">—</div></div><div><div class="t">鳴槍時間</div><div class="v" id="finGun">—</div></div></div>
+  </section>
+  <section class="card"><b>怎麼判定的</b><div class="note" id="finHow" style="margin-top:4px"></div></section>
+  <section class="card"><b>各關門餘裕</b><div class="cuttiles four" id="finCuts"></div></section>
+  <section class="ctl">
+   <button class="wide go" id="bFinCopy">複製分段紀錄</button>
+   <button class="wide" id="bFinHome">回賽事清單</button>
+   <button class="wide linkish" id="bUnfinish">判定錯了？取消完賽，繼續定位</button>
+  </section>
+ </div>
+
+ <div class="page" id="pgRace" hidden>
+  <div class="top">
+    <span id="status" class="chip">尚未開始</span>
+    <span class="right"><span id="bat"></span><span id="clock"></span></span>
+  </div>
+
+  <div id="alert" role="alert"></div>
+  <div id="arrive"></div>
+  <div id="nearFin">接近終點：進入終點 100 m 內會自動判定完賽，偏離提醒同時關閉</div>
+
+  <section class="card" id="timerCard">
+    <div id="tPre" hidden>
+      <div class="lab" id="gunLab">距離鳴槍</div>
+      <div class="big" id="tCount">—</div>
+      <button class="wide" id="bGo" style="margin-top:10px;min-height:64px;font-size:22px;background:var(--ok);color:#06251a;border:none">🏁 我過起跑線了（現在開始計時）</button>
+      <div class="note" style="margin-top:6px" id="preNote"></div>
+    </div>
+    <div id="tRun" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span id="tLine" style="font-size:16px"></span><button class="small" id="bFix">校正</button></div>
+      <div id="fixPanel" hidden class="ctl" style="margin-top:10px">
+        <button class="small" id="bGo2">我剛過起跑線＝現在起跑</button>
+        <div class="stepper">
+          <button class="small" data-adj="-60000">已跑 +1 分</button><button class="small" data-adj="-10000">已跑 +10 秒</button>
+          <button class="small" data-adj="10000">已跑 −10 秒</button><button class="small" data-adj="60000">已跑 −1 分</button>
+        </div>
+        <button class="small" id="bGun2">改回自動（鳴槍＋預估起跑延遲）</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ① 瞄一眼：在哪、快慢、你／計畫／關門線在同一條線上 -->
+  <section class="card glance">
+    <div class="row">
+      <div><div class="lab">目前里程</div><div class="km"><span id="km">0.0</span><small>K</small></div></div>
+      <div><div class="lab" style="text-align:right">對照計畫</div><div class="dbig" id="dbig">—</div><div class="dsub" id="dsub">—</div></div>
+    </div>
+    <canvas id="cvSec" aria-label="本區段：你、計畫、關門線的位置"></canvas>
+    <canvas id="cvAll" aria-label="全程進度"></canvas>
+    <div class="legend"><span><i style="color:var(--fg)">●</i> 你</span><span><i style="color:var(--plan)">▲</i> 計畫的你</span><span><i style="color:var(--bad)">┆</i> 關門線（剛好踩線的人）</span><span><i style="color:var(--aid)">💧</i> 水站</span></div>
+  </section>
+
+  <!-- ② 區段：A 點 → B 點、地形、策略、到 B 點的計畫／預計／底線 -->
+  <section class="card sec" id="secCard">
+    <div class="sechead"><span class="secno" id="secNo">區段 –/13</span><span class="secname" id="secName">—</span></div>
+    <div class="secterr" id="secTerr">—</div>
+    <div class="secnow" id="secNow">—</div>
+    <div class="act" id="act">—</div>
+    <div class="tgtTo" id="tgtTo">到 B 點</div>
+    <div class="tgt">
+      <div><div class="t">計畫到</div><div class="v" id="tPlanB">—</div></div>
+      <div><div class="t">照現速預計</div><div class="v" id="tPredB">—</div></div>
+      <div><div class="t" id="tCutLab">底線</div><div class="v cutv" id="tCutB">—</div></div>
+      <div><div class="t">餘裕</div><div class="v" id="tMarB">—</div></div>
+    </div>
+  </section>
+
+  <!-- ③ 下一個地標、補給站、能量膠 -->
+  <section class="card">
+    <div class="lm">
+      <div class="lmnum" id="lmnum">1</div>
+      <div class="lmname" id="lmname">—</div>
+      <div class="lmdist" id="lmdist">—</div>
+    </div>
+    <div class="eta"><span>計畫 <b id="etaPlan">—</b> 到</span><span>預計 <b id="etaPred">—</b></span><span id="etaDiff"></span></div>
+    <div class="lmnote" id="lmnote"></div>
+    <div class="gel" id="gel"></div>
+    <div class="aidrow" id="aidrow"></div>
+  </section>
+
+  <!-- ④ 時間 -->
+  <section class="card">
+    <div class="grid2">
+      <div><div class="lab">已跑時間（過線起算）</div><div class="big" id="elapsed">—</div></div>
+      <div><div class="lab">目前配速</div><div class="big" id="pace">—</div></div>
+      <div><div class="lab">照目前進度完賽</div><div class="big" id="pred">—</div></div>
+      <div><div class="lab">計畫到此（目標 <span id="tgtLab">5:30</span>）</div><div class="big" id="plan">—</div></div>
+    </div>
+    <div class="cut" id="cut">—</div>
+  </section>
+
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0" id="zoomTitle">前方 2.5K</h2><div class="chips" id="zoomSel"></div></div>
+    <div class="note" id="zoomNote" style="margin:4px 0 2px">上方數字＝每 250 m 平均坡度 %</div>
+    <canvas id="cvZoom"></canvas>
+  </section>
+
+  <section class="card ctl">
+    <div class="grid2" id="finRow" hidden><button id="bFinish" style="background:var(--fg);color:var(--bg);border:none;font-size:19px">🏁 我完賽了</button><button id="bStopRun">停止定位</button></div>
+    <button class="small wide" id="bMore">全程剖面・分段紀錄・設定</button>
+    <div class="seg">
+      <button id="bGps">GPS 定位</button>
+      <button id="bManual">手動</button>
+      <button id="bDemo">示範</button>
+    </div>
+    <div id="gpsNote" class="note"></div>
+    <div id="manual" hidden class="ctl">
+      <input type="range" id="slider" min="0" max="42195" step="50" value="0" aria-label="手動設定里程">
+      <div class="stepper">
+        <button class="small" data-step="-1000">−1K</button>
+        <button class="small" data-step="-100">−0.1K</button>
+        <button class="small" data-step="100">+0.1K</button>
+        <button class="small" data-step="1000">+1K</button>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+ </div><!-- /pgRace -->
+
+ <div class="page" id="pgPlan" hidden>
+  <section class="card">
+   <h2>分段計畫（目標 <span id="tgtLab2">5:30</span>・起跑延遲 <span id="dlyLab">15</span> 分）</h2>
+   <div id="planWarn"></div>
+   <div style="overflow-x:auto"><table class="plan" id="planTbl"><thead><tr><th>區段</th><th>配速</th><th>計畫到</th><th>底線</th></tr></thead><tbody></tbody></table></div>
+   <div class="note" style="margin-top:8px" id="planNote"></div>
+  </section>
+  <section class="card">
+   <h2 id="cutTitle">關門</h2>
+   <table id="cutTbl"><thead><tr><th>關門點</th><th>K</th><th>關門</th><th>計畫到</th><th>餘裕</th></tr></thead><tbody></tbody></table>
+   <div class="note" style="margin-top:8px" id="cutNote"></div>
+  </section>
+  <section class="card">
+   <h2>四階段</h2>
+   <div id="phases"></div>
+  </section>
+  <section class="card">
+   <h2 id="aidTitle">水站</h2>
+   <div style="margin:-2px 0 8px" id="aidLegend"></div>
+   <table class="aid" id="aidTbl"><thead><tr><th>站</th><th>K</th><th>地點・補給</th><th>計畫到</th></tr></thead><tbody></tbody></table>
+   <div class="note" style="margin-top:8px" id="aidNote"></div>
+  </section>
+  <section class="card">
+   <h2>能量膠＋喝水</h2>
+   <ul class="tips" id="gelList"></ul>
+   <div class="note" style="margin-top:6px" id="gelNote"></div>
+  </section>
+  <section class="card">
+   <h2 id="tipsTitle">提醒</h2>
+   <ul class="tips" id="tipsList"></ul>
+  </section>
+ </div>
+
+ <div class="page" id="pgMap" hidden>
+  <section class="card" style="padding:8px">
+   <div class="mapwrap" id="mapwrap"><img id="mapimg" alt="路線地圖與坡度"></div>
+   <div class="note" style="margin-top:6px" id="mapNote"></div>
+  </section>
+ </div>
+
+ <div class="page" id="pgMore" hidden>
+  <details class="card" id="dMore" open>
+    <summary>全程剖面・分段紀錄・設定</summary>
+    <div class="ctl">
+      <div><h2>全程剖面（手動模式可點選位置）</h2><canvas id="cvFull"></canvas></div>
+
+      <div>
+        <h2>分段紀錄（通過地標自動記下）</h2>
+        <table id="splits"><thead><tr><th>地標</th><th>K</th><th>時間</th><th>到達</th><th>vs計畫</th></tr></thead><tbody></tbody></table>
+        <div class="grid2" style="margin-top:8px">
+          <button class="small" id="bCopy">複製紀錄</button>
+          <button class="small" id="bClear">清除紀錄</button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <h2 style="margin:0">個人偏好（所有賽事共用）</h2>
+        <div class="kv"><span>跑者名稱</span><input type="text" id="name" maxlength="20" placeholder="選填，顯示在紀錄" style="width:55%"></div>
+        <div class="note">目標時間、起跑延遲是每場各自的設定，在「準備」頁。</div>
+        <div class="kv"><span>震動提醒（補給、吃膠、關門）</span><button class="small" id="bVib">開</button></div>
+        <div class="kv"><span>語音提醒（口袋裡也聽得到）</span><button class="small" id="bTts">開</button></div>
+        <div class="kv"><span>每 1K 語音報告</span><button class="small" id="bKmv">開</button></div>
+        <div class="kv"><span>停下 10 秒自動報告位置與計畫</span><button class="small" id="bStopv">開</button></div>
+        <div class="kv" id="rowKeep" hidden><span>看畫面時螢幕恆亮</span><button class="small" id="bKeep">關</button></div>
+        <div class="grid2"><button class="small" id="bTestVib">測試震動</button><button class="small" id="bTestTts">測試語音</button></div>
+        <div class="kv"><span>亮 / 暗（戶外太亮可切亮色）</span><button class="small" id="bTheme">切換</button></div>
+        <div class="grid2">
+          <button class="small" id="bStart">以現在為起跑（練習）</button>
+          <button class="small" id="bGun">改回比賽日自動計時</button>
+        </div>
+        <div class="note" id="wlNote"></div>
+      </div>
+
+      <div>
+        <h2>使用提醒</h2>
+        <ul class="tips">
+          <li>比賽日：鳴槍前按「開始定位」，手機放口袋、鎖螢幕。每 1K、補給、關門都會震動＋語音。</li>
+          <li>停下來（補給、走路）10 秒會自動語音報告；想看就點亮螢幕，鎖屏通知就有「你／計畫／關門線」。</li>
+          <li>沒網路也能用：地圖與路線都在 App 裡，只用 GPS。</li>
+          <li>里程是「落在官方路線上的位置」，跟手錶差一點很正常，以地標為準。</li>
+          <li>GPS 抓不到：按「手動」，點最近看到的地標即可對位。</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+ </div>
+</main>
+<nav class="tabs" hidden><button id="tPrep" class="on">準備</button><button id="tRace">賽道</button><button id="tPlan">計畫</button><button id="tMap">地圖</button></nav>
+
+<script src="races.js"></script>
+<script>
+"use strict";
+/* ================= 開機：先出現賽事清單，選了哪一場才載入那一場 =================
+ *
+ *   打開 App ──▶ 有賽事正在定位？──是──▶ 直接進那一場（比賽中不用再選）
+ *                    │否
+ *                    ▼
+ *               賽事清單（#home）──點一場──▶ index.html#race=<id> 重新載入
+ *
+ *   每場賽事的資料都來自 races.js（由 races/<id>/race.json 打包），引擎裡不寫死任何賽事。
+ */
+const NATIVE = !!(window.Android && window.Android.getPrefs);
+const $ = id => document.getElementById(id);
+const p2 = n => String(n).padStart(2, '0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');      // 賽事包文字只認 **粗體**，其他一律當純文字
+const Q = new URLSearchParams(location.hash.slice(1));
+const SELFTEST = Q.has('selftest'), SAID = [];
+/* 儲存：個人偏好全 App 共用；其他（目標、延遲、起跑時間、分段、完賽）每場賽事各存一格 */
+const SHARED = new Set(['name', 'vib', 'tts', 'kmv', 'stopv', 'keepOn', 'theme', 'win']);
+function lget(k) { try { return localStorage.getItem('rn_' + k); } catch (e) { return null; } }
+function lset(k, v) { try { if (v == null) localStorage.removeItem('rn_' + k); else localStorage.setItem('rn_' + k, v); } catch (e) { } }
+function racePrefs(id) {
+  if (NATIVE) { try { return JSON.parse(Android.getPrefs(id)); } catch (e) { return {}; } }
+  const j = k => { try { return JSON.parse(lget(id + '.' + k)); } catch (e) { return null; } };
+  const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
+  const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
+  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'),
+    name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '' };
+}
+function activeRace() { try { return NATIVE ? Android.activeRace() : ''; } catch (e) { return ''; } }
+function goRace(id, page) { location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
+/* 時區：用鳴槍時間字串裡的 +09:00 / +08:00 */
+function tzOffMs(r) { const m = /([+-])(\d\d):?(\d\d)$/.exec(r.time.gun); return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) * 60000 : 0; }
+const WD = '日一二三四五六';
+function dateTxtTz(ms, off, wd) { const d = new Date(ms + off); return d.getUTCFullYear() + '/' + (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + (wd ? '（' + WD[d.getUTCDay()] + '）' : ''); }
+function clkTz(ms, off) { const d = new Date(ms + off); return d.getUTCHours() + ':' + p2(d.getUTCMinutes()); }
+function hms(sec) { sec = Math.round(sec); return Math.floor(sec / 3600) + ':' + p2(Math.floor(sec % 3600 / 60)) + ':' + p2(sec % 60); }
+function hm(min) { min = Math.round(min); return Math.floor(min / 60) + ':' + p2(min % 60); }
+
+window.R = null;
+(function boot() {
+  let id = Q.get('race');
+  if (!id && !Q.has('home')) id = activeRace();
+  window.R = (window.RACES || []).find(r => r.id === id) || null;
+  if (!window.R) renderHome();
+})();
+
+/* Android 返回鍵：賽事頁 → 回清單 */
+window.onBack = () => { if (window.R) { goRace(null); return true; } return false; };
+
+function renderHome() {
+  const P0 = racePrefs((window.RACES[0] || {}).id || '_');
+  if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
+  $('pgHome').hidden = false;
+  const now = Date.now(), act = activeRace(), dn = new Date();
+  $('homeDate').textContent = (dn.getMonth() + 1) + '/' + dn.getDate() + '（' + WD[dn.getDay()] + '）';
+  let nextDone = false;
+  $('raceList').innerHTML = window.RACES.map(r => {
+    const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
+    const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off) + ' ' + r.time.tz_label;
+    const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
+    const ncut = r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length;
+    if (!past) {
+      const isNext = !nextDone; nextDone = true;
+      const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
+      const tgt = p.target || r.params.target.default, dly = p.delay != null ? p.delay : r.params.delay.default;
+      return `<button class="rcard${isNext ? ' next' : ''}" data-go="${esc(r.id)}"><div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">下一場</span>' : ''}<span>${esc(when)}</span></div>` +
+        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門</div></div><div class="rcd">${cd}</div></div></button>`;
+    }
+    return `<div class="rcard"><div class="rtop"><span class="pill">${fin ? '已完賽' : '已結束'}</span><span>${esc(dateTxtTz(g, off, true))}</span></div>` +
+      `<div class="rmid"><div class="rname">${esc(r.name)}</div><div class="rres">${fin && fin.t != null ? hms(fin.t) : ''}</div></div>` +
+      `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">明年再跑／模擬</button></div></div>`;
+  }).join('');
+  $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
+}
+</script>
+<script>
+"use strict";
+if (window.R) (function () {
+const R = window.R, RID = R.id, RT = R.route;
+const D = { elev: RT.elev, lon: RT.lon, lat: RT.lat };
+
+/* ---------- 路線幾何 ---------- */
+const N = D.elev.length, TOTAL = R.distance_m, STEP = TOTAL / (N - 1), TOTAL_KM = TOTAL / 1000;
+/* 平面投影原點＝路線中心（背景服務用同一個，見 pushCourse） */
+const LAT0 = Math.round((Math.min(...D.lat) + Math.max(...D.lat)) / 2 * 1e4) / 1e4, LON0 = Math.round((Math.min(...D.lon) + Math.max(...D.lon)) / 2 * 1e4) / 1e4, CX = Math.cos(LAT0 * Math.PI / 180);
+const PX = D.lon.map(l => (l - LON0) * CX * 111320);
+const PY = D.lat.map(l => (l - LAT0) * 110574);
+const es3 = D.elev.map((_, i, a) => (a[Math.max(0, i - 1)] + a[i] + a[Math.min(N - 1, i + 1)]) / 3);
+const es = D.elev.map((_, i, a) => { let s = 0; for (let k = -2; k <= 2; k++) s += a[Math.max(0, Math.min(N - 1, i + k))]; return s / 5; });
+function interp(arr, s) { s = Math.max(0, Math.min(TOTAL, s)); const f = s / STEP, i = Math.min(N - 2, Math.floor(f)), t = f - i; return arr[i] + (arr[i + 1] - arr[i]) * t; }
+const E = s => interp(es, s), E3 = s => interp(es3, s);
+function G(s) { const a = Math.max(0, s - 150), b = Math.min(TOTAL, s + 150); return (E(b) - E(a)) / (b - a) * 100; }
+/* 對位：在片段 [i0,i1] 找「離得近、又接近預期里程」的點。折返段兩條線很近，用預期里程分辨你在去程還是回程 */
+/* 比賽不會往回跑：落在預期里程後面的點再多扣 wb 分（短折返去回程在 GPX 上是同一條線，只靠 w 會被雜訊拉回去程） */
+function match(x, y, i0, i1, sExp, w, wb = 0) {
+  let best = { d: 1e9, s: 0, sc: 1e18 }, near = 1e9;
+  for (let i = Math.max(0, i0); i <= Math.min(N - 2, i1); i++) {
+    const ax = PX[i], ay = PY[i], dx = PX[i + 1] - ax, dy = PY[i + 1] - ay, L2 = dx * dx + dy * dy;
+    let t = L2 > 0 ? ((x - ax) * dx + (y - ay) * dy) / L2 : 0; t = Math.max(0, Math.min(1, t));
+    const d = Math.hypot(x - (ax + t * dx), y - (ay + t * dy)), s = (i + t) * STEP;
+    near = Math.min(near, d);
+    const sc = d + (sExp == null ? 0 : w * Math.abs(s - sExp) + wb * Math.max(0, sExp - s));
+    if (sc < best.sc) best = { d, s, sc };
+  }
+  best.near = near; return best;
+}
+
+/* ---------- 賽事資料：全部來自賽事包 races/<id>/race.json（地標 cut＝關門） ---------- */
+const LM = R.landmarks;
+/* 區段：A 點 → B 點（首頁直接顯示這段的地形、策略、計畫與底線） */
+const SEC = R.sections;
+/* 水站：類型代碼（w、f、s…）與名稱在賽事包 aid.labels 定義 */
+const AID = R.aid.stations, AID_LAB = R.aid.labels;
+const aidTags = a => [...a.s].map(c => `<span class="tag ${esc(c)}">${esc(AID_LAB[c])}</span>`).join('');
+const aidKind = a => R.aid.say[a.s] || [...a.s].map(c => AID_LAB[c]).join('＋');
+const aidSay = a => aidKind(a) + (a.food && a.food !== '品項未知' ? '，可能有' + a.food : '');
+const aidTxt = a => a.food ? '有給食（' + a.food + '）' : aidKind(a);
+const GELS = R.gels.map(g => ({ k: g.km, t: g.label, at: g.aid, note: g.note }));
+/* 關門：以鳴槍後分鐘計 */
+const CUT = R.cutoffs.map(c => ({ km: c.km, name: c.name, min: c.min }));
+const GUN = Date.parse(R.time.gun), TZ = tzOffMs(R), LIMIT = R.time.limit_min;
+const PLANCFG = R.plan, CB = R.plan.cut_buffer_min || { first_n: 0, early: 4, later: 6 };
+/* 比賽日：鳴槍前 12 小時到關門後 3 小時（這段時間關門以真正的鳴槍計，其他時候＝練習） */
+const raceWindow = now => now > GUN - 12 * 3600e3 && now < GUN + (LIMIT + 180) * 60000;
+/* 全程剖面的高度刻度、公里刻度（依路線自動決定） */
+const FULL_Y = (() => { let mn = Infinity, mx = -Infinity; for (const e of es) { mn = Math.min(mn, e); mx = Math.max(mx, e); } const span = mx - mn, st = span > 300 ? 100 : span > 120 ? 50 : span > 60 ? 20 : 10; const lo = Math.floor((mn - st * 0.3) / st) * st, hi = Math.ceil((mx + st * 0.3) / st) * st, t = []; for (let v = lo + st; v <= hi; v += st) t.push(v); return [lo, hi, t]; })();
+const FULL_XK = (() => { const st = TOTAL_KM >= 15 ? 10 : 5, a = []; for (let k = st; k < TOTAL_KM - 0.5; k += st) a.push(k); return a; })();
+const ALL_XK = TOTAL_KM > 40 ? [0, 10, 21.1, 30, Math.round(TOTAL_KM * 10) / 10] : [0].concat(FULL_XK.filter(k => k < TOTAL_KM - 3), [Math.round(TOTAL_KM * 10) / 10]);
+/* 剛好踩關門的人：鳴槍後 gm 分鐘時在哪（km），以及到某 km 的最晚時刻（鳴槍後分鐘） */
+const CPTS = [{ km: 0, min: 0 }].concat(CUT);
+function cutLineKm(gm) { if (gm <= 0) return 0; for (let i = 1; i < CPTS.length; i++) { const a = CPTS[i - 1], b = CPTS[i]; if (gm <= b.min) return a.km + (gm - a.min) / (b.min - a.min) * (b.km - a.km); } return TOTAL / 1000; }
+function deadlineMin(km) { for (let i = 1; i < CPTS.length; i++) { const a = CPTS[i - 1], b = CPTS[i]; if (km <= b.km + 1e-9) return a.min + (km - a.km) / (b.km - a.km) * (b.min - a.min); } return LIMIT; }
+function cutAt(km) { return CUT.find(c => Math.abs(c.km - km) < 0.05); }
+function secAt(km) { return SEC.find(s => km < s.b) || SEC[SEC.length - 1]; }
+
+/* ---------- 配速計畫：坡度 × 擁擠 × 後段疲勞，再依關門自動前移 ---------- */
+let PC = new Float64Array(N), PLAN_TOTAL = 330, PLAN_ADJ = [], PLAN_BAD = '';
+function weight(i) {
+  const s = (i + 0.5) * STEP, km = s / 1000, g = Math.max(-8, Math.min(12, (E(Math.min(TOTAL, s + STEP / 2)) - E(Math.max(0, s - STEP / 2))) / STEP * 100));
+  let w = g > 0 ? 1 + 0.04 * g : 1 + 0.014 * g;          // 上坡每 1% 慢 4%，下坡每 1% 快 1.4%
+  for (const a of PLANCFG.adjust || []) if (km >= a.from && km < a.to) w *= a.x;   // 賽事包：起跑擁擠、窄路…
+  const fa = PLANCFG.fatigue; if (fa) w *= 1 + fa.x * Math.max(0, km - fa.from_km) / (TOTAL_KM - fa.from_km);   // 後段疲勞（新手正常會掉速）
+  return w;
+}
+const W0 = Array.from({ length: N - 1 }, (_, i) => weight(i));
+/* 關門保護：依序檢查每個關門，計畫太晚就只把「上一關門 → 這一關門」那段調快，
+   省下的時間平均加回後面（總時間不變）。前三關留 4 分、之後留 6 分。 */
+function buildPlan(target, delay) {
+  if (PLANCFG.model === 'rows') return buildPlanRows(target, delay);
+  const w = W0.slice();
+  const cum = () => { const c = new Float64Array(N); for (let i = 0; i < N - 1; i++) c[i + 1] = c[i] + w[i]; return c; };
+  let c = cum(); const k0 = target / c[N - 1]; for (let i = 0; i < w.length; i++) w[i] *= k0;
+  PLAN_ADJ = []; PLAN_BAD = '';
+  if (target + delay > LIMIT - 6) PLAN_BAD = '目標 ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。計畫照原樣排、不做關門保護，紅字餘裕就是風險，建議把目標調快。';
+  else {
+    let iPrev = 0;
+    CUT.forEach((ct, k) => {
+      if (ct.km >= TOTAL / 1000) return;
+      c = cum();
+      const iC = Math.round(ct.km * 1000 / STEP), allow = ct.min - delay - (k < CB.first_n ? CB.early : CB.later), late = c[iC] - allow;
+      if (late > 0.05) {
+        const seg = c[iC] - c[iPrev], rest = target - c[iC], f = Math.max(0.7, (seg - late) / seg), saved = seg * (1 - f), g = (rest + saved) / rest;
+        for (let i = iPrev; i < iC; i++) w[i] *= f; for (let i = iC; i < w.length; i++) w[i] *= g;
+        PLAN_ADJ.push(ct.name);
+      }
+      iPrev = iC;
+    });
+  }
+  PC = cum(); PLAN_TOTAL = PC[N - 1];
+  checkTight(delay);
+}
+/* 日月潭這類「手調配速」的賽事：每段一個基準配速，等比例縮放到目標時間（沿用舊 App 的算法） */
+function buildPlanRows(target, delay) {
+  const rows = PLANCFG.rows, base = rows.reduce((s, r) => s + (r[1] - r[0]) * r[2], 0), sc = target / base;
+  const at = km => { let t = 0; for (const r of rows) { if (km <= r[1]) return t + (Math.max(km, r[0]) - r[0]) * r[2] * sc; t += (r[1] - r[0]) * r[2] * sc; } return t; };
+  PLAN_ADJ = []; PLAN_BAD = '';
+  if (target + delay > LIMIT - 6) PLAN_BAD = '目標 ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。';
+  PC = new Float64Array(N); for (let i = 0; i < N; i++) PC[i] = at(i * STEP / 1000);
+  PLAN_TOTAL = PC[N - 1];
+  checkTight(delay);
+}
+function checkTight(delay) {
+  const tight = CUT.filter(ct => PC[Math.round(Math.min(TOTAL, ct.km * 1000) / STEP)] + delay > ct.min - 2).map(ct => ct.name);
+  if (tight.length && !PLAN_BAD) PLAN_BAD = '照這個目標和起跑延遲，「' + tight.join('、') + '」的餘裕不到 2 分鐘。' + (PLANCFG.tight_hint || '');
+}
+function planMin(km) { return interp(PC, km * 1000); }
+function planKm(min) { if (min <= 0) return 0; if (min >= PLAN_TOTAL) return TOTAL / 1000; let lo = 0, hi = N - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (PC[m] < min) lo = m; else hi = m; } return (lo + (min - PC[lo]) / (PC[hi] - PC[lo])) * STEP / 1000; }
+function paceBetween(a, b) { return (planMin(b) - planMin(a)) / Math.max(0.01, b - a); }
+function planPace(km) { return paceBetween(Math.max(0, km - 0.25), Math.min(TOTAL_KM, km + 0.25)); }
+
+/* ---------- 設定：個人偏好全 App 共用；目標、延遲、起跑時間、分段、完賽狀態每場各自一格 ----------
+ *   APK：Android.getPrefs(id) / setPref(id, k, v)（pref ＋ race_<id>）
+ *   網頁：localStorage rn_<k>（共用）與 rn_<id>.<k>（這一場）
+ */
+function rget(k) { return lget(RID + '.' + k); }
+function rset(k, v) { lset(RID + '.' + k, v); }
+const NP = racePrefs(RID);
+const S = {
+  target: NP.target || R.params.target.default, delay: NP.delay != null ? NP.delay : R.params.delay.default,
+  name: NP.name || '', vib: NP.vib !== false, tts: NP.tts !== false, kmv: NP.kmv !== false, stopv: NP.stopv !== false, keepOn: !!NP.keepOn,
+  theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {}
+};
+let FIN = NP.finished || null;     // 完賽紀錄 {how: auto|manual, t: 淨秒數, c: 時刻, s: 里程, d: 離終點 m}
+if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
+function pset(k, v) {
+  if (SELFTEST) return;
+  if (NATIVE) Android.setPref(RID, k, v == null ? 'null' : String(v));
+  else if (SHARED.has(k)) lset(k, v == null ? null : String(v)); else rset(k, v == null ? null : String(v));
+}
+buildPlan(S.target, S.delay);
+/* 把這一場的路線、計畫交給背景服務（APK），語音、通知列、完賽判定用同一份 */
+function coursePayload() {
+  return {
+    v: 2, id: RID, name: R.name, short: R.short, tzShort: R.time.tz_short, gun: GUN, tzOff: Math.round(TZ / 60000), limit: LIMIT,
+    finR: R.finish.radius_m, finFrac: R.finish.min_frac,
+    route: { lat: D.lat, lon: D.lon, elev: D.elev, total: TOTAL, lat0: LAT0, lon0: LON0 },
+    target: S.target, delay: S.delay, plan: Array.from(PC, v => Math.round(v * 100) / 100),
+    sec: SEC, lm: LM.map(l => ({ n: l.n, name: l.name, km: l.km, cut: !!l.cut })), cut: CUT,
+    aid: AID.map(a => ({ n: a.n, km: a.km, name: a.name, say: aidSay(a) })), gel: GELS.map(g => ({ k: g.k, t: g.t, at: g.at }))
+  };
+}
+function pushCourse() { if (!NATIVE || !Android.setCourse || SELFTEST) return; Android.setCourse(JSON.stringify(coursePayload())); }
+pushCourse();
+
+/* ---------- 狀態 ---------- */
+let mode = 'idle';
+let curS = 0, acc = null, dev = null, lastFix = 0, gpsMsg = '', watchId = null;
+let hist = [], startMs = null, demoT0 = 0, wl = null, batLevel = null, lastAlertKey = '';
+const DEMO_SPEED = 60;
+(function initStart() { const saved = Number(NP.start), now = Date.now(); if (saved && Math.abs(now - saved) < 20 * 3600e3) startMs = saved; })();
+/* 起跑（過線）時間：手動優先；比賽日沒按就用「鳴槍＋預估延遲」 */
+function effStart(now) {
+  if (startMs != null && Math.abs(now - startMs) < 20 * 3600e3) return startMs;
+  if (raceWindow(now)) return GUN + S.delay * 60000;
+  return null;
+}
+function baseStart() { const s0 = mode === 'demo' ? null : effStart(Date.now()); return s0 != null ? s0 : GUN + S.delay * 60000; }
+function setStartTo(ms) { startMs = ms; if (NATIVE) Android.adjustStart(RID, ms || 0); else rset('start', ms == null ? null : String(ms)); schedule(); }
+(function initPos() { if (NATIVE) return; const p = Number(rget('pos')), t = Number(rget('posT')); if (p && t && Date.now() - t < 2 * 3600e3) curS = p; })();
+
+/* ---------- 格式（時刻一律用賽事當地時間） ---------- */
+function clk(ms) { const d = new Date(ms + TZ); return d.getUTCHours() + ':' + p2(d.getUTCMinutes()); }
+function fmtMS(sec) { sec = Math.round(sec); return Math.floor(sec / 60) + ':' + p2(sec % 60); }
+function fmtHMS(sec) { const neg = sec < 0; sec = Math.abs(Math.round(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (neg ? '−' : '') + h + ':' + p2(m) + ':' + p2(s); }
+function fmtHM(min) { min = Math.round(min); return Math.floor(min / 60) + ':' + p2(min % 60); }
+function fmtDelta(sec) { return Math.abs(sec) >= 3600 ? fmtHM(Math.abs(sec) / 60) + 'h' : fmtMS(Math.abs(sec)); }
+function planClock(min) { return clk(baseStart() + min * 60000); }
+function fmtDist(m) { return m >= 1000 ? (m / 1000).toFixed(1) + 'K' : Math.max(0, Math.round(m / 10) * 10) + ' m'; }
+function gradeKey(g) { return g >= 7 ? 'up3' : g >= 4 ? 'up2' : g >= 2 ? 'up1' : g <= -7 ? 'dn3' : g <= -4 ? 'dn2' : g <= -2 ? 'dn1' : 'flat'; }
+function gradeWord(g) { return g >= 7 ? '陡上' : g >= 4 ? '上坡' : g >= 2 ? '緩上' : g <= -7 ? '陡下' : g <= -4 ? '下坡' : g <= -2 ? '緩下' : '平路'; }
+const sayMS = sec => { sec = Math.round(Math.abs(sec)); const m = Math.floor(sec / 60), s = sec % 60; return (m ? m + '分' : '') + (s || !m ? s + '秒' : ''); };
+const sayClock = ms => { const d = new Date(ms + TZ); return d.getUTCHours() + '點' + p2(d.getUTCMinutes()) + '分'; };
+CUT.forEach(c => c.clock = clk(GUN + c.min * 60000));
+
+let TH = {};
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['bg', 'card', 'line', 'fg', 'sub', 'ok', 'bad', 'warn', 'plan', 'up3', 'up2', 'up1', 'flat', 'dn1', 'dn2', 'dn3', 'aid', 'btn']) TH[k] = cs.getPropertyValue('--' + k).trim();
+  fullCache = null; allCache = null;
+}
+
+/* ---------- 時間與位置 ---------- */
+function elapsedSec() {
+  if (mode === 'demo') return (Date.now() - demoT0) / 1000 * DEMO_SPEED;
+  const s0 = effStart(Date.now()); return s0 == null ? null : (Date.now() - s0) / 1000;
+}
+/* 鳴槍後分鐘（關門用）；示範模式＝已跑＋延遲 */
+function gunMin() { const now = Date.now(); if (mode !== 'demo' && raceWindow(now)) return (now - GUN) / 60000; const el = elapsedSec(); return el == null ? null : el / 60 + S.delay; }   // 練習＝已跑＋預估延遲
+function currentS() { if (mode === 'demo') return Math.min(TOTAL, planKm(elapsedSec() / 60) * 1000); return curS; }
+
+/* ---------- 原生服務狀態（APK） ---------- */
+let nativePace = -1, NS = null;
+window.onNativeState = function (st) {
+  if (!st) return;
+  if (st.race && st.race !== RID) return;                 // 別場賽事的狀態，不關這一頁
+  if (st.finished && !FIN) { FIN = st.finished; mode = 'idle'; renderFinish(); showPage('pgFinish'); schedule(); return; }
+  if (st.running === false && mode === 'gps' && !st.err) { mode = 'idle'; gpsMsg = '定位已停止。'; schedule(); }
+  if (st.err === 'noperm') { gpsMsg = '沒有定位權限。請到系統設定允許「位置」→「一律允許」。'; mode = 'manual'; schedule(); return; }
+  if (st.err === 'gpsoff') { gpsMsg = '手機的定位功能是關的，請打開。'; schedule(); return; }
+  NS = st;
+  if (mode !== 'gps') return;
+  if (st.fix) curS = st.s; acc = st.acc; dev = st.dev; lastFix = st.fixAge < 0 ? 0 : Date.now() - st.fixAge * 1000; nativePace = st.pace; gpsMsg = '';
+  if (st.start) startMs = st.start;
+  if (st.splits) { const n = Object.keys(st.splits).length, o = Object.keys(S.splits).length; S.splits = st.splits; if (n !== o) { renderSplits(); const last = LM.filter(l => st.splits[l.n]).pop(); if (last) showArrive(last, st.splits[last.n]); } }
+  schedule();
+};
+let arriveUntil = 0, arriveText = '';
+function showArrive(l, s) { const d = s.plan - s.t; arriveText = '到 ' + l.name + '：比計畫' + (d >= 0 ? '快 ' : '慢 ') + fmtDelta(d); arriveUntil = Date.now() + 60000; }
+
+/* ---------- GPS（網頁版；APK 由背景服務做同樣的事） ---------- */
+const OFF = 300;
+let badJumps = 0, lastSave = 0;
+function fmtOff(m) { return m >= 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m'; }
+function onPos(p) {
+  const a = p.coords.accuracy; acc = a; const now = Date.now(); gpsMsg = '';
+  if (a > 80) { schedule(); return; }
+  lastFix = now;
+  const x = (p.coords.longitude - LON0) * CX * 111320, y = (p.coords.latitude - LAT0) * 110574;
+  let b;
+  if (hist.length) {
+    const last = hist[hist.length - 1], dt = (now - last.t) / 1000, sExp = curS + Math.min(5, recentSpeed()) * dt;
+    b = match(x, y, Math.floor((curS - 400) / STEP), Math.ceil((curS + Math.max(1500, dt * 8)) / STEP), sExp, 0.1, 0.4);
+    if (b.d > 150) { const g = match(x, y, 0, N - 2, sExp, 0.02); if (g.d < b.d - 30 && g.d < 100) b = g; }
+    if (dt > 0 && Math.abs(b.s - last.s) / dt > 8 && badJumps < 3) { badJumps++; schedule(); return; }
+    badJumps = 0;
+    if (b.s < curS && curS - b.s < 120) b.s = curS;
+  } else {
+    const el = elapsedSec(), prior = curS > 0 ? curS : (el != null && el > 0 ? planKm(el / 60) * 1000 : 0);
+    b = match(x, y, 0, N - 2, prior, curS > 0 ? 0.05 : 0.01);
+  }
+  dev = b.d;
+  if (b.d > OFF) { hist = []; schedule(); return; }
+  curS = b.s;
+  if (finishCheck(curS, Math.hypot(x - PX[N - 1], y - PY[N - 1]))) return;
+  hist.push({ t: now, s: curS });
+  while (hist.length && now - hist[0].t > 120000) hist.shift();
+  if (now - lastSave > 20000) { rset('pos', String(Math.round(curS))); rset('posT', String(now)); lastSave = now; }
+  schedule();
+}
+function recentSpeed() { if (hist.length < 2) return 3; const a = hist[Math.max(0, hist.length - 6)], b = hist[hist.length - 1]; const dt = (b.t - a.t) / 1000; return dt > 3 ? Math.max(0, (b.s - a.s) / dt) : 3; }
+function onErr(e) { if (e.code === 1) { gpsMsg = '定位被拒絕。請允許「位置」，或改用手動。'; setMode('manual'); } else gpsMsg = '定位暫時失敗，會繼續嘗試（到空曠處）。'; schedule(); }
+function startGPS() {
+  if (NATIVE) {
+    hist = []; pushCourse();
+    const busy = Android.start(RID);
+    if (busy) { gpsMsg = ''; showBusy(busy); mode = 'idle'; schedule(); return; }
+    gpsMsg = '正在啟動定位服務…'; return;
+  }
+  if (!navigator.geolocation) { gpsMsg = '這個瀏覽器不支援定位，已切到手動。'; setMode('manual'); return; }
+  if (!isSecureContext) gpsMsg = '這個開啟方式不允許定位（需 https）。';
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  hist = []; acc = null; dev = null; lastFix = 0;
+  watchId = navigator.geolocation.watchPosition(onPos, onErr, { enableHighAccuracy: true, maximumAge: 2000, timeout: 30000 });
+  wake();
+}
+function stopGPS() { if (NATIVE) { Android.stop(); return; } if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; } }
+async function wake() { try { if ('wakeLock' in navigator && !wl) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; schedule(); }); } } catch (e) { wl = null; } schedule(); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (mode === 'gps' || mode === 'demo') wake(); startTick(); } else stopTick(); });
+function setMode(m) {
+  const prev = mode;
+  if (prev === 'demo' && m !== 'demo') curS = currentS();
+  if (m !== 'gps') stopGPS();
+  if (m === 'gps' && prev === 'gps') return;
+  mode = m; voiceReset();
+  if (m === 'gps') { gpsMsg = '正在搜尋 GPS…請站在空曠處。'; startGPS(); }
+  else if (m === 'demo') { demoT0 = Date.now(); hist = []; wake(); }
+  startTick(); schedule();
+}
+
+/* ---------- 震動、語音（網頁版；APK 由背景服務負責，鎖屏也會講） ---------- */
+function buzz(pattern) { if (NATIVE && mode === 'gps') return; if (S.vib && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) { } } }
+let zhVoice = null;
+function pickVoice() { try { const v = speechSynthesis.getVoices(); zhVoice = v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; } catch (e) { } }
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+/* 念之前：10:02 → 10點02分；拿掉括號說明 */
+function spoken(t) { return t.replace(/（.*?）/g, '').replace(/(\d{1,2}):(\d{2})/g, '$1點$2分'); }
+function say(text) {
+  if (SELFTEST) { SAID.push(text); return; }
+  if (NATIVE || !S.tts || !('speechSynthesis' in window) || mode === 'idle' || mode === 'manual') return;
+  text = spoken(text);
+  try { const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-TW'; if (zhVoice) u.voice = zhVoice; u.rate = mode === 'demo' ? 1.3 : 1.05; speechSynthesis.speak(u); } catch (e) { }   // 排隊播放，不互相打斷
+}
+if (navigator.getBattery) navigator.getBattery().then(b => { const u = () => { batLevel = b.level; schedule(); }; u(); b.addEventListener('levelchange', u); }).catch(() => { });
+
+/* 語音內容（與 APK 背景服務同一套說法） */
+function vsDiff(el, km) { const d = planMin(km) * 60 - el; return (d >= 0 ? '比計畫快' : '比計畫慢') + sayMS(d); }
+function vsCut(km, gm) {
+  const nc = CUT.find(c => c.km > km + 0.02); if (!nc) return '';
+  const left = nc.min - gm; return left > 0 ? '下一個關門' + nc.name + '，還有' + Math.floor(left) + '分鐘' : '';
+}
+/* 每 1K：快慢；每 5K 或關門餘裕 < 15 分時加報「照計畫配速到下一關門還剩幾分」 */
+function kmSay(k, el, gm, curKm) {
+  let t = k + '公里，' + vsDiff(el, curKm) + '。';
+  const nc = CUT.find(c => c.km > k + 0.02);
+  if (nc && gm != null) { const mar = nc.min - (gm + planMin(nc.km) - planMin(k)); if (mar < 15 || k % 5 === 0) t += nc.name + '關門餘裕' + Math.max(0, Math.floor(mar)) + '分鐘。'; }
+  return t;
+}
+function stopSay(sM, el, gm) {
+  const km = sM / 1000, sc = secAt(km), bMs = baseStart();
+  const dl = GUN + deadlineMin(sc.b) * 60000;
+  return '你在' + km.toFixed(1) + '公里，往' + sc.to.replace(/（.*?）/g, '') + '。' + vsDiff(el, km) + '。到' + sc.to.replace(/（.*?）/g, '') + '計畫' + sayClock(bMs + planMin(sc.b) * 60000) + '，底線' + sayClock(dl) + '。' + sc.act;
+}
+let vKm = -1, vSec = -1, vStopAt = 0, vStopped = false, vMoveRef = null;
+function voiceReset() { vKm = -1; vSec = -1; vStopped = false; vMoveRef = null; }
+function checkVoice(sM, el) {
+  if (NATIVE && mode === 'gps') return;
+  if (el == null || el < 0 || mode === 'idle' || mode === 'manual') { vKm = Math.floor(sM / 1000); vSec = SEC.indexOf(secAt(sM / 1000)); return; }
+  const km = sM / 1000, k = Math.floor(km + 1e-6), si = SEC.indexOf(secAt(km)), gm = gunMin();
+  if (vKm < 0) { vKm = k; vSec = si; return; }
+  if (si !== vSec && si > vSec) { const s = SEC[si]; say('進入區段' + (si + 1) + '，' + s.from + '到' + s.to.replace(/（.*?）/g, '') + '。' + s.act); vSec = si; }
+  if (k > vKm) { if (S.kmv && k >= 1 && k <= TOTAL_KM) say(kmSay(k, el, gm, km)); vKm = k; }
+  // 停下 10 秒：自動報告
+  if (mode === 'gps' && S.stopv && hist.length) {
+    const now = Date.now(), recent = hist.filter(h => now - h.t <= 12000);
+    if (recent.length >= 3 && now - recent[0].t >= 9000 && Math.abs(recent[recent.length - 1].s - recent[0].s) < 8) { if (!vStopped) { vStopped = true; say(stopSay(sM, el, gm)); } }
+    else if (recent.length >= 2 && recent[recent.length - 1].s - recent[0].s > 30) vStopped = false;
+  }
+}
+
+/* ---------- 分段紀錄 ---------- */
+let lastSplitS = curS;
+function checkSplits(sM) {
+  if (NATIVE && mode === 'gps') return;
+  const el = elapsedSec(); if (el == null || el < 0 || (mode !== 'gps' && mode !== 'demo')) { lastSplitS = sM; return; }   // 手動跳位置不記分段
+  for (const l of LM) {
+    const m = l.km * 1000;
+    if (m > lastSplitS && m <= sM + 1 && m > 0 && !S.splits[l.n]) {
+      S.splits[l.n] = { t: Math.round(el), c: Date.now(), plan: Math.round(planMin(l.km) * 60) };
+      if (mode !== 'demo') pset('splits', JSON.stringify(S.splits));
+      buzz([80]); renderSplits(); showArrive(l, S.splits[l.n]);
+      const d = S.splits[l.n].plan - S.splits[l.n].t;
+      say(l.name + '，比計畫' + (d >= 0 ? '快' : '慢') + sayMS(d) + '。');
+    }
+  }
+  lastSplitS = sM;
+}
+function renderSplits() {
+  const tb = $('splits').tBodies[0]; tb.textContent = '';
+  for (const l of LM) {
+    const s = S.splits[l.n]; if (!s) continue;
+    const tr = document.createElement('tr'), d = s.plan - s.t;
+    tr.innerHTML = `<td>${l.n} ${l.name}</td><td>${l.km}</td><td>${fmtHMS(s.t)}</td><td>${clk(s.c)}</td><td class="${d >= 0 ? 'pos' : 'neg'}">${d >= 0 ? '快' : '慢'} ${fmtDelta(d)}</td>`;
+    tb.appendChild(tr);
+  }
+}
+function splitsText() {
+  const lines = [(S.name ? S.name + ' ' : '') + R.name + ' ' + dateTxt(GUN) + ' 分段'];
+  for (const l of LM) { const s = S.splits[l.n]; if (s) lines.push(`${l.km}K ${l.name}  ${fmtHMS(s.t)}  (${s.plan - s.t >= 0 ? '快' : '慢'}${fmtMS(Math.abs(s.plan - s.t))})`); }
+  return lines.join('\n');
+}
+
+/* ---------- 繪圖 ---------- */
+let fullCache = null, allCache = null;
+function fit(cv) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return null;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); if (cv.id === 'cvFull') fullCache = null; if (cv.id === 'cvAll') allCache = null; }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); return { c, w, h, dpr };
+}
+function drop(c, x, y, r, hgt) { c.beginPath(); c.moveTo(x, y - hgt); c.quadraticCurveTo(x + r, y, x, y + r * .75); c.quadraticCurveTo(x - r, y, x, y - hgt); }
+function drawProfile(c, w, h, k0, k1, yMin, yMax, opt) {
+  const padL = 36, padR = 8, padT = opt.gl ? 24 : 16, padB = opt.padB || 28, Ef = opt.ef || E;
+  const X = k => padL + (k - k0) / (k1 - k0) * (w - padL - padR);
+  const Y = e => padT + (1 - (e - yMin) / (yMax - yMin)) * (h - padT - padB);
+  const base = h - padB;
+  c.font = '12px system-ui,sans-serif'; c.textBaseline = 'middle'; c.lineWidth = 1; c.strokeStyle = TH.line; c.fillStyle = TH.sub; c.textAlign = 'right';
+  for (const tk of opt.ticks) { const y = Math.round(Y(tk)) + .5; if (y < padT - 2 || y > base) continue; c.beginPath(); c.moveTo(padL, y); c.lineTo(w - padR, y); c.stroke(); c.fillText(String(tk), padL - 5, y); }
+  const step = Math.max(opt.minStep || 20, (k1 - k0) * 1000 / (w - padL - padR) * 2);
+  for (let m = k0 * 1000; m < k1 * 1000; m += step) { const x = X(m / 1000), x2 = X(Math.min(k1, (m + step) / 1000)), y = Y(Ef(m)); c.fillStyle = TH[gradeKey(G(m))]; c.fillRect(x, y, x2 - x + .6, base - y); }
+  c.strokeStyle = TH.fg; c.lineWidth = 1.5; c.beginPath();
+  for (let m = k0 * 1000, f = true; m <= k1 * 1000; m += step) { const x = X(m / 1000), y = Y(Ef(m)); f ? c.moveTo(x, y) : c.lineTo(x, y); f = false; }
+  c.stroke();
+  if (opt.gl) {
+    c.textAlign = 'center'; c.font = '700 12px system-ui,sans-serif'; const gi = opt.gi || 250;
+    for (let m = Math.ceil(k0 * 1000 / gi) * gi; m + gi <= k1 * 1000 + 1; m += gi) {
+      const g = (E(m + gi) - E(m)) / gi * 100, r = Math.round(g), x = X((m + gi / 2) / 1000);
+      c.strokeStyle = TH.line; c.lineWidth = 1; c.beginPath(); c.moveTo(X(m / 1000), padT - 14); c.lineTo(X(m / 1000), padT - 4); c.stroke();
+      c.fillStyle = Math.abs(g) < 2 ? TH.sub : TH[gradeKey(g)]; c.fillText((r > 0 ? '+' : r < 0 ? '−' : '') + Math.abs(r), x, padT - 9);
+    }
+  }
+  if (opt.xt) {
+    c.textAlign = 'center'; c.font = '12px system-ui,sans-serif'; c.fillStyle = TH.sub; c.strokeStyle = TH.sub; c.lineWidth = 1;
+    for (let k = Math.ceil(k0 / opt.xt) * opt.xt; k <= k1 + 1e-9; k += opt.xt) { const x = Math.round(X(k)) + .5; c.beginPath(); c.moveTo(x, base); c.lineTo(x, base + 4); c.stroke(); c.fillText(opt.xt >= 1 ? String(Math.round(k)) : k.toFixed(opt.xt < 0.5 ? 2 : 1), x, base + 12); }
+  }
+  c.textAlign = 'center'; c.font = '700 11px system-ui,sans-serif';
+  for (const ct of CUT) if (ct.km >= k0 && ct.km <= k1) { const x = X(ct.km); c.strokeStyle = TH.bad; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(x, padT); c.lineTo(x, base); c.stroke(); c.setLineDash([]); c.fillStyle = TH.bad; c.fillText(ct.clock, Math.min(w - 20, Math.max(padL + 14, x)), 7); }
+  c.fillStyle = TH.warn; c.font = '12px system-ui,sans-serif';
+  for (const g of GELS) if (g.k >= k0 && g.k <= k1) c.fillText('◆', X(g.k), Math.max(padT + 8, Y(E(g.k * 1000)) - 9));
+  for (const a of AID) if (a.km >= k0 && a.km <= k1) {
+    const x = X(a.km), y = base - 9, big = (k1 - k0) <= 10, r = big ? 6 : 4.5, hgt = big ? 9 : 7;
+    c.fillStyle = TH.aid; drop(c, x, y, r, hgt); c.strokeStyle = TH.card; c.lineWidth = 2.5; c.stroke(); c.fill();
+    if (big) { c.font = '700 11px system-ui,sans-serif'; c.lineWidth = 3; c.strokeText(String(a.n), x, y - 16); c.fillText(String(a.n), x, y - 16); }
+  }
+  for (const l of LM) if (l.km >= k0 - .05 && l.km <= k1 + .05) {
+    const x = X(l.km), y = base + (opt.xt ? 31 : 14), small = (k1 - k0) > 12, r = small ? 7.5 : 10;
+    c.fillStyle = l.cut ? TH.bad : TH.fg; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+    c.fillStyle = l.cut ? '#fff' : TH.bg; c.font = '700 ' + (small ? 8 : 10) + 'px system-ui,sans-serif'; c.fillText(l.n.replace('關', ''), x, y + .5);
+  }
+  if (opt.xk) { c.fillStyle = TH.sub; c.font = '12px system-ui,sans-serif'; for (const k of opt.xk) c.fillText(k + 'K', X(k), base - 7); }
+  return { X, Y, padT, base, right: w - padR };
+}
+function marker(c, geo, sM, k0, k1, label) {
+  const sK = sM / 1000; if (sK < k0 || sK > k1) return;
+  const x = geo.X(sK), y = geo.Y(label ? E3(sM) : E(sM));
+  c.strokeStyle = TH.fg; c.lineWidth = 2; c.beginPath(); c.moveTo(x, geo.padT); c.lineTo(x, geo.base); c.stroke();
+  c.fillStyle = TH.fg; c.strokeStyle = TH.bg; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 7, 0, 7); c.fill(); c.stroke();
+  if (label) { c.font = '700 14px system-ui,sans-serif'; c.textBaseline = 'middle'; const txt = Math.round(E(sM)) + ' m', tw = c.measureText(txt).width + 10, left = x + tw + 14 > geo.right; const bx = left ? x - tw - 10 : x + 10, by = Math.min(geo.base - 22, Math.max(geo.padT + 4, y - 26)); c.fillStyle = TH.fg; c.fillRect(bx, by, tw, 20); c.fillStyle = TH.bg; c.textAlign = 'center'; c.fillText(txt, bx + tw / 2, by + 10.5); }
+}
+let fullGeo = null;
+function drawFull(sM) {
+  const cv = $('cvFull'); if ($('pgMore').hidden || !$('dMore').open) return;
+  const f = fit(cv); if (!f) return;
+  if (!fullCache) {
+    fullCache = document.createElement('canvas'); fullCache.width = cv.width; fullCache.height = cv.height;
+    const cc = fullCache.getContext('2d'); cc.setTransform(f.dpr, 0, 0, f.dpr, 0, 0);
+    fullGeo = drawProfile(cc, f.w, f.h, 0, TOTAL_KM, FULL_Y[0], FULL_Y[1], { ticks: FULL_Y[2], xk: FULL_XK });
+  }
+  f.c.setTransform(1, 0, 0, 1, 0, 0); f.c.clearRect(0, 0, cv.width, cv.height); f.c.drawImage(fullCache, 0, 0);
+  f.c.setTransform(f.dpr, 0, 0, f.dpr, 0, 0); marker(f.c, fullGeo, sM, 0, TOTAL_KM);
+}
+const WINS = [1, 2.5, 5, 10, TOTAL_KM];
+let WIN = Number(S.win) || 2.5; if (!WINS.includes(WIN)) WIN = 2.5;
+function setWin(w) { WIN = w; pset('win', String(w)); for (const b of $('zoomSel').children) b.classList.toggle('on', Number(b.dataset.w) === w); $('zoomTitle').textContent = w >= TOTAL_KM ? '全程' : '前方 ' + w + 'K'; const gi = gradeInterval(w); $('zoomNote').textContent = '上方數字＝每 ' + (gi >= 1000 ? gi / 1000 + ' km' : gi + ' m') + ' 平均坡度 %；紅虛線＝關門'; lastDrawS = -1e9; schedule(); }
+function gradeInterval(w) { for (const gi of [250, 500, 1000, 2500]) if (w * 1000 / gi <= 12) return gi; return 5000; }
+WINS.forEach(w => { const b = document.createElement('button'); b.dataset.w = w; b.textContent = w >= TOTAL_KM ? '全程' : w + 'K'; b.onclick = () => setWin(w); $('zoomSel').appendChild(b); });
+function drawZoom(sM, noMarker) {
+  const f = fit($('cvZoom')); if (!f) return;
+  f.c.clearRect(0, 0, f.w, f.h);
+  const full = WIN >= TOTAL_KM - 1e-9, back = full ? 0 : WIN * 0.12, k0 = full ? 0 : Math.max(0, Math.min(sM / 1000 - back, TOTAL_KM - WIN)), k1 = full ? TOTAL_KM : k0 + WIN;
+  let mn = 1e9, mx = -1e9; for (let m = k0 * 1000; m <= k1 * 1000; m += 25) { const e = E3(m); mn = Math.min(mn, e); mx = Math.max(mx, e); }
+  const mid = (mn + mx) / 2, span = Math.max(30, mx - mn + 12);
+  const lo = Math.floor((mid - span / 2) / 5) * 5, hi = lo + Math.ceil(span / 5) * 5;
+  let ts = 5; for (const c of [5, 10, 20, 50]) { ts = c; if ((hi - lo) / c <= 6) break; }
+  const tk = []; for (let v = Math.ceil(lo / ts) * ts; v <= hi; v += ts) tk.push(v);
+  const xt = WIN <= 1 ? 0.25 : WIN <= 2.5 ? 0.5 : WIN <= 5 ? 1 : WIN <= 10 ? 2 : 5;
+  const geo = drawProfile(f.c, f.w, f.h, k0, k1, lo, hi, { ticks: tk, ef: WIN <= 5 ? E3 : E, gl: true, gi: gradeInterval(WIN), xt, padB: 44, minStep: WIN <= 5 ? 10 : 20 });
+  if (!noMarker) marker(f.c, geo, sM, k0, k1, true);
+}
+
+/* ① 區段對照線：A 點 → B 點的地形，上面標 你●、計畫▲、關門線┆ */
+function drawSec(sM, el, gm, have) {
+  const f = fit($('cvSec')); if (!f) return; const c = f.c, w = f.w, h = f.h;
+  c.clearRect(0, 0, w, h);
+  const sc = secAt(sM / 1000), k0 = sc.a, k1 = sc.b, padL = 10, padR = 10, top = 22, base = h - 30;
+  const X = k => padL + (k - k0) / (k1 - k0) * (w - padL - padR);
+  let mn = 1e9, mx = -1e9; for (let m = k0 * 1000; m <= k1 * 1000; m += 20) { const e = E3(m); mn = Math.min(mn, e); mx = Math.max(mx, e); }
+  const span = Math.max(14, mx - mn), lo = mn - span * 0.15, hi = lo + span * 1.3;
+  const Y = e => top + (1 - (e - lo) / (hi - lo)) * (base - top);
+  const step = Math.max(10, (k1 - k0) * 1000 / (w - padL - padR) * 2);
+  for (let m = k0 * 1000; m < k1 * 1000; m += step) { const x = X(m / 1000), x2 = X(Math.min(k1, (m + step) / 1000)); c.fillStyle = TH[gradeKey(G(m))]; c.fillRect(x, Y(E3(m)), x2 - x + .6, base - Y(E3(m))); }
+  c.strokeStyle = TH.fg; c.lineWidth = 1.5; c.beginPath(); for (let m = k0 * 1000, ff = true; m <= k1 * 1000 + 1; m += step) { const x = X(Math.min(k1, m / 1000)), y = Y(E3(Math.min(k1 * 1000, m))); ff ? c.moveTo(x, y) : c.lineTo(x, y); ff = false; } c.stroke();
+  c.strokeStyle = TH.line; c.lineWidth = 1; c.beginPath(); c.moveTo(padL, base + .5); c.lineTo(w - padR, base + .5); c.stroke();
+  // 水站、膠
+  for (const a of AID) if (a.km > k0 && a.km < k1) { const x = X(a.km); c.fillStyle = TH.aid; drop(c, x, base - 8, 5.5, 8); c.strokeStyle = TH.card; c.lineWidth = 2; c.stroke(); c.fill(); }
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (const g of GELS) if (g.k > k0 && g.k < k1) { c.fillStyle = TH.warn; c.font = '13px system-ui,sans-serif'; c.fillText('◆', X(g.k), base - 22); }
+  // A / B 標籤
+  c.font = '700 13px system-ui,sans-serif'; c.fillStyle = TH.sub; c.textBaseline = 'alphabetic';
+  const short = s => s.replace(/（.*?）/g, '');
+  let aTxt = 'A ' + sc.a + 'K ' + short(sc.from); const bTxt = short(sc.to) + ' ' + sc.b + 'K B', room = w - padL - padR - c.measureText(bTxt).width - 12;
+  while (aTxt.length > 6 && c.measureText(aTxt).width > room) aTxt = aTxt.slice(0, -2) + '…';
+  c.textAlign = 'left'; c.fillText(aTxt, padL, h - 8);
+  c.textAlign = 'right'; c.fillText(bTxt, w - padR, h - 8);
+  if (!have) return;
+  const edge = (kk, col, txt, yy) => { const left = kk < k0; c.fillStyle = TH.card; c.globalAlpha = .85; c.font = '700 12px system-ui,sans-serif'; const tw = c.measureText(txt).width + 22; c.fillRect(left ? padL : w - padR - tw, yy - 8, tw, 16); c.globalAlpha = 1; const x = left ? padL + 2 : w - padR - 2; c.fillStyle = col; c.font = '700 12px system-ui,sans-serif'; c.textAlign = left ? 'left' : 'right'; c.textBaseline = 'middle'; c.fillText((left ? '◀ ' : '') + txt + (left ? '' : ' ▶'), x, yy); };
+  // 關門線（剛好踩線的人在哪）
+  if (gm != null && gm > 0) {
+    const ck = cutLineKm(gm);
+    if (ck >= k0 && ck <= k1) { const x = X(ck); c.strokeStyle = TH.bad; c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(x, top - 4); c.lineTo(x, base); c.stroke(); c.setLineDash([]); c.fillStyle = TH.bad; c.font = '700 12px system-ui,sans-serif'; c.textAlign = x > w - 60 ? 'right' : 'left'; c.textBaseline = 'middle'; c.fillText('關門線', x + (x > w - 60 ? -4 : 4), top - 10); }
+    else edge(ck, TH.bad, '關門線 ' + (ck < k0 ? '後方 ' + (sM / 1000 - ck).toFixed(1) + 'K' : '前方 ' + (ck - sM / 1000).toFixed(1) + 'K'), top - 10);
+  }
+  // 計畫的你
+  if (el != null && el >= 0) {
+    const pk = planKm(el / 60);
+    if (pk >= k0 && pk <= k1) { const x = X(pk), y = Y(E3(pk * 1000)); c.fillStyle = TH.plan; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x - 8, y - 18); c.lineTo(x + 8, y - 18); c.closePath(); c.fill(); c.strokeStyle = TH.plan; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x, base); c.stroke(); }
+    else edge(pk, TH.plan, '計畫 ' + (pk < k0 ? '後方 ' : '前方 ') + Math.abs(pk - sM / 1000).toFixed(1) + 'K', top + 12);
+  }
+  // 你
+  const x = X(sM / 1000), y = Y(E3(sM));
+  c.strokeStyle = TH.fg; c.lineWidth = 2; c.beginPath(); c.moveTo(x, y); c.lineTo(x, base); c.stroke();
+  c.fillStyle = TH.fg; c.strokeStyle = TH.card; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 8, 0, 7); c.fill(); c.stroke();
+}
+/* 全程細條：區段分隔、關門、你、計畫 */
+function drawAll(sM, el) {
+  const cv = $('cvAll'), f = fit(cv); if (!f) return; const c = f.c, w = f.w, h = f.h, padL = 10, padR = 10, y = 14;
+  const X = k => padL + k / TOTAL_KM * (w - padL - padR);
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = TH.btn; c.fillRect(padL, y - 4, w - padL - padR, 8);
+  const sc = secAt(sM / 1000); c.fillStyle = TH.sub; c.globalAlpha = .35; c.fillRect(X(sc.a), y - 6, X(sc.b) - X(sc.a), 12); c.globalAlpha = 1;
+  c.fillStyle = TH.ok; c.fillRect(padL, y - 4, X(sM / 1000) - padL, 8);
+  for (const ct of CUT) { c.fillStyle = TH.bad; c.fillRect(X(ct.km) - 1, y - 8, 2, 16); }
+  c.font = '11px system-ui,sans-serif'; c.fillStyle = TH.sub; c.textAlign = 'center'; c.textBaseline = 'top';
+  for (const k of ALL_XK) c.fillText(k === 21.1 ? '半' : String(k), X(Math.min(k, TOTAL_KM)), y + 9);
+  if (el != null && el >= 0) { const x = X(planKm(el / 60)); c.fillStyle = TH.plan; c.beginPath(); c.moveTo(x, y - 2); c.lineTo(x - 6, y - 12); c.lineTo(x + 6, y - 12); c.closePath(); c.fill(); }
+  const x = X(sM / 1000); c.fillStyle = TH.fg; c.strokeStyle = TH.card; c.lineWidth = 2; c.beginPath(); c.arc(x, y, 6, 0, 7); c.fill(); c.stroke();
+}
+
+/* ---------- 畫面 ---------- */
+function setCls(el, c) { el.classList.remove('pos', 'neg', 'mid'); if (c) el.classList.add(c); }
+let lastDrawS = -1e9, pending = false, lastSecDraw = 0;
+function schedule() { if (!pending) { pending = true; requestAnimationFrame(() => { pending = false; render(); }); } }
+function renderClock(now) {
+  const el = elapsedSec();
+  $('clock').textContent = mode === 'demo' ? '模擬 ' + clk(baseStart() + el * 1000) : clk(now) + ' ' + R.time.tz_short;
+  $('elapsed').textContent = el == null ? '—' : fmtHMS(el);
+  const st = $('status'); st.className = 'chip'; let t = '尚未開始';
+  if (mode === 'gps') {
+    if (NATIVE && NS && !NS.fix && !(dev != null && dev > OFF && lastFix)) t = '搜尋 GPS… 衛星 ' + (NS.sats || 0) + '/' + (NS.satsSeen || 0);
+    else if (!lastFix) t = '搜尋 GPS…';
+    else if (now - lastFix > 20000) { t = 'GPS 中斷 ' + ((now - lastFix) >= 120000 ? Math.round((now - lastFix) / 60000) + ' 分' : Math.round((now - lastFix) / 1000) + ' 秒'); st.classList.add('bad'); }
+    else if (dev != null && dev > OFF) { t = '不在賽道上 ' + fmtOff(dev); st.classList.add('warn'); }
+    else if (dev != null && dev > 80) { t = '偏離路線 ' + Math.round(dev) + ' m'; st.classList.add('bad'); }
+    else { t = 'GPS ±' + Math.round(acc) + ' m'; st.classList.add(acc > 40 ? 'warn' : 'ok'); }
+  } else if (mode === 'manual') t = '手動'; else if (mode === 'demo') t = '示範 ×' + DEMO_SPEED;
+  st.textContent = t;
+  const b = $('bat'); if (batLevel != null) { b.textContent = '🔋' + Math.round(batLevel * 100) + '%'; b.classList.toggle('low', batLevel <= 0.2); } else b.textContent = '';
+}
+function renderTimer(now) {
+  const s0 = mode === 'demo' ? null : effStart(now), pre = s0 != null && now < s0, run = s0 != null && now >= s0;
+  $('tPre').hidden = !pre; $('tRun').hidden = !run || mode === 'demo'; $('timerCard').hidden = mode === 'demo' || s0 == null;
+  if (pre) { $('tCount').textContent = fmtHMS((GUN - now) / 1000); $('preNote').textContent = (R.text.pre_start ? R.text.pre_start + ' ' : '') + '沒按的話，App 假設你在鳴槍後 ' + S.delay + ' 分過線（準備頁可改）。關門一律以鳴槍計。'; }
+  if (run) { const manual = startMs != null; $('tLine').textContent = '計時中｜過線 ' + clk(s0) + (manual ? '（你按的）' : '（鳴槍＋' + S.delay + ' 分，預估）'); }
+}
+let idleNote = false;
+function idleChart() { if (lastDrawS !== -2e9) { lastDrawS = -2e9; drawZoom(0, true); drawSec(0, null, null, false); drawAll(0, null); } $('zoomNote').textContent = '尚無位置；定位成功後會標出你在哪。'; idleNote = true; }
+function syncControls(sM) { for (const [id, m] of [['bGps', 'gps'], ['bManual', 'manual'], ['bDemo', 'demo']]) $(id).classList.toggle('on', mode === m); $('manual').hidden = mode !== 'manual'; if (mode === 'manual') $('slider').value = Math.round(sM); }
+function offCourse(now) { return mode === 'gps' && dev != null && dev > OFF && lastFix && now - lastFix < 20000 && !(NATIVE && NS && NS.fix); }
+function waitingFix(now) { return mode === 'gps' && (NATIVE ? !(NS && NS.fix) : !lastFix); }
+function blank(msgDo, msgSub) {
+  $('km').textContent = '—'; $('dbig').textContent = '—'; $('dsub').textContent = ''; setCls($('dbig'), '');
+  $('secNo').textContent = '區段 –/' + SEC.length; $('secName').textContent = msgDo; $('secTerr').textContent = msgSub; $('secNow').textContent = ''; $('act').textContent = ''; $('secCard').style.borderLeftColor = TH.sub;
+  for (const id of ['tPlanB', 'tPredB', 'tCutB', 'tMarB', 'pace', 'pred', 'plan']) $(id).textContent = '—'; $('tgtTo').textContent = '';
+  $('lmnum').textContent = '–'; $('lmnum').className = 'lmnum'; $('lmname').textContent = '定位後顯示'; $('lmdist').textContent = '—'; $('lmnote').textContent = ''; $('gel').textContent = '';
+  $('etaPlan').textContent = '—'; $('etaPred').textContent = '—'; $('etaDiff').textContent = ''; setCls($('pred'), '');
+  $('cut').textContent = '—'; $('arrive').className = '';
+}
+function renderWait(now) {
+  const s = NS || {}; let diag;
+  if (NATIVE) {
+    if (s.gpsOn === false) diag = '手機的定位功能是關的，請到快速設定打開「位置」。';
+    else if (s.anyFixAge >= 0 && s.anyFixAge < 20) diag = '已有粗略位置（±' + Math.round(acc) + ' m），等待精確到 80 m 內。衛星：用 ' + (s.sats || 0) + ' / 看到 ' + (s.satsSeen || 0) + '。';
+    else diag = '衛星：用 ' + (s.sats || 0) + ' / 看到 ' + (s.satsSeen || 0) + '。請到戶外空曠處，通常 30–60 秒。';
+  } else diag = '請到戶外空曠處，通常 30–60 秒。';
+  blank('等待 GPS 定位', diag);
+  $('aidrow').className = 'aidrow'; $('aidrow').innerHTML = '<span class="drop">💧</span><span class="an">第一個水站：' + AID[0].km + 'K ' + esc(AID[0].name) + '</span>';
+  $('alert').className = ''; lastAlertKey = ''; $('gpsNote').textContent = gpsMsg; idleChart();
+}
+function renderOff(now) {
+  blank('你目前不在賽道上', '距離賽道最近點 ' + fmtOff(dev) + '（GPS 正常運作中）。進入賽道 300 m 內會自動開始。');
+  $('secCard').style.borderLeftColor = TH.warn; $('aidrow').className = 'aidrow'; $('aidrow').innerHTML = '';
+  const al = $('alert'); al.className = 'show off'; al.textContent = '不在賽道上：離賽道 ' + fmtOff(dev) + '。'; lastAlertKey = '';
+  $('gpsNote').textContent = ''; idleChart();
+}
+function curPace(now, km) {
+  if (mode === 'demo') return planPace(km);
+  if (NATIVE && mode === 'gps') return nativePace === 0 ? 0 : nativePace > 0 ? nativePace / 60 : null;
+  if (mode === 'gps' && hist.length > 1 && now - lastFix < 20000) {
+    const old = hist.find(h => now - h.t <= 90000), last = hist[hist.length - 1];
+    if (old && last.t - old.t >= 30000) { const ds = last.s - old.s; return ds < 20 ? 0 : (last.t - old.t) / 60000 / ds * 1000; }
+  }
+  return null;
+}
+function render() {
+  const now = Date.now();
+  const sM = Math.max(0, Math.min(TOTAL, currentS())), km = sM / 1000;
+  renderClock(now); renderTimer(now); syncControls(sM);
+  if (waitingFix(now) && !offCourse(now)) { renderWait(now); return; }
+  if (offCourse(now)) { renderOff(now); return; }
+  if (idleNote) { idleNote = false; setWin(WIN); }
+  const el = elapsedSec(), running = el != null && el >= 0 && mode !== 'idle', gm = running ? gunMin() : null;
+  checkSplits(sM); checkVoice(sM, el);
+  const moved = Math.abs(sM - lastDrawS) >= 10;
+  if (moved || now - lastSecDraw > 5000) { lastSecDraw = now; drawSec(sM, running ? el : null, running ? gm : null, mode !== 'idle' || sM > 0); drawAll(sM, running ? el : null); }
+  if (moved) { lastDrawS = sM; drawZoom(sM); drawFull(sM); }
+
+  /* ① 瞄一眼 */
+  $('km').textContent = km.toFixed(1);
+  const pace = curPace(now, km), planAt = planMin(km);
+  const db = $('dbig'), ds = $('dsub');
+  if (running) {
+    const d = planAt - el / 60;
+    db.textContent = (d >= 0 ? '快 ' : '慢 ') + fmtDelta(d * 60); setCls(db, d >= -0.01 ? 'pos' : d > -5 ? 'mid' : 'neg');
+    const nc = CUT.find(c => c.km * 1000 > sM + 20);
+    if (nc && gm != null) { const p = pace > 0 ? pace : planPace(km), arr = gm + (nc.km - km) * p, mar = nc.min - arr; ds.innerHTML = '關門餘裕 <b class="' + (mar < 8 ? 'neg' : mar < 20 ? 'mid' : 'pos') + '">' + (mar >= 0 ? Math.floor(mar) + ' 分' : '不足') + '</b>'; }
+    else ds.textContent = '已過所有關門';
+  } else { db.textContent = '—'; setCls(db, ''); ds.textContent = el != null && el < 0 ? '尚未起跑' : '比賽日 ' + clk(GUN) + ' 自動計時'; }
+
+  /* ② 區段 */
+  const sc = secAt(km), si = SEC.indexOf(sc), g = G(sM);
+  $('secCard').style.borderLeftColor = TH[gradeKey(g)];
+  $('secNo').textContent = '區段 ' + (si + 1) + '/' + SEC.length + '・' + sc.a + '–' + sc.b + 'K';
+  $('secName').textContent = sc.from + ' → ' + sc.to;
+  $('secTerr').textContent = sc.terr;
+  const aEnd = Math.min(TOTAL, sM + 500), dE = E(aEnd) - E(sM), aG = aEnd > sM ? dE / (aEnd - sM) * 100 : 0;
+  $('secNow').innerHTML = '此刻 <b style="color:' + (gradeKey(g) === 'flat' ? TH.fg : TH[gradeKey(g)]) + '">' + gradeWord(g) + ' ' + (g > 0 ? '+' : g < 0 ? '−' : '') + Math.abs(g).toFixed(0) + '%</b>｜海拔 ' + Math.round(E(sM)) + ' m' + (aEnd - sM < 50 ? '' : '｜前 500 m ' + gradeWord(aG) + (Math.abs(dE) >= 3 ? (dE > 0 ? ' +' : ' −') + Math.abs(Math.round(dE)) + ' m' : '')) + '｜這段目標 <b>' + fmtMS(paceBetween(sc.a, sc.b) * 60) + '</b>/km';
+  $('act').textContent = sc.act;
+  const cB = cutAt(sc.b), dlB = deadlineMin(sc.b), planB = planMin(sc.b);
+  $('tgtTo').innerHTML = '到 B 點 <b>' + sc.to + '</b>（還有 ' + fmtDist(sc.b * 1000 - sM) + '）';
+  $('tPlanB').textContent = planClock(planB);
+  $('tCutLab').textContent = cB ? '底線（關門）' : '底線（推算）';
+  $('tCutB').textContent = clk(GUN + dlB * 60000);
+  let predB = null;
+  if (running) { const p = pace > 0 ? pace : paceBetween(km, sc.b); predB = el / 60 + (sc.b - km) * p; $('tPredB').textContent = planClock(predB); setCls($('tPredB'), predB <= planB + 0.01 ? 'pos' : predB < planB + 5 ? 'mid' : 'neg'); }
+  else { $('tPredB').textContent = '—'; setCls($('tPredB'), ''); }
+  const arrGunB = (predB != null ? predB : planB) * 60000 + baseStart(), marB = (GUN + dlB * 60000 - arrGunB) / 60000;
+  $('tMarB').textContent = (marB >= 0 ? Math.floor(marB) + ' 分' : '不足'); setCls($('tMarB'), marB < 8 ? 'neg' : marB < 20 ? 'mid' : 'pos');
+
+  /* ③ 下一個地標、補給、膠 */
+  const nl = LM.find(l => l.km * 1000 > sM + 20);
+  if (nl) { $('lmnum').textContent = nl.n; $('lmnum').className = 'lmnum' + (nl.cut ? ' cut' : ''); $('lmname').textContent = nl.name; $('lmdist').textContent = fmtDist(nl.km * 1000 - sM); $('lmnote').textContent = nl.note; }
+  else { $('lmnum').textContent = '終'; $('lmnum').className = 'lmnum'; $('lmname').textContent = '已到終點'; $('lmdist').textContent = '🎉'; $('lmnote').textContent = '完賽！先慢走 10 分鐘、補水、穿暖。'; }
+  if (nl) {
+    const pm = planMin(nl.km); $('etaPlan').textContent = planClock(pm);
+    if (running) { const p = pace > 0 ? pace : planPace(km), pr = el / 60 + (nl.km - km) * p, d = pm - pr; $('etaPred').textContent = planClock(pr); const de = $('etaDiff'); de.textContent = (d >= 0 ? '早 ' : '晚 ') + fmtDelta(d * 60); setCls(de, d >= -0.01 ? 'pos' : d > -5 ? 'mid' : 'neg'); }
+    else { $('etaPred').textContent = '—'; $('etaDiff').textContent = ''; }
+  } else { $('etaPlan').textContent = '—'; $('etaPred').textContent = '—'; $('etaDiff').textContent = ''; }
+  $('nearFin').className = running && (mode === 'gps' || mode === 'demo') && sM >= TOTAL * 0.95 ? 'show' : '';
+  $('finRow').hidden = !(running && (mode === 'gps' || mode === 'demo'));
+  if (mode === 'demo' && sM >= TOTAL - 1 && finishCheck(sM, 0)) return;
+  const ar = $('arrive'); if (Date.now() < arriveUntil) { ar.textContent = '✔ ' + arriveText; ar.className = 'show'; } else ar.className = '';
+  highlightPlan(km);
+  const ng = GELS.find(x => x.k * 1000 > sM - 80), gelNear = ng && (ng.k * 1000 - sM) < 250;
+  const na = AID.find(a => a.km * 1000 > sM - 60), aidNear = na && (na.km * 1000 - sM) < 300, ar2 = $('aidrow');
+  if (na) {
+    const dm = na.km * 1000 - sM;
+    ar2.className = 'aidrow' + (aidNear ? ' near' : '');
+    ar2.innerHTML = `<span class="drop">💧</span><span class="an">水站 ${na.n}・${esc(na.name)}</span><span class="ad">${dm <= 30 ? '到了' : fmtDist(dm)}</span>` +
+      `<div class="sub">${aidTags(na)} ${na.est ? '約 ' : ''}${na.km_text ? esc(na.km_text) + '・' : ''}${na.km}K・計畫 ${planClock(planMin(na.km))} 到${na.food ? '・' + esc(na.food) : ''}` + (aidNear ? '・<b style="color:var(--fg)">靠邊減速，喝 2–3 口</b>' : '') + '</div>';
+  } else { ar2.className = 'aidrow'; ar2.innerHTML = '<span class="drop">💧</span><span class="an">水站都過了，終點見</span>'; }
+  $('gel').innerHTML = ng ? '◆ 能量膠 <b>' + ng.t + '</b>　' + (gelNear ? '<b>到了：' + ng.at + ' 號水站走路吃</b>' : '還有 ' + fmtDist(ng.k * 1000 - sM) + '（' + ng.at + ' 號水站，' + ng.k + 'K）') : '膠都吃完了。';
+
+  /* ④ 時間 */
+  $('pace').innerHTML = pace == null ? '—' : pace === 0 ? '停' : fmtMS(pace * 60) + '<small style="font-size:14px;color:var(--sub)">/km</small>';
+  $('plan').textContent = fmtHM(planAt) + '（' + planClock(planAt) + '）';
+  const cutEl = $('cut'), predEl = $('pred');
+  let cutDanger = false;
+  if (!running) { predEl.textContent = '—'; setCls(predEl, ''); cutEl.textContent = el == null ? '比賽日 ' + clk(GUN) + ' 自動開始計時（以鳴槍＋預估延遲為起點）。練習請到「設定」按「以現在為起跑」。' : '尚未起跑。'; }
+  else {
+    const emin = el / 60;
+    if (km >= 2) { const pf = PLAN_TOTAL * (emin / planAt), gunF = pf + (baseStart() - GUN) / 60000; predEl.textContent = fmtHM(pf) + '（' + planClock(pf) + '）'; setCls(predEl, gunF <= LIMIT - 15 ? 'pos' : gunF <= LIMIT ? 'mid' : 'neg'); }
+    else { predEl.textContent = '2K 後顯示'; setCls(predEl, ''); }
+    const nc = CUT.find(c => c.km * 1000 > sM + 20);
+    if (nc && gm != null) {
+      const left = nc.min - gm, dist = nc.km - km, need = left > 0 ? left / dist : 0;
+      const marPlan = left - (planMin(nc.km) - planMin(km));   // 照計畫配速跑過去還剩幾分
+      cutDanger = left > 0 && dist > 0.3 && marPlan < 2;
+      cutEl.innerHTML = '下個關門 <b>' + nc.name + ' ' + nc.clock + '</b>（' + nc.km + 'K）：' +
+        (left > 0 ? '還有 <b class="' + (left < 15 ? 'neg' : left < 30 ? 'mid' : 'pos') + '">' + Math.floor(left) + ' 分</b>，剩 ' + dist.toFixed(1) + 'K，均速要 ≤ <b>' + fmtMS(need * 60) + '</b>/km' : '<b class="neg">已超過關門時間</b>');
+    } else cutEl.textContent = nc ? '下個關門：' + nc.name + ' ' + nc.clock : '已過所有關門點';
+  }
+
+  /* 警示（同一事件只震一次） */
+  const al = $('alert'); let key = '', cls = '', txt = '';
+  if (mode === 'gps' && dev != null && dev > 80 && lastFix && now - lastFix < 20000) { key = 'off' + Math.floor(sM / 500); cls = 'off'; txt = '你離路線 ' + Math.round(dev) + ' m，確認有沒有跑錯路。'; }
+  else if (cutDanger) { key = 'cut'; cls = 'cut'; txt = '關門吃緊：請加快，補給只拿水不停留。'; }
+  else if (gelNear && ng.t !== '備用') { key = 'gel' + ng.t; cls = 'gel'; txt = '◆ ' + ng.at + ' 號水站：站內走路吃能量膠 ' + ng.t + '，配水吞下'; }
+  else if (na && na.km * 1000 - sM < 200) { key = 'aid' + na.n; cls = 'aid'; txt = '💧 水站 ' + na.n + '：' + aidTxt(na) + '。靠邊減速，喝 2–3 口' + (GELS.some(g => g.at === na.n && g.t === '備用') ? '（撐不住可吃備用膠）' : ''); }
+  al.className = cls ? 'show ' + cls : ''; al.textContent = txt;
+  if (key && key !== lastAlertKey && mode !== 'idle') {
+    buzz(cls === 'gel' ? [200, 100, 200] : cls === 'aid' ? [150] : [400, 200, 400]);
+    if (cls === 'gel') say(ng.at + '號水站，站內走路吃' + ng.t.replace('#', '第') + '包能量膠，配水吞下');
+    else if (cls === 'aid') say('前方水站' + na.n + '號，有' + aidSay(na) + '，靠邊減速');
+    else if (cls === 'cut') say('關門吃緊，請加快');
+  }
+  lastAlertKey = key;
+  $('gpsNote').textContent = gpsMsg || (mode === 'idle' ? (NATIVE ? '按「開始定位」。鎖屏後仍持續定位、語音與通知列更新。' : '按「GPS 定位」開始。練習或沒 GPS：按「手動」或「示範」。') : mode === 'demo' ? '示範：照計畫從頭跑一遍，1 秒＝1 分鐘（語音會照樣報）。' : '');
+  $('wlNote').textContent = NATIVE ? '定位由背景服務負責，鎖屏也會持續；提醒用震動與語音。' : ('wakeLock' in navigator) ? (wl ? '螢幕恆亮：開啟' : (mode === 'gps' || mode === 'demo' ? '螢幕恆亮：未取得，請把螢幕逾時設長一點' : '')) : '網頁版鎖屏後瀏覽器會停：比賽請用 APK。';
+}
+
+/* ---------- 節流：有在跑才每秒更新，否則 5 秒 ---------- */
+let tick = null;
+function startTick() { stopTick(); tick = setInterval(() => { if (mode === 'gps' || mode === 'demo' || effStart(Date.now()) != null) render(); else renderClock(Date.now()); }, (mode === 'gps' || mode === 'demo') ? 1000 : 5000); }
+function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
+
+/* ---------- 事件 ---------- */
+$('bGps').onclick = () => { if (mode === 'gps') { stopGPS(); startGPS(); } else setMode('gps'); };
+$('bManual').onclick = () => { if (mode !== 'manual') { curS = currentS(); setMode('manual'); } };
+$('bDemo').onclick = () => setMode('demo');
+$('slider').oninput = e => { curS = Number(e.target.value); schedule(); };
+document.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { curS = Math.max(0, Math.min(TOTAL, curS + Number(b.dataset.step))); schedule(); });
+LM.forEach(l => { const b = document.createElement('button'); b.textContent = l.n + ' ' + l.name; b.onclick = () => { curS = Math.min(TOTAL, l.km * 1000); schedule(); }; $('chips').appendChild(b); });
+$('cvFull').addEventListener('click', e => {
+  if (mode === 'gps' || mode === 'demo') return;
+  const r = e.currentTarget.getBoundingClientRect(), padL = 36, padR = 8;
+  curS = Math.max(0, Math.min(TOTAL, (e.clientX - r.left - padL) / (r.width - padL - padR) * TOTAL));
+  if (mode === 'idle') mode = 'manual'; schedule();
+});
+$('dMore').addEventListener('toggle', () => { lastDrawS = -1e9; schedule(); });
+$('bStart').onclick = () => { startMs = Date.now(); if (NATIVE) Android.setStart(RID, startMs); else { rset('start', String(startMs)); rset('splits', null); rset('finished', null); } S.splits = {}; FIN = null; voiceReset(); renderSplits(); schedule(); };
+$('bGo').onclick = () => setStartTo(Date.now()); $('bGo2').onclick = () => setStartTo(Date.now());
+$('bFix').onclick = () => { $('fixPanel').hidden = !$('fixPanel').hidden; };
+$('bGun2').onclick = () => setStartTo(null);
+document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { const s0 = effStart(Date.now()); if (s0 != null) setStartTo(s0 + Number(b.dataset.adj)); });
+$('bGun').onclick = () => { setStartTo(null); schedule(); };
+function replan() { buildPlan(S.target, S.delay); pushCourse(); $('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab').textContent = S.delay; renderPlan(); renderPrep(); lastDrawS = -1e9; schedule(); }
+fillOpts($('target'), R.params.target.options, v => fmtHM(v)); fillOpts($('delay'), R.params.delay.options, v => v + ' 分');
+$('target').value = String(S.target); $('delay').value = String(S.delay);
+$('target').onchange = e => { S.target = Number(e.target.value); pset('target', S.target); replan(); };
+$('delay').onchange = e => { S.delay = Number(e.target.value); pset('delay', S.delay); replan(); };
+$('name').value = S.name; $('name').onchange = e => { S.name = e.target.value.trim(); pset('name', S.name); };
+function toggles() { for (const [id, k] of [['bVib', 'vib'], ['bTts', 'tts'], ['bKmv', 'kmv'], ['bStopv', 'stopv'], ['bKeep', 'keepOn']]) { $(id).textContent = S[k] ? '開' : '關'; $(id).classList.toggle('on', !!S[k]); } }
+for (const [id, k] of [['bVib', 'vib'], ['bTts', 'tts'], ['bKmv', 'kmv'], ['bStopv', 'stopv'], ['bKeep', 'keepOn']]) $(id).onclick = () => { S[k] = !S[k]; pset(k, S[k] ? '1' : '0'); toggles(); if (k === 'vib' && S.vib && !NATIVE) buzz([100]); };
+toggles();
+$('bTestVib').onclick = () => { if (NATIVE) Android.testVibrate(); else { try { navigator.vibrate([200, 100, 200]); } catch (e) { } } };
+$('bTestTts').onclick = () => { if (NATIVE) Android.testSpeak(); else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance('語音測試，18公里，比計畫快2分10秒'); u.lang = 'zh-TW'; if (zhVoice) u.voice = zhVoice; speechSynthesis.speak(u); } };
+if (NATIVE) { $('rowKeep').hidden = false; $('bGps').textContent = '開始定位'; if (Android.activeRace() === RID) { mode = 'gps'; gpsMsg = ''; } }
+$('bTheme').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nx); pset('theme', nx);
+  document.querySelector('meta[name=theme-color]').content = nx === 'dark' ? '#0b0f11' : '#f3f4f1'; readTheme(); lastDrawS = -1e9; schedule();
+};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); lastDrawS = -1e9; schedule(); });
+$('bCopy').onclick = async () => { const t = splitsText(); try { if (NATIVE) Android.copy(t); else await navigator.clipboard.writeText(t); $('bCopy').textContent = '已複製'; } catch (e) { $('bCopy').textContent = '複製失敗'; } setTimeout(() => $('bCopy').textContent = '複製紀錄', 1500); };
+$('bClear').onclick = () => { if ($('bClear').textContent === '確定清除？') { S.splits = {}; if (NATIVE) Android.clearSplits(RID); else rset('splits', null); renderSplits(); $('bClear').textContent = '清除紀錄'; } else { $('bClear').textContent = '確定清除？'; setTimeout(() => $('bClear').textContent = '清除紀錄', 3000); } };
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { fullCache = null; allCache = null; lastDrawS = -1e9; schedule(); }, 150); });
+
+/* ---------- 分頁 ---------- */
+const PAGES = { tPrep: 'pgPrep', tRace: 'pgRace', tPlan: 'pgPlan', tMap: 'pgMap' };
+function showPage(id) { for (const p of ['pgPrep', 'pgRace', 'pgPlan', 'pgMap', 'pgMore', 'pgFinish']) $(p).hidden = p !== id; if (id === 'pgMap' && !$('mapimg').src) $('mapimg').src = 'races/' + RID + '/map.png'; for (const t in PAGES) $(t).classList.toggle('on', PAGES[t] === id); if (id === 'pgMore') $('tRace').classList.add('on'); lastDrawS = -1e9; window.scrollTo(0, 0); schedule(); }
+for (const t in PAGES) $(t).onclick = () => showPage(PAGES[t]);
+$('bMore').onclick = () => showPage('pgMore');
+
+/* ---------- 計畫頁 ---------- */
+function renderPlan() {
+  const pw = $('planWarn'); pw.innerHTML = '';
+  if (PLAN_BAD) pw.innerHTML += '<div class="warnbox bad">⚠ ' + PLAN_BAD + '</div>';
+  if (PLAN_ADJ.length) pw.innerHTML += '<div class="warnbox">為了在「' + PLAN_ADJ.join('、') + '」關門前留 4–6 分鐘餘裕，計畫已自動把那幾段調快、後段放慢（總時間不變）。</div>';
+  const tb = $('planTbl').tBodies[0]; tb.textContent = '';
+  SEC.forEach((s, i) => { const tr = document.createElement('tr'); tr.dataset.i = i; const cb = cutAt(s.b); tr.innerHTML = `<td><b>${s.a}–${s.b}K</b> ${esc(s.from)} → ${esc(s.to)}<br><span class="note">${esc(s.terr)}<br>👉 ${esc(s.act)}</span></td><td>${fmtMS(paceBetween(s.a, s.b) * 60)}</td><td>${planClock(planMin(s.b))}</td><td class="neg">${clk(GUN + deadlineMin(s.b) * 60000)}${cb ? '<br><span class="note">關門</span>' : ''}</td>`; tb.appendChild(tr); });
+  $('cutTbl').tBodies[0].innerHTML = CUT.map(c => { const arr = (baseStart() - GUN) / 60000 + planMin(c.km), m = c.min - arr; return `<tr><td>${esc(c.name)}</td><td>${c.km}</td><td class="neg">${c.clock}</td><td>${planClock(planMin(c.km))}</td><td class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分</td></tr>`; }).join('');
+  $('aidTbl').tBodies[0].innerHTML = AID.map(a => `<tr data-n="${a.n}"><td class="num">${a.n}</td><td>${a.est ? '約' : ''}${a.km}</td><td><b>${esc(a.name)}</b>${a.km_text ? '（' + esc(a.km_text) + '）' : ''}<br>${aidTags(a)}${a.food ? ' <span class="note">' + esc(a.food) + '</span>' : ''}</td><td>${planClock(planMin(a.km))}</td></tr>`).join('');
+  $('gelList').innerHTML = (R.text.gel_pre ? [R.text.gel_pre] : []).concat(GELS.map(g => [g.t + ' ' + g.k + 'K', g.note || g.at + ' 號水站'])).map(x => `<li><b>${esc(x[0])}</b>　${esc(x[1])}</li>`).join('');
+}
+function highlightPlan(km) {
+  const i = SEC.indexOf(secAt(km)); $('planTbl').querySelectorAll('tbody tr').forEach(tr => tr.classList.toggle('cur', Number(tr.dataset.i) === i));
+  const na = AID.find(a => a.km > km - 0.06); $('aidTbl').querySelectorAll('tbody tr').forEach(tr => { const a = AID.find(x => x.n === Number(tr.dataset.n)); tr.classList.toggle('cur', a === na); tr.classList.toggle('past', a.km <= km - 0.06); });
+}
+$('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab').textContent = S.delay; renderStatic(); renderPlan();
+
+/* ---------- 地圖：兩指縮放、單指拖曳 ---------- */
+(function () {
+  const w = $('mapwrap'), im = $('mapimg'); let sc = 1, tx = 0, ty = 0, pts = new Map(), pd = 0, pm = null;
+  const apply = () => { im.style.transform = `translate(${tx}px,${ty}px) scale(${sc})`; };
+  const clamp = () => { const W = w.clientWidth, H = w.clientHeight, iw = im.clientWidth * sc, ih = im.clientHeight * sc; tx = Math.min(0, Math.max(W - iw, tx)); ty = Math.min(0, Math.max(Math.min(0, H - ih), ty)); };
+  w.addEventListener('pointerdown', e => { pts.set(e.pointerId, [e.clientX, e.clientY]); w.setPointerCapture(e.pointerId); if (pts.size === 2) { const a = [...pts.values()]; pd = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); pm = [(a[0][0] + a[1][0]) / 2, (a[0][1] + a[1][1]) / 2]; } });
+  w.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return; const prev = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 1) { tx += e.clientX - prev[0]; ty += e.clientY - prev[1]; }
+    else if (pts.size === 2) { const a = [...pts.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]), m = [(a[0][0] + a[1][0]) / 2, (a[0][1] + a[1][1]) / 2]; const r = w.getBoundingClientRect(), f = Math.max(1, Math.min(5, sc * d / pd)) / sc; tx = (m[0] - r.left) - ((pm[0] - r.left) - tx) * f; ty = (m[1] - r.top) - ((pm[1] - r.top) - ty) * f; sc *= f; pd = d; pm = m; }
+    clamp(); apply();
+  });
+  const up = e => { pts.delete(e.pointerId); };
+  w.addEventListener('pointerup', up); w.addEventListener('pointercancel', up);
+  w.addEventListener('dblclick', () => { sc = 1; tx = ty = 0; apply(); });
+  im.addEventListener('load', () => { sc = 1; tx = ty = 0; apply(); });
+})();
+
+/* ---------- 賽事準備頁（MVP 畫面 2） ---------- */
+function fillOpts(sel, opts, lab) { sel.innerHTML = opts.map(o => `<option value="${o.v}">${esc(o.label || lab(o.v))}</option>`).join(''); }
+function dateTxt(ms) { return dateTxtTz(ms, TZ, true); }
+function renderStatic() {
+  document.title = R.short + '｜Run Navigator';
+  $('topName').textContent = R.short; $('prepName').textContent = R.name;
+  $('prepSub').textContent = dateTxt(GUN) + ' ' + clk(GUN) + ' 鳴槍（' + R.time.tz_label + '）・' + (LIMIT % 60 ? fmtHM(LIMIT) : LIMIT / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
+  $('checkin').textContent = R.checkin || '';
+  $('isoNote').textContent = '只影響' + R.short + '，不影響其他賽事';
+  $('delayNote').textContent = R.params.delay.note || '';
+  $('gunLab').textContent = '距離鳴槍 ' + clk(GUN) + '（' + R.time.tz_label + '）';
+  $('planNote').innerHTML = '時間都是<b>' + esc(R.time.tz_label) + '</b>。' + esc(R.text.plan_note || '');
+  const nc = CUT.filter(c => c.km < TOTAL_KM - 0.01).length;
+  $('cutTitle').textContent = nc + ' 個關門（以鳴槍 ' + clk(GUN) + ' 計' + (R.text.cut_title_note ? '，' + R.text.cut_title_note : '') + '）';
+  $('cutNote').textContent = R.text.cut_note || '';
+  const ph = R.text.phases || [];
+  $('phases').innerHTML = ph.map((p, i) => `<div class="phase"${i === ph.length - 1 ? ' style="border:0"' : ''}><b>${esc(p[0])}</b><div><b>${esc(p[1])}</b>${esc(p[2])}</div></div>`).join('');
+  $('phases').previousElementSibling.textContent = (['', '一', '二', '三', '四', '五', '六', '七'][ph.length] || ph.length) + '階段';
+  const nf = AID.filter(a => a.s.includes('f')).length, fl = AID_LAB.f === '食' ? '給食' : AID_LAB.f;
+  $('aidTitle').textContent = '水站 ' + AID.length + ' 處' + (nf && fl ? '・' + fl + ' ' + nf + ' 處' : '');
+  $('aidLegend').innerHTML = (R.aid.legend || []).map(x => `<span class="tag ${esc(x[0])}">${esc(AID_LAB[x[0]])}</span>${esc(x[1])}`).join('　');
+  $('aidNote').textContent = R.text.aid_note || ''; $('gelNote').textContent = R.text.gel_note || ''; $('mapNote').textContent = R.text.map_note || '';
+  $('tipsTitle').textContent = R.text.tips_title || '提醒';
+  $('tipsList').innerHTML = (R.text.tips || []).map(t => '<li>' + rich(t) + '</li>').join('');
+}
+function renderPrep() {
+  const now = Date.now(), d = GUN - now, end = GUN + LIMIT * 60000;
+  $('cdLab').textContent = d > 0 ? '距離鳴槍' : now < end ? '比賽進行中' : '已鳴槍';
+  $('cdVal').textContent = d > 86400e3 ? Math.ceil(d / 86400e3) + ' 天' : d > 0 ? fmtHMS(d / 1000) : now < end ? '關門 ' + clk(end) : dateTxt(GUN);
+  let w = '';
+  if (PLAN_BAD) w = '<div class="warnbox bad">⚠ ' + esc(PLAN_BAD) + '</div>';
+  else if (PLAN_ADJ.length) w = '<div class="warnbox">' + (R.text.prep_warn ? '<b style="color:var(--warn)">' + esc(R.text.prep_warn) + '</b><br>' : '') + '計畫已自動把「' + esc(PLAN_ADJ.join('、')) + '」之前的區段排快' + (CB.first_n ? '，前 ' + CB.first_n + ' 關各留 ' + CB.early + ' 分鐘、之後留 ' + CB.later + ' 分鐘' : '') + '（總時間不變）。</div>';
+  else if (R.text.prep_warn) w = '<div class="warnbox">' + esc(R.text.prep_warn) + '</div>';
+  $('prepWarn').innerHTML = w;
+  $('cutTiles').innerHTML = CUT.filter(c => c.km < TOTAL_KM - 0.01).slice(0, 3).map((c, i) => { const m = c.min - ((baseStart() - GUN) / 60000 + planMin(c.km)); return `<div><div class="t">第${i + 1}關 ${c.km}K</div><div class="v cutv">${c.clock}</div><div class="t">計畫餘裕 <span class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分</span></div></div>`; }).join('');
+  const fb = $('finBox');
+  if (FIN && !FIN.demo) { fb.hidden = false; fb.innerHTML = '這場已完賽' + (FIN.t != null ? '（淨時間 <b>' + fmtHMS(FIN.t) + '</b>）' : '') + '。再按「開始定位」會清掉完賽狀態。 <button class="small" id="bSeeFin">看成績</button>'; $('bSeeFin').onclick = () => { renderFinish(); showPage('pgFinish'); }; }
+  else fb.hidden = true;
+  $('bPrepGo').textContent = mode === 'gps' ? '定位中：回到賽道畫面' : NATIVE ? '開始定位（比賽）' : '開始 GPS 定位（網頁版僅供測試）';
+}
+function prepGo() {
+  if (mode === 'gps') { showPage('pgRace'); return; }
+  if (FIN && !FIN.demo) { FIN = null; pset('finished', null); if (NATIVE) Android.unfinish(RID); }
+  if (FIN && FIN.demo) FIN = null;
+  setMode('gps'); if (mode === 'gps') showPage('pgRace');
+}
+/* 同時只能一場：別場正在定位，先請使用者停止那一場 */
+function showBusy(other) {
+  const o = (window.RACES || []).find(r => r.id === other), b = $('busyBox');
+  b.hidden = false;
+  b.innerHTML = '「' + esc(o ? o.short : other) + '」正在定位。同時只能有一場，要先停止它嗎？<div class="grid2" style="margin-top:8px"><button class="small" id="bBusyStop">停止那一場，開始這一場</button><button class="small" id="bBusyGo">回去看那一場</button></div>';
+  $('bBusyStop').onclick = () => { Android.stop(); b.hidden = true; setTimeout(prepGo, 1200); };
+  $('bBusyGo').onclick = () => goRace(other);
+  showPage('pgPrep');
+}
+
+/* ---------- 完賽判定（MVP 畫面 3、4） ----------
+ *   自動：已跑 ≥ 98% 距離，而且人在終點 100 m 內（賽事包 finish 可調）
+ *   手動：「我完賽了」按鈕（要按兩下確認）
+ *   完賽後：停止定位、語音、偏離提醒 → 顯示成績頁；判定錯了可以取消、繼續定位
+ */
+let unfinAt = 0;
+function finishCheck(sM, dFin) {
+  if (FIN || (mode !== 'gps' && mode !== 'demo')) return false;
+  const el = elapsedSec(); if (el == null || el < 0) return false;
+  if (sM < R.finish.min_frac * TOTAL || dFin > R.finish.radius_m) return false;
+  doFinish('auto', el, sM, dFin); return true;
+}
+function doFinish(how, el, sM, dFin) {
+  const demo = mode === 'demo';
+  FIN = { how, c: demo ? baseStart() + el * 1000 : Date.now(), s: Math.round(sM), d: Math.round(dFin || 0) };
+  if (el != null && el >= 0) FIN.t = Math.round(el);
+  if (demo) FIN.demo = true;
+  else if (NATIVE) Android.finish(RID, JSON.stringify(FIN));    // 正在定位：背景服務記成績、停語音、20 秒後停止定位
+  else pset('finished', JSON.stringify(FIN));
+  buzz([500, 150, 500]);
+  say('完賽！' + (FIN.t != null ? '淨時間' + sayHMS(FIN.t) + '。' : '') + '辛苦了。');
+  if (!NATIVE) stopGPS();
+  mode = 'idle'; voiceReset();
+  renderFinish(); showPage('pgFinish'); startTick(); schedule();
+}
+function sayHMS(sec) { sec = Math.round(sec); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + '小時' : '') + m + '分' + s + '秒'; }
+function unfinish() {
+  const demo = FIN && FIN.demo; FIN = null; unfinAt = Date.now();
+  if (demo) { showPage('pgPrep'); return; }
+  pset('finished', null); if (NATIVE) Android.unfinish(RID);
+  setMode('gps'); showPage(mode === 'gps' ? 'pgRace' : 'pgPrep');
+}
+function renderFinish() {
+  if (!FIN) return;
+  $('finTitle').textContent = FIN.demo ? '完賽！（示範）' : '完賽！';
+  $('finSub').textContent = R.name + '・' + R.finish_name;
+  const t = FIN.t;
+  $('finNet').textContent = t != null ? fmtHMS(t) : '—';
+  const gunAt = (clockMs, tSec) => !FIN.demo && raceWindow(clockMs) ? (clockMs - GUN) / 60000 : tSec / 60 + S.delay;
+  if (t != null) {
+    const d = PLAN_TOTAL * 60 - t; $('finVs').textContent = (d >= 0 ? '快 ' : '慢 ') + fmtDelta(d); setCls($('finVs'), d >= 0 ? 'pos' : 'neg');
+    $('finPace').textContent = fmtMS(t / TOTAL_KM); $('finGun').textContent = fmtHMS(gunAt(FIN.c, t) * 60);
+  } else for (const id of ['finVs', 'finPace', 'finGun']) $(id).textContent = '—';
+  const pct = Math.min(100, Math.round(FIN.s / TOTAL * 100));
+  $('finHow').textContent = (FIN.how === 'auto' ? clk(FIN.c) + ' 進入終點 ' + FIN.d + ' m 內、已跑 ' + pct + '% 距離 → 自動完賽。' : clk(FIN.c) + ' 你按了「我完賽了」（當時在 ' + (FIN.s / 1000).toFixed(1) + 'K）。') +
+    (FIN.demo ? '這是示範模式，成績不會存起來。' : '定位、語音、偏離提醒都已停止，在旁邊休息也不會再跳「不在賽道上」。');
+  $('finCuts').innerHTML = CUT.map((c, i) => {
+    const isFin = c.km >= TOTAL_KM - 0.01; let arr = null;
+    if (isFin) { if (t != null) arr = gunAt(FIN.c, t); }
+    else { const l = LM.find(x => x.cut && Math.abs(x.km - c.km) < 0.05), s = l && S.splits[l.n]; if (s) arr = gunAt(s.c, s.t); }
+    const m = arr == null ? null : c.min - arr;
+    return `<div style="text-align:center"><div class="t">${isFin ? '終點' : '第' + (i + 1) + '關'}</div><div class="v ${m == null ? '' : m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}" style="font-size:16px">${m == null ? '—' : m < 0 ? '超過' : Math.floor(m) + ' 分'}</div></div>`;
+  }).join('');
+  $('bUnfinish').textContent = FIN.demo ? '回到準備頁' : '判定錯了？取消完賽，繼續定位';
+}
+/* 需要按兩下的按鈕（避免口袋誤觸） */
+function twoTap(btn, ask, fn) { const orig = btn.textContent; btn.onclick = () => { if (btn.textContent === ask) { btn.textContent = orig; fn(); } else { btn.textContent = ask; setTimeout(() => { if (btn.textContent === ask) btn.textContent = orig; }, 3000); } }; }
+twoTap($('bFinish'), '再按一次：確定完賽', () => doFinish('manual', elapsedSec(), currentS(), null));
+twoTap($('bStopRun'), '再按一次：停止定位', () => { setMode('idle'); showPage('pgPrep'); });
+$('bUnfinish').onclick = unfinish;
+$('bFinHome').onclick = () => goRace(null);
+$('bFinCopy').onclick = async () => { const tx = splitsText() + (FIN && FIN.t != null ? '\n完賽 ' + fmtHMS(FIN.t) : ''); try { if (NATIVE) Android.copy(tx); else await navigator.clipboard.writeText(tx); $('bFinCopy').textContent = '已複製'; } catch (e) { $('bFinCopy').textContent = '複製失敗'; } setTimeout(() => $('bFinCopy').textContent = '複製分段紀錄', 1500); };
+$('bPrepGo').onclick = prepGo;
+$('bPrepDemo').onclick = () => { if (FIN && FIN.demo) FIN = null; setMode('demo'); showPage('pgRace'); };
+$('bToPlan').onclick = () => showPage('pgPlan'); $('bToMap').onclick = () => showPage('pgMap');
+$('bBack').onclick = () => goRace(null);
+const _ons = window.onNativeState;
+window.onNativeState = st => { if (st && st.finished && Date.now() - unfinAt < 5000) delete st.finished; _ons(st); };
+
+/* ---------- 發版保護：示範模式把整場跑一遍（GitHub Actions 用無頭瀏覽器開 #race=<id>&selftest） ---------- */
+function selfTest() {
+  const errs = [], realNow = Date.now; let fake = GUN + 40 * 86400e3;
+  Date.now = () => fake;
+  try {
+    showPage('pgRace'); setMode('demo');
+    const realSec = PLAN_TOTAL * 60 / DEMO_SPEED;
+    for (let r = 0; r <= realSec + 30 && !FIN; r += 0.25) { fake = demoT0 + r * 1000; render(); }
+    const kmSaid = SAID.filter(t => /^\d+公里，/.test(t)).length, secSaid = SAID.filter(t => t.startsWith('進入區段')).length;
+    if (!FIN) errs.push('跑到終點沒有自動完賽');
+    else {
+      if (FIN.how !== 'auto') errs.push('完賽方式應該是自動');
+      if (Math.abs(FIN.t - PLAN_TOTAL * 60) > 60) errs.push('完賽時間 ' + fmtHMS(FIN.t) + ' 跟計畫 ' + fmtHMS(PLAN_TOTAL * 60) + ' 差太多');
+    }
+    if (kmSaid !== Math.floor(TOTAL_KM + 1e-9)) errs.push('每 1K 語音 ' + kmSaid + ' 次，應該 ' + Math.floor(TOTAL_KM + 1e-9) + ' 次');
+    if (secSaid !== SEC.length - 1) errs.push('進區段語音 ' + secSaid + ' 次，應該 ' + (SEC.length - 1) + ' 次');
+    for (const l of LM) if (l.km > 0 && !S.splits[l.n]) errs.push('地標 ' + l.n + ' ' + l.name + ' 沒有記到分段');
+    for (const a of AID) if (!SAID.some(t => t.startsWith('前方水站' + a.n + '號') || t.startsWith(a.n + '號水站，站內走路吃'))) errs.push('水站 ' + a.n + ' 沒有提醒');
+    if (Math.abs(PLAN_TOTAL - S.target) > 3) errs.push('計畫總時間 ' + fmtHM(PLAN_TOTAL) + ' 跟目標 ' + fmtHM(S.target) + ' 差太多');
+    for (let i = 1; i < N; i++) if (!(PC[i] >= PC[i - 1])) { errs.push('配速計畫不是遞增（第 ' + i + ' 點）'); break; }
+    for (const t of SAID) if (/NaN|undefined|null/.test(t)) errs.push('語音內容有錯：' + t);
+    renderFinish(); renderPrep(); renderPlan();
+    for (const id of ['pgFinish', 'pgPrep', 'pgPlan']) { const tx = $(id).textContent; if (/NaN|undefined/.test(tx)) errs.push(id + ' 畫面有 NaN / undefined'); }
+    if (/—/.test($('finCuts').textContent)) errs.push('完賽頁有關門餘裕算不出來');
+  } catch (e) { errs.push('執行錯誤：' + (e && e.stack || e)); }
+  Date.now = realNow;
+  window.__selftest = { id: RID, ok: errs.length === 0, errs, said: SAID.length, sample: SAID.slice(0, 6), finT: FIN && FIN.t, planTotal: PLAN_TOTAL, course: coursePayload() };
+}
+
+readTheme(); renderSplits(); setWin(WIN); renderPrep();
+$('topbar').hidden = false; document.querySelector('nav.tabs').hidden = false;
+showPage(Q.get('page') === 'review' ? (FIN ? 'pgFinish' : 'pgMore') : mode === 'gps' ? 'pgRace' : 'pgPrep');
+if (Q.get('page') === 'review' && FIN) renderFinish();
+startTick(); render();
+setInterval(() => { if (!$('pgPrep').hidden) renderPrep(); }, 1000);
+if (SELFTEST) setTimeout(selfTest, 30);
+
+})();
+if (!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+</script>
+</body>
+</html>

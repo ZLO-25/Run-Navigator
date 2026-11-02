@@ -1,0 +1,27 @@
+name: Deploy web version
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency: { group: pages, cancel-in-progress: true }
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - uses: actions/checkout@v4
+      - name: 組合網頁版（與 APK 內的畫面同一份）
+        run: |
+          mkdir -p site
+          cp app/src/main/assets/index.html app/src/main/assets/races.js site/
+          cp -r app/src/main/assets/races site/
+          cp web/* site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - id: d
+        uses: actions/deploy-pages@v4

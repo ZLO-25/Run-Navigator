@@ -1,0 +1,108 @@
+name: Build APK
+# 每次推送都先跑「發版保護」，任何一個賽事包出錯就停，不會編 APK、也不會發佈。
+#
+#   ① 賽事包檢查（格式、公里數、關門、水站…）
+#   ② 畫面示範模式：每個賽事包從起點跑到終點（無頭瀏覽器）
+#   ③ 背景服務對位模擬：每個賽事包 × 6 種配速／GPS 誤差情境（JVM）
+#   ④ 編 APK：PR 編測試版（下載 artifact 試裝）；main 編正式版並發佈到 Releases
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- 發版保護 ----------
+      - name: ① 賽事包檢查（races.js 必須是最新）
+        run: python3 tools/build_races.py --check
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: 安裝無頭瀏覽器
+        run: |
+          npm install --no-save --no-package-lock playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: ② 畫面示範模式：每個賽事包跑完全程
+        run: node tools/selftest.js
+      - name: 示範模式截圖（首頁、準備頁、完賽頁）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: selftest-screens, path: build/selftest/*.png, if-no-files-found: ignore }
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: '17' }
+      - name: ③ 背景服務對位模擬（JVM）
+        run: |
+          mkdir -p build/jvm
+          curl -sSfL --retry 4 -o build/json.jar https://repo1.maven.org/maven2/org/json/json/20240303/json-20240303.jar
+          javac -encoding UTF-8 -d build/jvm -cp build/json.jar app/src/main/java/zl/runnav/app/{Route,Course,Tracker}.java tools/jvm/TrackerCheck.java
+          java -Dstdout.encoding=UTF-8 -cp build/jvm:build/json.jar zl.runnav.app.TrackerCheck build/selftest/course-*.json
+
+      # ---------- 編 APK ----------
+      - name: 接受 Android SDK 授權（runner 已內建 SDK）
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      - name: 版本號
+        run: echo "VER=$(grep -oP "versionName\s+'\K[^']+" app/build.gradle)" >> "$GITHUB_ENV"
+
+      - name: ④ PR：編測試版 APK（套件名稱 zl.runnav.app.debug，可跟正式版並存）
+        if: github.event_name == 'pull_request'
+        run: |
+          gradle assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "RunNavigator-v${VER}-test.apk"
+      - name: 上傳測試版 APK
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with: { name: "RunNavigator-v${{ env.VER }}-test", path: "RunNavigator-v${{ env.VER }}-test.apk" }
+
+      - name: 簽章金鑰（快取，不進程式碼）
+        if: github.event_name != 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: ~/signing
+          key: runnav-signing-v1
+      - name: 沒有金鑰就產生一把
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p ~/signing
+          if [ ! -f ~/signing/release.keystore ]; then
+            openssl rand -hex 16 > ~/signing/pass.txt
+            keytool -genkeypair -keystore ~/signing/release.keystore -storepass "$(cat ~/signing/pass.txt)" -keypass "$(cat ~/signing/pass.txt)" -alias runnav -keyalg RSA -keysize 2048 -validity 3650 -dname "CN=RUNNAV, O=Personal, C=TW"
+          fi
+          echo "::add-mask::$(cat ~/signing/pass.txt)"
+          echo "KEYSTORE_PATH=$HOME/signing/release.keystore" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASS=$(cat ~/signing/pass.txt)" >> "$GITHUB_ENV"
+      - name: ④ main：編正式版 APK
+        if: github.event_name != 'pull_request'
+        run: |
+          gradle assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "RunNavigator-v${VER}.apk"
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with: { name: "RunNavigator-v${{ env.VER }}", path: "RunNavigator-v${{ env.VER }}.apk" }
+      - name: 發佈固定版本（每版各自保留）
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VER }}
+          name: Run Navigator v${{ env.VER }}
+          files: RunNavigator-v${{ env.VER }}.apk
+      - name: 更新「最新版」
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Run Navigator 最新版（v${{ env.VER }}）
+          files: RunNavigator-v${{ env.VER }}.apk
+      - name: 「最新版」只留目前這一個 APK
+        if: github.event_name != 'pull_request'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          for a in $(gh release view latest --json assets --jq '.assets[].name'); do
+            [ "$a" = "RunNavigator-v${VER}.apk" ] || gh release delete-asset latest "$a" -y
+          done
