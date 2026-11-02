@@ -6,6 +6,7 @@
  *                           │  示範模式照計畫跑完全程（時間快轉）
  *                           ▼
  *        檢查：每 1K 語音、進區段語音、每個地標分段、每個水站提醒、終點自動完賽、畫面沒有 NaN
+ *        再用最窄的手機寬度（320 px）跑一次，邊跑邊量：任何一格字超出框 → 失敗
  *                           │
  *                           ▼
  *        把畫面算出的 course JSON 存到 build/selftest/，給 Java 端（TrackerCheck）再跑一次對位
@@ -24,8 +25,8 @@ const { chromium } = require('playwright');
   const opts = process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {};
   const browser = await chromium.launch(opts);
   let fails = 0;
-  const open = async hash => {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const open = async (hash, width = 390) => {
+    const ctx = await browser.newContext({ viewport: { width, height: 844 } });
     const p = await ctx.newPage(); const errs = [];
     p.on('pageerror', e => errs.push(String(e)));
     p.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|navigator\.vibrate/.test(m.text())) errs.push(m.text()); });   // 網頁版的圖示、manifest 只在 Pages 上才有
@@ -42,7 +43,33 @@ const { chromium } = require('playwright');
     await p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });
     await ctx.close();
   }
+  // 量「字超出框」：不換行的字比框寬、或整頁出現左右捲動
+  const overflow = p => p.evaluate(() => {
+    const o = [];
+    if (document.documentElement.scrollWidth > innerWidth + 1) o.push('整頁出現左右捲動');
+    for (const e of document.querySelectorAll('body *')) {
+      if (!e.offsetParent || e.tagName === 'CANVAS' || e.clientWidth === 0) continue;
+      const cs = getComputedStyle(e);
+      if (cs.overflowX !== 'visible') continue;
+      if (e.children.length && cs.whiteSpace !== 'nowrap') continue;
+      if (e.scrollWidth > e.clientWidth + 1) o.push(`#${e.id || e.className}「${e.textContent.trim().slice(0, 16)}」寬 ${e.scrollWidth} > 框 ${e.clientWidth}`);
+    }
+    return o;
+  });
   for (const r of races) {
+    // 窄螢幕：示範跑全程，每 0.2 秒量一次，最後每個分頁再量一次
+    {
+      const { p, ctx } = await open('race=' + r.id + '&selftest', 320); const seen = new Set();
+      for (let k = 0; k < 600; k++) {
+        (await overflow(p)).forEach(x => seen.add(x));
+        if (await p.evaluate(() => !!window.__selftest)) break;
+        await p.waitForTimeout(200);
+      }
+      for (const t of ['tRace', 'tPrep', 'tPlan', 'tMap']) { if (await p.isVisible('#' + t)) { await p.click('#' + t); await p.waitForTimeout(200); (await overflow(p)).forEach(x => seen.add(x)); } }
+      if (seen.size) { fails++; console.log(`❌ ${r.id} 窄螢幕 320 px 字超出框：\n   - ` + [...seen].slice(0, 12).join('\n   - ')); }
+      else console.log(`✅ ${r.id}：320 px 窄螢幕沒有字超出框`);
+      await ctx.close();
+    }
     const { p, ctx, errs } = await open('race=' + r.id + '&selftest');
     try { await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 }); } catch (e) { errs.push('示範跑不完（逾時）'); }
     const res = await p.evaluate(() => window.__selftest || null);
