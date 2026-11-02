@@ -1,0 +1,593 @@
+{
+  "format": 1,
+  "id": "nyc-marathon-2027",
+  "name": "紐約市馬拉松 2027（全馬）",
+  "short": "紐約 42K",
+  "kind": "race",
+  "start_name": "Fort Wadsworth（史坦頓島）",
+  "finish_name": "中央公園 Tavern on the Green",
+  "time": {
+    "tz": "America/New_York",
+    "tz_label": "紐約時間",
+    "tz_short": "紐約",
+    "gun": "2027-11-07T09:10:00-05:00",
+    "limit_min": 770
+  },
+  "distance_m": 42195,
+  "route": {
+    "source": "Strava 路線 TCS New York City Marathon 2025（GitHub AymericNoblanc/GPX-files），布朗克斯 138th–141st St 依 2026 新路線手改，縮放成 42.195 km",
+    "out_and_back": false
+  },
+  "checkin": "報到 11/4–11/6（預估）\nJavits Center 博覽會",
+  "params": {
+    "target": {
+      "default": 330,
+      "options": [
+        {
+          "v": 270
+        },
+        {
+          "v": 300
+        },
+        {
+          "v": 330
+        },
+        {
+          "v": 360
+        },
+        {
+          "v": 390
+        },
+        {
+          "v": 420
+        }
+      ]
+    },
+    "delay": {
+      "default": 110,
+      "options": [
+        {
+          "v": 5,
+          "label": "第 1 波 9:10"
+        },
+        {
+          "v": 40,
+          "label": "第 2 波 9:45"
+        },
+        {
+          "v": 75,
+          "label": "第 3 波 10:20"
+        },
+        {
+          "v": 110,
+          "label": "第 4 波 10:55"
+        },
+        {
+          "v": 145,
+          "label": "第 5 波 11:30"
+        }
+      ],
+      "note": "紐約分 5 波起跑，這裡的「延遲」＝你的波次比第 1 波晚幾分＋過線約 5 分。號碼布寄來（約 10 月）會寫波次，再改。"
+    }
+  },
+  "landmarks": [
+    {
+      "n": "起",
+      "name": "Fort Wadsworth（史坦頓島）",
+      "km": 0,
+      "note": "照波次進起跑區：起跑前約 35–25 分關閉。等待時間長，穿可丟的舊衣保暖。"
+    },
+    {
+      "n": "1",
+      "name": "韋拉札諾海峽大橋頂",
+      "km": 1.0,
+      "note": "第 1 英里一路上橋，全場最高點，風大。慢就是快，不要因為人多亢奮衝。"
+    },
+    {
+      "n": "2",
+      "name": "進布魯克林（Bay Ridge）",
+      "km": 3.0,
+      "note": "下橋接 4th Ave，往北約 9 公里長直路，觀眾開始變多。"
+    },
+    {
+      "n": "3",
+      "name": "Barclays Center",
+      "km": 12.4,
+      "note": "第 8 英里，4th Ave 結束，轉 Lafayette Ave 小上坡。"
+    },
+    {
+      "n": "4",
+      "name": "Williamsburg（Bedford Ave）",
+      "km": 17.5,
+      "note": "猶太社區段比較安靜，路面有些坑，看路。"
+    },
+    {
+      "n": "掃1",
+      "name": "Pulaski 橋（半程）",
+      "km": 20.9,
+      "cut": true,
+      "note": "半程！小橋上坡，過橋進皇后區。掃把車大約 14:58 經過這裡。"
+    },
+    {
+      "n": "5",
+      "name": "Queensboro 橋（下層）",
+      "km": 24.0,
+      "note": "第 15 英里：長上坡、沒有觀眾、很安靜，GPS 在下層會飄。省力過橋。"
+    },
+    {
+      "n": "6",
+      "name": "1st Ave（曼哈頓）",
+      "km": 25.4,
+      "note": "第 16 英里，下橋聲浪爆炸。小心別被氣氛帶快，1st Ave 是長緩上。"
+    },
+    {
+      "n": "7",
+      "name": "Willis Ave 橋（進布朗克斯）",
+      "km": 31.8,
+      "note": "第 20 英里，短陡的引橋。2026 起布朗克斯段改道：Alexander Ave 直走到 141st St。"
+    },
+    {
+      "n": "掃2",
+      "name": "Madison Ave 橋（回曼哈頓）",
+      "km": 34.4,
+      "cut": true,
+      "note": "第 21 英里，最後一座橋。掃把車大約 17:12 經過這裡。"
+    },
+    {
+      "n": "8",
+      "name": "5th Ave 長上坡",
+      "km": 37.0,
+      "note": "第 23 英里，約 110th→90th St 一路緩上 1.6 公里，全場最難。縮小步、擺臂。"
+    },
+    {
+      "n": "9",
+      "name": "進中央公園（90th St）",
+      "km": 38.2,
+      "note": "第 24 英里，East Drive 起伏下坡，Cat Hill 小坡。"
+    },
+    {
+      "n": "10",
+      "name": "Columbus Circle",
+      "km": 41.5,
+      "note": "第 26 英里，轉回公園，最後 600 公尺是緩上坡。"
+    },
+    {
+      "n": "終",
+      "name": "中央公園 Tavern on the Green",
+      "km": 42.195,
+      "note": "終點！22:00 前完賽都算正式成績。"
+    }
+  ],
+  "sections": [
+    {
+      "a": 0,
+      "b": 3.0,
+      "from": "Fort Wadsworth",
+      "to": "布魯克林 Bay Ridge",
+      "terr": "韋拉札諾大橋：前 1K 上坡 +18 m，再下坡 2K",
+      "act": "上橋慢、下橋放鬆，別在第一英里花力氣"
+    },
+    {
+      "a": 3.0,
+      "b": 12.4,
+      "from": "Bay Ridge",
+      "to": "Barclays Center",
+      "terr": "4th Ave 長直路，平、微起伏",
+      "act": "找到節奏，照計畫配速，不要跟觀眾嗨"
+    },
+    {
+      "a": 12.4,
+      "b": 20.9,
+      "from": "Barclays Center",
+      "to": "Pulaski 橋（半程）",
+      "terr": "Lafayette 小上坡 → Bedford Ave → Greenpoint，平",
+      "act": "第 12 英里拿膠，半程前穩住"
+    },
+    {
+      "a": 20.9,
+      "b": 25.4,
+      "from": "Pulaski 橋",
+      "to": "Queensboro 橋下橋",
+      "terr": "皇后區平路 → Queensboro 長上坡 +40 m（下層、安靜）",
+      "act": "過橋省力，配速掉 20–30 秒正常"
+    },
+    {
+      "a": 25.4,
+      "b": 31.8,
+      "from": "1st Ave（59th St）",
+      "to": "Willis Ave 橋",
+      "terr": "1st Ave 6 公里長直路，緩上緩下",
+      "act": "觀眾最多：享受但不要加速，18 英里拿膠"
+    },
+    {
+      "a": 31.8,
+      "b": 34.4,
+      "from": "Willis Ave 橋",
+      "to": "Madison Ave 橋",
+      "terr": "布朗克斯 1.6 英里，轉彎多、短引橋",
+      "act": "撞牆區：小步、數轉彎，21 英里拿香蕉"
+    },
+    {
+      "a": 34.4,
+      "b": 38.2,
+      "from": "Madison Ave 橋",
+      "to": "中央公園 90th St",
+      "terr": "Harlem 平 → 5th Ave 長上坡 +22 m",
+      "act": "最難的一段：縮步擺臂，不要停"
+    },
+    {
+      "a": 38.2,
+      "b": 41.5,
+      "from": "中央公園 East Drive",
+      "to": "Columbus Circle",
+      "terr": "公園內起伏，Cat Hill；出公園走 59th St 平路",
+      "act": "還有力氣再慢慢加速"
+    },
+    {
+      "a": 41.5,
+      "b": 42.195,
+      "from": "Columbus Circle",
+      "to": "終點",
+      "terr": "回公園，緩上坡到終點",
+      "act": "最後 400 公尺才衝"
+    }
+  ],
+  "cutoffs": [
+    {
+      "km": 20.9,
+      "name": "掃把車 Pulaski 橋（半程）",
+      "min": 348
+    },
+    {
+      "km": 34.4,
+      "name": "掃把車 Madison Ave 橋",
+      "min": 482
+    },
+    {
+      "km": 42.195,
+      "name": "終點 22:00 正式成績截止",
+      "min": 770
+    }
+  ],
+  "aid": {
+    "labels": {
+      "w": "水",
+      "g": "運動飲料",
+      "f": "食"
+    },
+    "say": {
+      "w": "水",
+      "wg": "水和運動飲料",
+      "wgf": "水、運動飲料和補給"
+    },
+    "legend": [
+      [
+        "w",
+        "水"
+      ],
+      [
+        "g",
+        "Gatorade Endurance"
+      ],
+      [
+        "f",
+        "膠／香蕉"
+      ]
+    ],
+    "stations": [
+      {
+        "n": 1,
+        "km": 4.8,
+        "km_text": "Mile 3",
+        "name": "Bay Ridge（4th Ave）",
+        "s": "wg"
+      },
+      {
+        "n": 2,
+        "km": 6.4,
+        "km_text": "Mile 4",
+        "name": "Bay Ridge",
+        "s": "wg"
+      },
+      {
+        "n": 3,
+        "km": 8.0,
+        "km_text": "Mile 5",
+        "name": "Sunset Park",
+        "s": "w"
+      },
+      {
+        "n": 4,
+        "km": 9.7,
+        "km_text": "Mile 6",
+        "name": "Sunset Park",
+        "s": "wg"
+      },
+      {
+        "n": 5,
+        "km": 11.3,
+        "km_text": "Mile 7",
+        "name": "Park Slope 邊",
+        "s": "w"
+      },
+      {
+        "n": 6,
+        "km": 12.9,
+        "km_text": "Mile 8",
+        "name": "Barclays Center 前",
+        "s": "wg"
+      },
+      {
+        "n": 7,
+        "km": 14.5,
+        "km_text": "Mile 9",
+        "name": "Fort Greene（Lafayette Ave）",
+        "s": "w"
+      },
+      {
+        "n": 8,
+        "km": 16.1,
+        "km_text": "Mile 10",
+        "name": "Bedford-Stuyvesant",
+        "s": "wg"
+      },
+      {
+        "n": 9,
+        "km": 17.7,
+        "km_text": "Mile 11",
+        "name": "Williamsburg（Bedford Ave）",
+        "s": "wg"
+      },
+      {
+        "n": 10,
+        "km": 19.3,
+        "km_text": "Mile 12",
+        "name": "Williamsburg",
+        "s": "wgf",
+        "food": "Maurten 膠（Gel 100／含咖啡因）"
+      },
+      {
+        "n": 11,
+        "km": 20.9,
+        "km_text": "Mile 13",
+        "name": "Greenpoint（半程前）",
+        "s": "wg"
+      },
+      {
+        "n": 12,
+        "km": 22.5,
+        "km_text": "Mile 14",
+        "name": "Long Island City",
+        "s": "wg"
+      },
+      {
+        "n": 13,
+        "km": 23.5,
+        "km_text": "約 Mile 14.6",
+        "name": "Queensboro 橋前（LIC）",
+        "s": "wg",
+        "est": true
+      },
+      {
+        "n": 14,
+        "km": 25.7,
+        "km_text": "Mile 16",
+        "name": "1st Ave（59th St 後）",
+        "s": "wg"
+      },
+      {
+        "n": 15,
+        "km": 27.4,
+        "km_text": "Mile 17",
+        "name": "1st Ave（Upper East Side）",
+        "s": "wg"
+      },
+      {
+        "n": 16,
+        "km": 29.0,
+        "km_text": "Mile 18",
+        "name": "1st Ave（約 90th St）",
+        "s": "wgf",
+        "food": "Maurten 膠（Gel 100／含咖啡因）"
+      },
+      {
+        "n": 17,
+        "km": 30.6,
+        "km_text": "Mile 19",
+        "name": "1st Ave（East Harlem）",
+        "s": "wg"
+      },
+      {
+        "n": 18,
+        "km": 32.2,
+        "km_text": "Mile 20",
+        "name": "布朗克斯（138th St）",
+        "s": "wg"
+      },
+      {
+        "n": 19,
+        "km": 33.8,
+        "km_text": "Mile 21",
+        "name": "Harlem（5th Ave）",
+        "s": "wgf",
+        "food": "香蕉"
+      },
+      {
+        "n": 20,
+        "km": 35.4,
+        "km_text": "Mile 22",
+        "name": "Harlem（Marcus Garvey 公園）",
+        "s": "wg"
+      },
+      {
+        "n": 21,
+        "km": 37.0,
+        "km_text": "Mile 23",
+        "name": "5th Ave（約 105th St）",
+        "s": "wg"
+      },
+      {
+        "n": 22,
+        "km": 38.6,
+        "km_text": "Mile 24",
+        "name": "中央公園 East Drive",
+        "s": "wg"
+      },
+      {
+        "n": 23,
+        "km": 40.2,
+        "km_text": "Mile 25",
+        "name": "中央公園南側",
+        "s": "wg"
+      }
+    ]
+  },
+  "gels": [
+    {
+      "km": 8.0,
+      "label": "#1",
+      "aid": 3,
+      "note": "第 5 英里，4th Ave"
+    },
+    {
+      "km": 16.1,
+      "label": "#2",
+      "aid": 8,
+      "note": "第 10 英里，Bedford-Stuyvesant"
+    },
+    {
+      "km": 22.5,
+      "label": "#3",
+      "aid": 12,
+      "note": "第 14 英里，Queensboro 橋前"
+    },
+    {
+      "km": 29.0,
+      "label": "#4",
+      "aid": 16,
+      "note": "第 18 英里，官方也發 Maurten 膠"
+    },
+    {
+      "km": 35.4,
+      "label": "#5",
+      "aid": 20,
+      "note": "第 22 英里，5th Ave 大坡前最關鍵"
+    }
+  ],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      {
+        "from": 0,
+        "to": 3,
+        "x": 1.04,
+        "why": "起跑擁擠＋上橋"
+      },
+      {
+        "from": 31.8,
+        "to": 34.4,
+        "x": 1.02,
+        "why": "布朗克斯轉彎多"
+      }
+    ],
+    "fatigue": {
+      "from_km": 28,
+      "x": 0.07
+    },
+    "cut_buffer_min": {
+      "first_n": 3,
+      "early": 4,
+      "later": 6
+    },
+    "tight_hint": "紐約沒有硬關門，只有掃把車；第 5 波起跑的話，前段不要比 16 分/英里（9:56/km）慢。"
+  },
+  "finish": {
+    "radius_m": 100,
+    "min_frac": 0.98
+  },
+  "text": {
+    "pre_start": "照波次進起跑區（約起跑前 35–25 分關閉）。第 1 波 9:10，之後每 35 分一波。過線時按「我過起跑線了」。",
+    "plan_note": "時間都是紐約時間。「底線」紅字＝掃把車（官方 16 分/英里，從第 5 波 11:30 起算）到這裡的時刻。目前區段會反白。",
+    "cut_title_note": "2026 年規則：掃把車＋22:00 終點",
+    "cut_note": "紐約沒有中途硬關門。掃把車以 16 分/英里跟在最後一波後面，被追過也不會被拉下來，只是要改走人行道、補給可能收掉。終點 22:00 前到都算正式成績。",
+    "prep_warn": "全場 5 座橋：第 1 英里韋拉札諾、半程 Pulaski、15 英里 Queensboro、20 英里 Willis、21 英里 Madison。最難是 23 英里的 5th Ave 上坡。",
+    "aid_note": "第 3–25 英里每英里一站（2026 官方）：都有水，第 5、7、9 英里以外有 Gatorade Endurance。Maurten 膠在第 12、18 英里，香蕉在第 21 英里。自助補水站在第 8、14、17、20、23 英里。第 15 英里在橋上，水站位置是推估。",
+    "gel_pre": [
+      "起跑前",
+      "進起跑區前 15 分吃一包"
+    ],
+    "gel_note": "膠都在水站吃：進站靠邊減速，拿水、吃膠、吞下再跑。官方第 12、18 英里發 Maurten，腸胃沒試過就吃自己的。",
+    "map_note": "兩指縮放、單指拖曳、點兩下復原。白圈數字＝地標，紅圈＝掃把車點，藍點＝水站，顏色＝坡度。",
+    "phases": [
+      [
+        "0–12.4K",
+        "大橋＋布魯克林長直路",
+        "第一英里上橋別衝；4th Ave 找節奏"
+      ],
+      [
+        "12.4–25.4K",
+        "半程與 Queensboro 橋",
+        "半程 Pulaski 小坡；Queensboro 長上坡又安靜，省力過"
+      ],
+      [
+        "25.4–34.4K",
+        "1st Ave 與布朗克斯",
+        "觀眾最多別加速；布朗克斯轉彎多、撞牆區"
+      ],
+      [
+        "34.4–42.2K",
+        "5th Ave 大坡與中央公園",
+        "23 英里最難的上坡；進公園後起伏，最後 400 m 才衝"
+      ]
+    ],
+    "tips_title": "紐約特有的提醒",
+    "tips": [
+      "**11/7 凌晨 2 點夏令時間結束**（時鐘回撥 1 小時），鬧鐘、手錶都要確認。",
+      "到起點要搭渡輪＋接駁車或巴士（9 月選），**沒有接送下車點**；起跑村要等 2–3 小時，穿可丟的舊衣（會捐出）。",
+      "起點**不能寄物**，只能帶博覽會發的透明袋；完賽後可選雨衣直接離場或領寄物（報名時選）。",
+      "波次與起跑區（藍／橘／綠）寫在號碼布上；綠色走韋拉札諾**下層**，前 3 公里 GPS 可能不準。",
+      "Queensboro 橋走**下層**，GPS 約 1.5 公里會飄或斷，App 晚報公里是正常的。",
+      "曼哈頓高樓區 GPS 會飄 30–60 m，語音晚幾秒正常。",
+      "11 月初起跑常 7–12°C，晚波次終點會比較暖；風大時橋上很冷。",
+      "報到在 Javits Center 博覽會，帶**護照正本**＋報到 QR code。",
+      "不舒服就停：第 3 英里起每英里都有醫療站。"
+    ]
+  },
+  "sources": [
+    {
+      "item": "比賽日期",
+      "src": "第三方整理（The Running Channel 等）：2027/11/7（週日）；NYRR 尚未公告",
+      "trust": "中（待官方）"
+    },
+    {
+      "item": "路線座標／海拔",
+      "src": "Strava 2025 路線（GitHub AymericNoblanc/GPX-files），縮放成 42.195 km；與已知地標比對約 ±0.3 km",
+      "trust": "高"
+    },
+    {
+      "item": "2026 布朗克斯改道",
+      "src": "FOX 5 NY 2026 指南：Alexander Ave→E 141st St→3rd Ave→E 138th St；約 300 m 路線手畫",
+      "trust": "中"
+    },
+    {
+      "item": "波次時間",
+      "src": "2026 官方（FOX 5、Marathon Handbook）：9:10／9:45／10:20／10:55／11:30",
+      "trust": "高（2027 待公布）"
+    },
+    {
+      "item": "掃把車與終點",
+      "src": "2026 規則：16 分/英里從第 5 波起算、22:00 正式成績截止（Marathon Ballot、Marathon Handbook）",
+      "trust": "高"
+    },
+    {
+      "item": "23 個水站、膠、香蕉",
+      "src": "2026 Marathon Handbook、Maurten 官方（第 12、18 英里）",
+      "trust": "高；站名是我依路線標的"
+    },
+    {
+      "item": "地形與策略",
+      "src": "多篇跑者攻略＋路線海拔",
+      "trust": "中高"
+    }
+  ]
+}
