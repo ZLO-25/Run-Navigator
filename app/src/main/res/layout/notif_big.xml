@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 展開的通知（鎖屏常見）：大字＋到 B 點時間＋區段地形對照圖＋區段、地形、策略 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView android:id="@+id/nTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification.Title" android:textStyle="bold" android:textSize="17sp" android:maxLines="1" android:ellipsize="end"/>
+    <TextView android:id="@+id/nText" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification" android:maxLines="2"/>
+    <ImageView android:id="@+id/nStrip" android:layout_width="match_parent" android:layout_height="64dp" android:layout_marginTop="4dp"
+        android:scaleType="fitXY" android:contentDescription="區段地形：你、計畫、關門線"/>
+    <TextView android:id="@+id/nBig" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification" android:maxLines="3"/>
+</LinearLayout>

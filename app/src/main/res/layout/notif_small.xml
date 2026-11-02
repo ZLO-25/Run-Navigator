@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 摺疊的通知：一行大字（里程｜快慢｜關門餘裕）＋一行到 B 點的時間＋細對照線 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <TextView android:id="@+id/nTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification.Title" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+    <TextView android:id="@+id/nText" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textAppearance="@android:style/TextAppearance.Material.Notification" android:maxLines="1" android:ellipsize="end"/>
+    <ImageView android:id="@+id/nStrip" android:layout_width="match_parent" android:layout_height="22dp" android:layout_marginTop="3dp"
+        android:scaleType="fitXY" android:contentDescription="你、計畫、關門線"/>
+</LinearLayout>
