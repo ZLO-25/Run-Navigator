@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""畫東京馬拉松 2027 的離線路線地圖 races/tokyo-2027/map.png（沒有底圖，只畫路線、坡度、地標、關門、水站）。
+"""畫東京馬拉松的離線路線地圖 races/tokyo-marathon/map.png（沒有底圖，只畫路線、坡度、地標、關門、水站）。
 改自 Kyoto-Run 的 tools/build_map.py，但資料全部從賽事包 race.json／route.json 讀，不寫死。
 折返段：每一條線都往行進方向的右側偏移一點，去程、回程就不會疊在一起。
-重跑：python3 tools/maps/tokyo-2027.py（需要 matplotlib 與 Noto Sans CJK 字型）
+重跑：python3 tools/maps/tokyo-marathon.py（需要 matplotlib 與 Noto Sans CJK 字型）
 """
 import json, math, os
 import matplotlib
@@ -12,7 +12,7 @@ from matplotlib import font_manager
 from matplotlib.collections import LineCollection
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-PACK = os.path.join(ROOT, 'app/src/main/assets/races/tokyo-2027')
+PACK = os.path.join(ROOT, 'app/src/main/assets/races/tokyo-marathon')
 RACE = json.load(open(os.path.join(PACK, 'race.json'), encoding='utf8'))
 R = json.load(open(os.path.join(PACK, 'route.json')))
 for f in font_manager.findSystemFonts():
@@ -114,7 +114,7 @@ for j, (c, t) in enumerate(leg):
     else: ax.plot([xs, xs + 0.4], [yy, yy], color=c, lw=5)
     ax.text(xs + 0.5, yy, t.replace('● ', ''), va='center', fontsize=10)
 lim = RACE['time']['limit_min'] // 60
-ax.text(xs, max(Y) + 0.42, f'{RACE["name"]} 路線（3/7 9:10 鳴槍・{lim} 小時關門）', fontsize=15, fontweight='bold')
+ax.text(xs, max(Y) + 0.42, f'{RACE["name"]} 路線（每年 3 月第一個週日 9:10 鳴槍・{lim} 小時關門）', fontsize=15, fontweight='bold')
 ax.text(xs, max(Y) + 0.2, '紅圈＝關門（2026 年時刻），白圈＝地標，箭頭＝行進方向；去回同一條路的路段，兩條線各畫在行進方向右側', fontsize=9.5, color='#5a6460')
 ax.set_aspect('equal'); ax.axis('off')
 ax.set_xlim(xs - 0.3, max(X) + 0.3); ax.set_ylim(ys - 0.4, max(Y) + 0.65)
