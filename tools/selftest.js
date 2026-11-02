@@ -46,7 +46,12 @@ const { chromium } = require('playwright');
   // 量「字超出框」：不換行的字比框寬、或整頁出現左右捲動
   const overflow = p => p.evaluate(() => {
     const o = [];
-    if (document.documentElement.scrollWidth > innerWidth + 1) o.push('整頁出現左右捲動');
+    if (document.documentElement.scrollWidth > innerWidth + 1) {
+      // 找出是誰撐寬了頁面：右邊超出螢幕、而且自己的子元素都沒超出的那一層
+      const wide = [...document.querySelectorAll('body *')].filter(e => e.offsetParent && e.getBoundingClientRect().right > innerWidth + 1);
+      const leaf = wide.filter(e => !wide.some(k => k !== e && e.contains(k)));
+      o.push('整頁出現左右捲動：' + leaf.slice(0, 4).map(e => `#${e.id || e.className || e.tagName}「${e.textContent.trim().slice(0, 16)}」右緣 ${Math.round(e.getBoundingClientRect().right)} > 螢幕 ${innerWidth}`).join('；'));
+    }
     for (const e of document.querySelectorAll('body *')) {
       if (!e.offsetParent || e.tagName === 'CANVAS' || e.clientWidth === 0) continue;
       const cs = getComputedStyle(e);
