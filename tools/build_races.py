@@ -127,6 +127,62 @@ def check(rid, r, route):
         o = r['params'][k]
         if o['default'] not in [x['v'] for x in o['options']]:
             err(rid, f'params.{k}.default 不在選項裡')
+    check_schedule(rid, r)
+
+
+def iso_date(s):
+    try:
+        return datetime.date.fromisoformat(s)
+    except Exception:
+        return None
+
+
+def check_schedule(rid, r):
+    """schedule＝接下來幾年的報名與比賽日期。官方公布的附來源（src），沒公布的標預估（*_est）並寫推估依據（basis）。"""
+    sc = r.get('schedule')
+    if sc is None:
+        err(rid, '缺少 schedule（接下來幾年的報名與比賽日期；沒公布的標預估）')
+        return
+    for k in ('rule', 'checked', 'items'):
+        if not sc.get(k):
+            err(rid, f'schedule 缺 {k}')
+    if not iso_date(sc.get('checked', '')):
+        err(rid, 'schedule.checked 要是 YYYY-MM-DD（最後查證日）')
+    items = sc.get('items') or []
+    years = [it.get('year') for it in items]
+    if years != sorted(set(years)) or not all(isinstance(y, int) for y in years):
+        err(rid, 'schedule.items 的 year 要是整數、由小到大、不重複')
+    gun = r['time']['gun'][:10]
+    for it in items:
+        y = it.get('year')
+        rd = iso_date(it.get('race', ''))
+        if not rd or rd.year != y:
+            err(rid, f'schedule {y}：race 要是 {y} 年的 YYYY-MM-DD')
+        elif rd.weekday() != 6:
+            err(rid, f'schedule {y}：比賽日 {rd} 不是週日（真的是的話改這條檢查）')
+        for k in ('race_est', 'entry_est'):
+            if not isinstance(it.get(k), bool):
+                err(rid, f'schedule {y}：{k} 要是 true（預估）或 false（官方）')
+        if not it.get('entry'):
+            err(rid, f'schedule {y}：缺 entry（報名時間）')
+        if not it.get('entry_short') or len(it['entry_short']) > 24:
+            err(rid, f'schedule {y}：entry_short（首頁卡片用的一句話）要有、24 字以內')
+        if (it.get('race_est') or it.get('entry_est')) and not it.get('basis'):
+            err(rid, f'schedule {y}：有預估就要寫 basis（推估依據）')
+        if (it.get('race_est') is False or it.get('entry_est') is False) and not it.get('src'):
+            err(rid, f'schedule {y}：官方資料要附 src 來源')
+        for s in it.get('src', []):
+            if not (isinstance(s, list) and len(s) == 2 and str(s[1]).startswith('https://')):
+                err(rid, f'schedule {y}：src 每筆要是 [名稱, https 網址]')
+        for k in ('open', 'close'):
+            if k in it and not iso_date(it[k]):
+                err(rid, f'schedule {y}：{k} 要是 YYYY-MM-DD')
+        if it.get('open') and it.get('close') and it['close'] < it['open']:
+            err(rid, f'schedule {y}：close 早於 open')
+    if gun[:4].isdigit() and int(gun[:4]) in years:
+        it = items[years.index(int(gun[:4]))]
+        if it.get('race') != gun:
+            err(rid, f'schedule {gun[:4]} 的比賽日 {it.get("race")} 跟 time.gun {gun} 不一樣')
 
 
 def build():

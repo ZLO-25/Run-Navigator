@@ -553,6 +553,55 @@
       "不舒服就停：第 3 英里起每英里都有醫療站。"
     ]
   },
+  "schedule": {
+    "rule": "每年 11 月第 1 個週日；抽籤報名在比賽當年 2 月、為期約 3 週，3 月初抽",
+    "checked": "2026-11-03",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-11-07",
+        "race_est": true,
+        "race_note": "第三方整理一致，NYRR 尚未公告",
+        "entry": "抽籤報名約 2027/2 上旬開放約 3 週，3 月初抽籤（2026 屆：2/4–2/25，3/4 抽）",
+        "entry_short": "約 2027/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋2026 屆的抽籤時程",
+        "src": [
+          [
+            "FOX 5 NY：2026 屆報名時程",
+            "https://www.fox5ny.com/news/sign-up-nyc-marathon-2026"
+          ],
+          [
+            "timeanddate：歷年日期",
+            "https://www.timeanddate.com/holidays/us/new-york-city-marathon"
+          ],
+          [
+            "FatMarathoner：2027 報名方式",
+            "https://fatmarathoner.com/?p=9008"
+          ]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-11-05",
+        "race_est": true,
+        "entry": "約 2028/2 抽籤報名、3 月初抽",
+        "entry_short": "約 2028/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋往年抽籤時程"
+      },
+      {
+        "year": 2029,
+        "race": "2029-11-04",
+        "race_est": true,
+        "entry": "約 2029/2 抽籤報名、3 月初抽",
+        "entry_short": "約 2029/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋往年抽籤時程"
+      }
+    ],
+    "note": "抽籤很難中（2026 屆約 24 萬人申請）。抽不到還有兩條路：慈善名額（募款）或官方合作旅行社的國際套票。"
+  },
   "sources": [
     {
       "item": "比賽日期",
