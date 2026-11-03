@@ -166,6 +166,14 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .pill{font-size:12px;font-weight:800;border-radius:99px;padding:2px 9px;white-space:nowrap;border:1.5px solid var(--sub);color:var(--sub)}
 .pill.ok{background:var(--ok);border-color:var(--ok);color:#06251a}
 .pill.live{background:var(--warn);border-color:var(--warn);color:#161200}
+.pill.off{border-color:var(--line);color:var(--sub);font-weight:700}
+.srow{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);margin-top:8px}
+.srow.done{opacity:.6}
+.srow .sy{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;min-width:52px}
+.srow .sb{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
+.srow .sl{color:var(--sub);font-weight:700;margin-right:6px}
+.srow a{color:var(--aid)}
+.rnext{font-size:14px;color:var(--sub);margin-top:4px}
 .pcard{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:104px;opacity:.6}
 .pcard.dashed{border-style:dashed}
 .pcard .pill{align-self:flex-start}
@@ -237,6 +245,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <button class="wide" id="bPrepDemo">練習模擬：在這條路線上試跑（示範）</button>
    <div class="note" style="text-align:center">同時只能有一場在定位：別場正在定位時，會先請你停止那一場。</div>
   </section>
+  <section class="card" id="schedCard"></section>
  </div>
 
  <!-- 完賽（MVP 畫面 4） -->
@@ -495,6 +504,36 @@ function dateTxtTz(ms, off, wd) { const d = new Date(ms + off); return d.getUTCF
 function clkTz(ms, off) { const d = new Date(ms + off); return d.getUTCHours() + ':' + p2(d.getUTCMinutes()); }
 function hms(sec) { sec = Math.round(sec); return Math.floor(sec / 3600) + ':' + p2(Math.floor(sec % 3600 / 60)) + ':' + p2(sec % 60); }
 function hm(min) { min = Math.round(min); return Math.floor(min / 60) + ':' + p2(min % 60); }
+/* 接下來幾年的報名與比賽（賽事包 schedule）：官方＝有來源；預估＝依往年慣例推算 */
+const ymd = s => { const [y, m, d] = s.split('-').map(Number); return { y, m, d, w: WD[new Date(Date.UTC(y, m - 1, d)).getUTCDay()] }; };
+const ymdTxt = s => { const t = ymd(s); return t.y + '/' + t.m + '/' + t.d + '（' + t.w + '）'; };
+function todayStr() { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+function entryState(it, today) {
+  if (it.close && today > it.close) return ['已截止', ''];
+  if (it.open && today >= it.open) return ['報名中', 'ok'];
+  if (it.open) return ['尚未開放', 'live'];
+  return null;
+}
+/* 下一個還能報名的一屆（報名還沒截止、比賽還沒到） */
+function schedNext(r, today) {
+  const sc = r.schedule; if (!sc) return null;
+  return (sc.items || []).find(it => it.race > today && !(it.close && today > it.close)) || null;
+}
+function schedHTML(r) {
+  const sc = r.schedule; if (!sc) return '';
+  const today = todayStr(), est = b => b ? '<span class="pill">預估</span>' : '<span class="pill off">官方</span>';
+  const rows = (sc.items || []).map(it => {
+    const st = entryState(it, today), done = it.race < today;
+    const src = (it.src || []).map(x => `<a href="${esc(x[1])}" target="_blank" rel="noopener">${esc(x[0])}</a>`).join('、');
+    return `<div class="srow${done ? ' done' : ''}"><div class="sy">${it.year}</div><div class="sb">` +
+      `<div><span class="sl">比賽</span>${esc(ymdTxt(it.race))}${it.race_note ? '<span class="note">（' + esc(it.race_note) + '）</span>' : ''} ${est(it.race_est)}${done ? ' <span class="pill">已舉行</span>' : ''}</div>` +
+      `<div><span class="sl">報名</span>${esc(it.entry)} ${est(it.entry_est)}${st && !done ? ' <span class="pill ' + st[1] + '">' + st[0] + '</span>' : ''}</div>` +
+      (it.basis ? `<div class="note">推估依據：${esc(it.basis)}</div>` : '') + (src ? `<div class="note">來源：${src}</div>` : '') + '</div></div>';
+  }).join('');
+  return `<b>接下來幾年的報名與比賽</b><div class="note" style="margin-top:2px">${esc(sc.rule)}</div>${rows}` +
+    (sc.note ? `<div class="note" style="margin-top:8px">${rich(sc.note)}</div>` : '') +
+    `<div class="note" style="margin-top:6px">「預估」是照往年慣例推的，官方公布後以官方為準。最後查證 ${esc(sc.checked.replace(/-0?/g, '/'))}。</div>`;
+}
 
 window.R = null;
 (function boot() {
@@ -514,6 +553,11 @@ function renderHome() {
   const now = Date.now(), act = activeRace(), dn = new Date();
   $('homeDate').textContent = (dn.getMonth() + 1) + '/' + dn.getDate() + '（' + WD[dn.getDay()] + '）';
   let nextDone = false;
+  /* 卡片底下一行：下一個還能報名的一屆（這一屆已經報完名就看下一屆） */
+  const today = todayStr();
+  const nx = (r, g) => { const it = schedNext(r, today); if (!it) return '';
+    const st = entryState(it, today), same = it.race === r.time.gun.slice(0, 10);
+    return '<div class="rnext">' + (same ? '' : '下一屆 ' + esc(ymdTxt(it.race)) + (it.race_est ? '（預估）' : '') + '・') + '報名 ' + esc(it.entry_short || it.entry) + (it.entry_est ? '（預估）' : '') + (st ? '・' + st[0] : '') + '</div>'; };
   $('raceList').innerHTML = window.RACES.map(r => {
     const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
     const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off) + ' ' + r.time.tz_label;
@@ -524,10 +568,11 @@ function renderHome() {
       const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
       const tgt = p.target || r.params.target.default, dly = p.delay != null ? p.delay : r.params.delay.default;
       return `<button class="rcard${isNext ? ' next' : ''}" data-go="${esc(r.id)}"><div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">下一場</span>' : ''}<span>${esc(when)}</span></div>` +
-        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門</div></div><div class="rcd">${cd}</div></div></button>`;
+        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門</div></div><div class="rcd">${cd}</div></div>${nx(r, g)}</button>`;
     }
     return `<div class="rcard"><div class="rtop"><span class="pill">${fin ? '已完賽' : '已結束'}</span><span>${esc(dateTxtTz(g, off, true))}</span></div>` +
       `<div class="rmid"><div class="rname">${esc(r.name)}</div><div class="rres">${fin && fin.t != null ? hms(fin.t) : ''}</div></div>` +
+      nx(r, g) +
       `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">明年再跑／模擬</button></div></div>`;
   }).join('');
   $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
@@ -1306,6 +1351,7 @@ function renderStatic() {
   $('topName').textContent = R.short; $('prepName').textContent = R.name;
   $('prepSub').textContent = dateTxt(GUN) + ' ' + clk(GUN) + ' 鳴槍（' + R.time.tz_label + '）・' + (LIMIT % 60 ? fmtHM(LIMIT) : LIMIT / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
   $('checkin').textContent = R.checkin || '';
+  $('schedCard').innerHTML = schedHTML(R); $('schedCard').hidden = !R.schedule;
   $('isoNote').textContent = '只影響' + R.short + '，不影響其他賽事';
   $('delayNote').textContent = R.params.delay.note || '';
   $('gunLab').textContent = '距離鳴槍 ' + clk(GUN) + '（' + R.time.tz_label + '）';

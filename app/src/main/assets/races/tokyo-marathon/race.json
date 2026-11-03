@@ -652,6 +652,51 @@
     "next": "2027-03-07",
     "update": "每年 1–2 月官方參賽手冊公布後，更新 time.gun、cutoffs、aid；賽事 id 不變，紀錄與設定會保留"
   },
+  "schedule": {
+    "rule": "每年 3 月第 1 個週日（2023–2027 都是）；一般抽籤在前一年 8 月中、為期約兩週",
+    "checked": "2026-11-03",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-03-07",
+        "race_est": false,
+        "entry": "一般抽籤（國內外同一窗口）2026/8/14–8/28，9/18 公布、9/30 前繳費；準菁英／ONE TOKYO 會員 7/31–8/13；慈善名額 7 月",
+        "entry_short": "抽籤 2026/8/14–8/28",
+        "entry_est": false,
+        "open": "2026-08-14",
+        "close": "2026-08-28",
+        "src": [
+          [
+            "Marathon Ballot 整理官方時程（2026/10/26 更新）",
+            "https://www.marathonballot.com/news/tokyo-marathon-2027-lottery-results-date"
+          ],
+          [
+            "Metropolis 活動頁",
+            "https://metropolisjapan.com/events/tokyo-marathon-2027/"
+          ]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-03-05",
+        "race_est": true,
+        "entry": "約 2027/8 中旬抽籤兩週，9 月中旬公布；會員與慈善名額在 7 月",
+        "entry_short": "約 2027/8 中旬抽籤",
+        "entry_est": true,
+        "basis": "3 月第 1 個週日＋2027 屆的報名時程"
+      },
+      {
+        "year": 2029,
+        "race": "2029-03-04",
+        "race_est": true,
+        "entry": "約 2028/8 中旬抽籤兩週（同上）",
+        "entry_short": "約 2028/8 中旬抽籤",
+        "entry_est": true,
+        "basis": "3 月第 1 個週日＋2027 屆的報名時程"
+      }
+    ],
+    "note": "2027 屆沒抽中。一般抽籤中籤率約一成；ONE TOKYO 會員（免費註冊）的報名窗口比一般早兩週，先註冊好。"
+  },
   "sources": [
     {
       "item": "日期、鳴槍、時限、組別",
