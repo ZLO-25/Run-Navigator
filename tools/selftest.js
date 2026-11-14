@@ -64,7 +64,7 @@ const { chromium } = require('playwright');
   }
   // 練習模式：跑步節拍器（功能＋300 px 窄螢幕）
   {
-    const { p, ctx, errs } = await open('metro', 300);
+    const { p, ctx, errs } = await open('metro&selftest', 300);
     await p.waitForTimeout(200);
     (await overflow(p)).forEach(x => errs.push(x));
     await p.click('[data-mstep="5"]');

@@ -127,7 +127,7 @@ input[type=text]{font:inherit;color:var(--fg);background:var(--btn);border:1px s
 .chips button{min-height:38px;padding:6px 10px;font-size:15px}
 .note{font-size:15px;color:var(--sub)} .note b{color:var(--fg)}
 .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px}
-.kv select{min-height:42px;padding:6px 8px;font-size:16px;max-width:62%;min-width:0}
+.kv select{min-height:42px;padding:6px 8px;font-size:16px}
 table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
 td,th{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
 td:first-child,th:first-child{text-align:left}
@@ -238,8 +238,8 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
  <div class="page" id="pgMetro" hidden>
   <section class="card glance">
    <div class="row">
-    <div><div class="lab">目前步頻</div><div class="km"><span id="mBpmBig">180</span><small>BPM</small></div></div>
-    <div><div class="lab" style="text-align:right">節奏區間</div><div class="dbig" id="mZone" style="font-size:clamp(18px,6.5vw,28px)">標準步頻</div><div class="dsub" id="mSub">每步 0.33 秒</div></div>
+    <div><div class="lab">目前步頻</div><div class="km" style="font-size:clamp(42px,14.5vw,64px)"><span id="mBpmBig">180</span><small style="font-size:.34em">BPM</small></div></div>
+    <div><div class="lab" style="text-align:right">節奏區間</div><div class="dbig" id="mZone" style="font-size:clamp(16px,5.6vw,26px)">標準步頻</div><div class="dsub" id="mSub">每步 0.33 秒</div></div>
    </div>
    <div class="mbeats" id="mBeats"></div>
    <div class="tgt3">
@@ -262,8 +262,8 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   </section>
   <section class="card ctl">
    <b>節拍與練習設定</b>
-   <div class="kv"><label for="mAcc">強拍模式</label><select id="mAcc"><option value="2">每 2 拍（左右腳）</option><option value="4">每 4 拍（1 強 3 弱）</option><option value="1">平拍（每步同音）</option></select></div>
-   <div class="kv"><label for="mSnd">節拍音色</label><select id="mSnd"><option value="wood">清脆木魚（推薦）</option><option value="beep">電子嗶聲</option><option value="soft">柔和滴答</option><option value="off">靜音（僅閃燈／震動）</option></select></div>
+   <div class="kv"><label for="mAcc">強拍模式</label><select id="mAcc"><option value="2">每 2 拍</option><option value="4">每 4 拍</option><option value="1">平拍</option></select></div>
+   <div class="kv"><label for="mSnd">節拍音色</label><select id="mSnd"><option value="wood">清脆木魚</option><option value="beep">電子嗶聲</option><option value="soft">柔和滴答</option><option value="off">靜音</option></select></div>
    <div class="kv"><span>節拍震動</span><button class="small" id="bMetroVib">關</button></div>
    <div class="kv"><label for="mDur">練習時間目標</label><select id="mDur"><option value="0">不限時</option><option value="5">5 分鐘</option><option value="10">10 分鐘</option><option value="15">15 分鐘</option><option value="20">20 分鐘</option><option value="30">30 分鐘</option><option value="45">45 分鐘</option><option value="60">60 分鐘</option></select></div>
   </section>
@@ -506,7 +506,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
         <div class="kv"><span>每 1K 語音報告</span><button class="small" id="bKmv">開</button></div>
         <div class="kv"><span>停下 10 秒自動報告位置與計畫</span><button class="small" id="bStopv">開</button></div>
         <div class="kv"><label for="sMsnd">節拍器音色</label><select id="sMsnd"><option value="wood">清脆木魚</option><option value="beep">電子嗶聲</option><option value="soft">柔和滴答</option><option value="off">靜音</option></select></div>
-        <div class="kv"><label for="sMacc">節拍器強拍</label><select id="sMacc"><option value="2">每 2 拍（左右腳）</option><option value="4">每 4 拍</option><option value="1">平拍</option></select></div>
+        <div class="kv"><label for="sMacc">節拍器強拍</label><select id="sMacc"><option value="2">每 2 拍</option><option value="4">每 4 拍</option><option value="1">平拍</option></select></div>
         <div class="kv"><span>節拍器震動</span><button class="small" id="bMvib">關</button></div>
         <div class="kv" id="rowKeep" hidden><span>看畫面時螢幕恆亮</span><button class="small" id="bKeep">關</button></div>
         <div class="grid2"><button class="small" id="bTestVib">測試震動</button><button class="small" id="bTestTts">測試語音</button></div>
@@ -1544,7 +1544,7 @@ function fillRaceBpm() {
   const opts = [0, 160, 165, 170, 172, 175, 178, 180, 182, 185, 188, 190, 195, 200];
   for (const v of [S.raceBpm, Metro.bpm]) if (v > 0 && !opts.includes(v)) opts.push(v);
   opts.sort((a, b) => a - b);
-  $('raceBpm').innerHTML = opts.map(v => `<option value="${v}">${v === 0 ? '關閉（跑中可開）' : v + ' BPM' + (v === 180 ? '（推薦）' : '')}</option>`).join('');
+  $('raceBpm').innerHTML = opts.map(v => `<option value="${v}">${v === 0 ? '關閉' : v + ' BPM'}</option>`).join('');
   $('raceBpm').value = String(S.raceBpm || 0);
 }
 function syncRaceMetro() {
