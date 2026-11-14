@@ -191,6 +191,10 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .rcats{display:flex;flex-wrap:wrap;gap:5px}
 .rcat{min-height:28px;padding:3px 9px;font-size:12px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2}
 .rcat.on{border-color:var(--rc,var(--ok));background:color-mix(in srgb,var(--rc,var(--ok)) 18%,var(--btn));color:var(--fg)}
+.rright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.rmore{min-height:24px;padding:2px 8px;font-size:11px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2;white-space:nowrap}
+.rmore.on{border-color:var(--rc,var(--ok));color:var(--fg);background:color-mix(in srgb,var(--rc,var(--ok)) 16%,var(--btn))}
+.rmore-body{display:flex;flex-direction:column;gap:8px}
 .rcard[data-go]{cursor:pointer}
 .srow{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);margin-top:8px}
 .srow.done{opacity:.6}
@@ -885,11 +889,13 @@ function renderHome() {
     return pa !== pb ? pa - pb : ga - gb;
   });
   let curFilter = 'all';
+  const openMore = new Set();
   function drawRaceList() {
     nextDone = false;
     $('raceList').innerHTML = sorted.map(r => {
       const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
       const pf = raceProfile(r);
+      const isOpen = openMore.has(r.id);
       const curIt = (r.schedule && r.schedule.items || []).find(it => it.race === r.time.gun.slice(0, 10));
       const isEst = curIt ? curIt.race_est : false;
       const when = dateTxtTz(g, off, true) + ' ' + (pf.sel.gun_txt || clkTz(g, off));
@@ -906,23 +912,31 @@ function renderHome() {
         `<div><div class="t">目標時間</div><div class="v">${hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
         `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${pf.sel.route ? (ncut ? ncut + ' 個中途關' : '無中途關門') : '依組別計時'}</div></div>` +
         `</div>`;
+      const moreBtn = `<button type="button" class="rmore${isOpen ? ' on' : ''}" data-more="${esc(r.id)}" aria-expanded="${isOpen}">${isOpen ? 'more ▴' : 'more ▾'}</button>`;
       const routeSub = pf.sel.note || pf.st.route;
       if (!past) {
         const isNext = !nextDone; nextDone = true;
         const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
         return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
           `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
-          `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rcd">${cd}</div></div>` +
-          catsHTML + pf.svg + specHTML + nx(r) + `</div>`;
+          `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rright"><div class="rcd">${cd}</div>${moreBtn}</div></div>` +
+          `<div class="rmore-body"${isOpen ? '' : ' hidden'}>${catsHTML}${pf.svg}${specHTML}${nx(r)}</div></div>`;
       }
       const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
       return `<div class="rcard" style="--rc:${pf.st.col}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
         `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
         `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div>` +
-        `<div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div></div>` +
-        catsHTML + pf.svg + specHTML + nx(r) +
-        `<div class="grid2"><button type="button" class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button type="button" class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div>`;
+        `<div class="rright"><div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div>${moreBtn}</div></div>` +
+        `<div class="rmore-body"${isOpen ? '' : ' hidden'}>${catsHTML}${pf.svg}${specHTML}${nx(r)}` +
+        `<div class="grid2"><button type="button" class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button type="button" class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div></div>`;
     }).join('');
+    $('raceList').querySelectorAll('[data-more]').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const id = b.dataset.more;
+      if (openMore.has(id)) openMore.delete(id); else openMore.add(id);
+      drawRaceList();
+      applyFilter(curFilter);
+    });
     $('raceList').querySelectorAll('[data-pick]').forEach(b => b.onclick = e => {
       e.stopPropagation();
       const rid = b.dataset.pick, cid = b.dataset.cid;
