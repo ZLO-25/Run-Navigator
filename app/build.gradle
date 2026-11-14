@@ -7,8 +7,8 @@ android {
         applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
         minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
         targetSdk 34
-        versionCode 4
-        versionName '0.4'   // 首頁訓練置頂＋高鑑別度賽事卡片（海拔縮圖、爬升配速三格、篩選）＋2027 賽事更新
+        versionCode 5
+        versionName '0.5'   // 項目特色圖示＋各賽事多距離報名組別選擇
     }
     signingConfigs {
         release {

@@ -164,9 +164,14 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .rcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--rc,var(--line));border-radius:16px;padding:12px 12px 12px 11px;color:var(--fg);font-weight:400;min-height:0}
 .rcard.next{border-color:var(--rc,var(--ok));box-shadow:0 0 0 1px var(--rc,var(--ok))}
 .rcard .rtop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
-.rcard .rmid{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.rcard .rname{font-size:21px;font-weight:800;line-height:1.22}
-.rcard .rsub{font-size:13px;color:var(--sub);margin-top:3px;line-height:1.3}
+.rcard .rmid{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rcard .rhead{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.ricon{flex:none;width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--rc,var(--ok)) 16%,var(--btn));border:1.5px solid color-mix(in srgb,var(--rc,var(--ok)) 45%,var(--line));display:grid;place-items:center;overflow:hidden}
+.ricon svg{width:30px;height:30px;display:block}
+.ricon.lg{width:50px;height:50px;border-radius:14px} .ricon.lg svg{width:34px;height:34px}
+.phead{display:flex;align-items:center;gap:12px}
+.rcard .rname{font-size:20px;font-weight:800;line-height:1.22}
+.rcard .rsub{font-size:13px;color:var(--sub);margin-top:2px;line-height:1.3}
 .rcard .rcd{text-align:right;white-space:nowrap;flex:none} .rcard .rcd b{display:block;font-size:32px;line-height:1;font-variant-numeric:tabular-nums;color:var(--rc,var(--fg))} .rcard .rcd span{font-size:12px;color:var(--sub)}
 .rcard .rres{font-size:22px;font-weight:800;color:var(--ok);font-variant-numeric:tabular-nums}
 .rprof{position:relative;background:var(--btn);border-radius:10px;overflow:hidden;height:42px;border:1px solid var(--line)}
@@ -182,6 +187,10 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .pill.live{background:var(--warn);border-color:var(--warn);color:#161200}
 .pill.off{border-color:var(--line);color:var(--sub);font-weight:700}
 .pill.cat{border-color:var(--rc,var(--aid));color:var(--rc,var(--aid));background:color-mix(in srgb,var(--rc,var(--aid)) 14%,transparent)}
+.rcats{display:flex;flex-wrap:wrap;gap:5px}
+.rcat{min-height:28px;padding:3px 9px;font-size:12px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2}
+.rcat.on{border-color:var(--rc,var(--ok));background:color-mix(in srgb,var(--rc,var(--ok)) 18%,var(--btn));color:var(--fg)}
+.rcard[data-go]{cursor:pointer}
 .srow{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);margin-top:8px}
 .srow.done{opacity:.6}
 .srow .sy{flex:none;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -235,9 +244,9 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <h1 class="htitle">今天練跑或備賽？</h1>
   <div class="hsec"><span>🏃 日常訓練（最常用）</span><span>一鍵開跑</span></div>
   <section class="mcard">
-   <button class="rcard mhero" id="bGoMetro">
+   <button class="rcard mhero" id="bGoMetro" style="--rc:var(--ok)">
     <div class="rtop"><span class="pill ok">練習模式</span><span id="homeMetroZone">標準步頻・每步 0.33 秒</span><span class="mgo">完整設定 ›</span></div>
-    <div class="rmid"><div style="min-width:0"><div class="rname">跑步節拍器</div><div class="rsub" id="homeMetroSub">180 BPM・每 2 拍強音・清脆木魚</div></div><div class="rcd"><b id="homeMetroBpm">180</b><span>BPM</span></div></div>
+    <div class="rmid"><div class="rhead"><div class="ricon" id="homeMetroIcon"></div><div style="min-width:0"><div class="rname">跑步節拍器</div><div class="rsub" id="homeMetroSub">180 BPM・每 2 拍強音・清脆木魚</div></div></div><div class="rcd"><b id="homeMetroBpm">180</b><span>BPM</span></div></div>
    </button>
    <div class="mquick">
     <button class="small mplay" id="bHomeMetroPlay"><span class="mpulse" id="homeMetroPulse"></span><span id="homeMetroPlayTxt">▶ 直接打拍</span></button>
@@ -255,8 +264,8 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <div id="raceList" class="ctl"></div>
   <div class="hsec"><span>更多工具</span></div>
   <div class="grid2">
-   <div class="pcard"><b style="font-size:18px">自由跑</b><span class="note">不用路線，報距離與配速</span><span class="pill">即將推出</span></div>
-   <div class="pcard dashed"><b style="font-size:18px">匯入路線</b><span class="note">My Maps KML、GPX</span><span class="pill">即將推出</span></div>
+   <div class="pcard" style="--rc:var(--aid)"><div class="rhead"><div class="ricon" id="icoFreeRun"></div><b style="font-size:17px">自由跑</b></div><span class="note">不用路線，報距離與配速</span><span class="pill">即將推出</span></div>
+   <div class="pcard dashed" style="--rc:var(--plan)"><div class="rhead"><div class="ricon" id="icoImport"></div><b style="font-size:17px">匯入路線</b></div><span class="note">My Maps KML、GPX</span><span class="pill">即將推出</span></div>
   </div>
   <div class="note" style="text-align:center;margin-top:4px">匯入賽事包（GPX＋賽事設定檔）也會在之後的版本加入。</div>
  </div>
@@ -305,15 +314,20 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 
  <!-- 賽事準備（MVP 畫面 2）：這一場的參數、關門提醒、開始定位、練習模擬 -->
  <div class="page" id="pgPrep" hidden>
-  <section>
-   <h1 class="ptitle" id="prepName"></h1>
-   <div class="note" id="prepSub" style="margin-top:2px"></div>
+  <section class="phead">
+   <div id="prepIcon"></div>
+   <div style="min-width:0">
+    <h1 class="ptitle" id="prepName"></h1>
+    <div class="note" id="prepSub" style="margin-top:2px"></div>
+   </div>
   </section>
   <div id="busyBox" class="warnbox bad" hidden></div>
   <div id="finBox" class="warnbox" hidden></div>
   <section class="card cdcard"><div><div class="lab" id="cdLab">距離鳴槍</div><div class="big" id="cdVal">—</div></div><div class="note" id="checkin" style="text-align:right;white-space:pre-line"></div></section>
   <section class="card ctl">
    <div class="kv"><b>這一場的參數</b><span class="note" id="isoNote"></span></div>
+   <div class="kv"><label for="regCat">報名組別</label><select id="regCat"></select></div>
+   <div class="note" id="regCatNote" hidden></div>
    <div class="kv"><label for="target">目標完賽時間</label><select id="target"></select></div>
    <div class="kv"><label for="delay">預估過起跑線延遲</label><select id="delay"></select></div>
    <div class="kv"><label for="raceBpm">跑步節拍</label><select id="raceBpm"></select></div>
@@ -726,6 +740,59 @@ function schedHTML(r) {
     `<div class="note" style="margin-top:6px">「預估」是照往年慣例推的，官方公布後以官方為準。最後查證 ${esc(sc.checked.replace(/-0?/g, '/'))}。</div>`;
 }
 
+const ITEM_ICONS = {
+  metro: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M18 5 9 30h18L18 5Z" stroke="#3ddc97" stroke-width="2.2" stroke-linejoin="round"/><path d="M13 24h10" stroke="#3ddc97" stroke-width="2" stroke-linecap="round"/><path d="M18 24 25 10" stroke="#ffc24a" stroke-width="2.4" stroke-linecap="round"/><circle cx="25" cy="10" r="2.2" fill="#ffc24a"/><path d="M27.5 13.5a7 7 0 0 1 0 9" stroke="#3ddc97" stroke-width="1.8" stroke-linecap="round" opacity=".75"/></svg>',
+  'kyoto-2027': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M5 10c4 2 22 2 26 0" stroke="#ff6b5e" stroke-width="2.8" stroke-linecap="round"/><path d="M7 15h22" stroke="#ff6b5e" stroke-width="2.4" stroke-linecap="round"/><path d="M12 11v19M24 11v19" stroke="#ff6b5e" stroke-width="2.4" stroke-linecap="round"/><path d="M18 11v4" stroke="#c9a7ff" stroke-width="2.2"/><circle cx="28" cy="24" r="3" fill="#c9a7ff" opacity=".85"/><circle cx="8" cy="25" r="2.2" fill="#c9a7ff" opacity=".65"/></svg>',
+  'tokyo-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M18 4v5M16 9h4l3 21H13L16 9Z" stroke="#ff6b5e" stroke-width="2.1" stroke-linejoin="round"/><path d="M14.5 18h7M13.8 24h8.4" stroke="#5ab8ff" stroke-width="2" stroke-linecap="round"/><path d="M6 30h24M8 30v-7h3v7M25 30v-9h3v9" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  'sunmoonlake-29k-2026': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="13" cy="12" r="4.5" fill="#ffc24a"/><path d="M25.5 8.5a4.5 4.5 0 1 0 3.5 7.3A3.8 3.8 0 0 1 25.5 8.5Z" fill="#2dd4bf"/><path d="M5 23l6.5-6.5L17 22l4.5-4L31 23" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 27.5q3.2-2 6.5 0t6.5 0 6.5 0 6.5 0" stroke="#5ab8ff" stroke-width="2" stroke-linecap="round"/></svg>',
+  'yangmingshan-21k-2026': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M4 25 13 11l6 8 4-5 9 11" stroke="#3ddc97" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 29c4-3.5 18-3.5 22 0" stroke="#5ab8ff" stroke-width="2.2" stroke-linecap="round"/><path d="M13 28v-2.5M23 28v-2.5" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  'yangmingshan-42k-2026': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 28 12 12l5 6 5-7 11 17H3Z" stroke="#ff6b5e" stroke-width="2.1" stroke-linejoin="round"/><path d="M19 9c0-2 2.5-2.5 2-4.5M23.5 9.5c0-1.8 2-2 1.8-4" stroke="#ffc24a" stroke-width="1.8" stroke-linecap="round"/><path d="M10 28c3-2.5 6-2 9-4s5-1 8 4" stroke="#ffc24a" stroke-width="1.8" stroke-linecap="round" opacity=".85"/></svg>',
+  'nyc-marathon-2027': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M11 8c1.5-2.5 3.5-2.5 3 0-.5 1.8-2.5 2-3 0Z" fill="#ffc24a"/><path d="M12.5 11v12M10 13h5M21 15l-3 13h7l-2-13h-2Z" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 28c4-4 10-4 14 0M18 28c4-4 10-4 14 0" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  freerun: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 24c4 0 6-6 9-10l3 3c2 2 5 3 10 3.5 1.5.2 2.5 1.3 2.5 2.5 0 1.2-1 2-2.5 2H7.5C6.4 25 5.5 24.5 6 24Z" stroke="#5ab8ff" stroke-width="2.1" stroke-linejoin="round"/><circle cx="26" cy="10" r="2.2" fill="#3ddc97"/><path d="M22.5 10a3.5 3.5 0 0 1 7 0" stroke="#3ddc97" stroke-width="1.7" stroke-linecap="round" opacity=".75"/></svg>',
+  import: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 27c3-6 7-6 10-1s7 5 11-4" stroke="#c9a7ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/><path d="M25 8a4.5 4.5 0 0 1 4.5 4.5c0 3.2-4.5 7.5-4.5 7.5s-4.5-4.3-4.5-7.5A4.5 4.5 0 0 1 25 8Z" stroke="#c9a7ff" stroke-width="2"/><circle cx="25" cy="12.5" r="1.5" fill="#c9a7ff"/></svg>'
+};
+const RACE_CATS = {
+  'sunmoonlake-29k-2026': [
+    { id: '29k', label: '29K 環湖', full: '29K 超半馬環湖組', km: 29, limit_min: 270, def_target: 230, cat: 'short', route: true, gun_txt: '06:00', note: '環湖一圈（向山・文武廟・玄奘寺・頭社三坡）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 390, def_target: 330, cat: '42k', route: false, gun_txt: '06:00', note: '環湖一圈＋水社／九龍口折返（導航路線與水站以 29K 環湖為主）' },
+    { id: '6k', label: '6K 健走', full: '6K 活力健走組', km: 6, limit_min: 150, def_target: 60, cat: 'short', route: false, gun_txt: '06:00', note: '向山周邊體驗組，限時 2 小時 30 分（導航路線以 29K 環湖為主）' }
+  ],
+  'yangmingshan-21k-2026': [
+    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 185, cat: 'short', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
+    { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
+  ],
+  'yangmingshan-42k-2026': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
+    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 185, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
+    { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
+  ],
+  'kyoto-2027': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, gun_txt: '09:00', note: '西京極 → 平安神宮（全馬完整賽道）' },
+    { id: 'pair1', label: '接力1棒 27.6K', full: '雙人接力第 1 棒（27.6K）', km: 27.6, limit_min: 245, def_target: 195, cat: 'short', route: false, gun_txt: '09:00', note: '西京極 → 京都府立植物園交接（沿全馬前 27.6K 賽道）' },
+    { id: 'pair2', label: '接力2棒 14.6K', full: '雙人接力第 2 棒（14.6K）', km: 14.6, limit_min: 360, def_target: 105, cat: 'short', route: false, gun_txt: '09:00', note: '京都府立植物園 → 平安神宮（沿全馬後段賽道）' },
+    { id: 'wheel', label: '輪椅 6.1K', full: '輪椅競技組（6.1K）', km: 6.1, limit_min: 60, def_target: 25, cat: 'short', route: false, gun_txt: '08:55', note: '西京極出發，08:55 鳴槍，限時 60 分鐘' }
+  ],
+  'tokyo-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松（含輪椅／雙人組）', km: 42.195, limit_min: 420, def_target: 270, cat: '42k', route: true, gun_txt: '09:10', note: '2027 第20屆起原 10.7K 組已併入 42.195K 平權與身心障礙組' }
+  ],
+  'nyc-marathon-2027': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K（26.2 mi）全程馬拉松', km: 42.195, limit_min: 510, def_target: 300, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（史坦頓島 → 中央公園）' },
+    { id: '5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六）', km: 5, limit_min: 90, def_target: 30, cat: 'short', route: false, gun_txt: '08:30', note: '週六 UN 總部 → 中央公園暖身賽（主賽日賽道以 42.2K 為主）' }
+  ]
+};
+function getRaceCats(r) {
+  return RACE_CATS[r.id] || [{ id: 'main', label: Math.round(r.distance_m / 100) / 10 + 'K', full: r.name, km: r.distance_m / 1000, limit_min: r.time.limit_min, def_target: r.params.target.default, cat: r.distance_m >= 40000 ? '42k' : 'short', route: true, gun_txt: '', note: '' }];
+}
+function getRaceCat(r) {
+  const cats = getRaceCats(r), p = racePrefs(r.id);
+  return cats.find(c => c.id === p.regCat) || cats[0];
+}
+function saveRaceCat(rid, cid) {
+  if (SELFTEST) return;
+  if (NATIVE) Android.setPref(rid, 'regCat', cid);
+  else lset(rid + '.regCat', cid);
+}
 const RACE_STYLE = {
   'kyoto-2027': { loc: '🇯🇵 日本京都', col: '#c9a7ff', route: '西京極 → 嵐山・鴨川 → 平安神宮' },
   'tokyo-marathon': { loc: '🇯🇵 日本東京', col: '#5ab8ff', route: '東京都廳 → 淺草・銀座 → 東京站前' },
@@ -735,10 +802,13 @@ const RACE_STYLE = {
   'yangmingshan-42k-2026': { loc: '🇹🇼 台北陽明山', col: '#ff6b5e', route: '中山樓 ⇄ 金山折返（後半 16K 長爬）' }
 };
 function raceProfile(r) {
-  const km = r.distance_m / 1000;
+  const cats = getRaceCats(r), sel = getRaceCat(r);
+  const km = sel.km, limitMin = sel.limit_min;
   const st = RACE_STYLE[r.id] || { loc: (r.time.tz === 'Asia/Taipei' ? '🇹🇼 ' : '🌏 ') + (r.time.tz_short || ''), col: '#5ab8ff', route: (r.start_name || '') + ' → ' + (r.finish_name || '') };
-  const distBadge = km >= 40 ? '全馬 42.2K' : km >= 25 ? '環湖 ' + Math.round(km) + 'K' : '半馬 21.1K';
-  const distCat = km >= 40 ? '42k' : 'short';
+  const icon = `<div class="ricon">${ITEM_ICONS[r.id] || ITEM_ICONS.metro}</div>`;
+  const distBadge = sel.label;
+  const distCat = sel.cat;
+  const allCats = [...new Set(cats.map(c => c.cat))].join(' ');
   const region = r.time.tz === 'Asia/Taipei' ? 'tw' : 'intl';
   const raw = (r.route && r.route.elev) || [0, 0];
   const n = raw.length, es = raw.map((_, i) => { let s = 0; for (let k = -2; k <= 2; k++) s += raw[Math.max(0, Math.min(n - 1, i + k))]; return s / 5; });
@@ -752,7 +822,7 @@ function raceProfile(r) {
   const line = 'M' + pts.map(p => p[0] + ',' + p[1]).join('L');
   const area = line + 'L240,42L0,42Z';
   const svg = `<div class="rprof"><svg viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true"><path d="${area}" fill="${st.col}" fill-opacity="0.18"/><path d="${line}" fill="none" stroke="${st.col}" stroke-width="2"/></svg><div class="rplab"><span>⛰ 海拔 ${minE}–${maxE} m</span><span>最高 ${maxE} m</span></div></div>`;
-  return { km, st, distBadge, distCat, region, gain, terr, svg };
+  return { km, limitMin, cats, sel, allCats, st, icon, distBadge, distCat, region, gain, terr, svg };
 }
 
 window.R = null;
@@ -773,6 +843,9 @@ function renderHome() {
   Metro.load(P0);
   if (!activeRace()) Metro.syncNative();
   $('pgHome').hidden = false;
+  $('homeMetroIcon').innerHTML = ITEM_ICONS.metro;
+  $('icoFreeRun').innerHTML = ITEM_ICONS.freerun;
+  $('icoImport').innerHTML = ITEM_ICONS.import;
   const HM_CHIPS = [170, 175, 180, 185, 190];
   $('homeMetroChips').innerHTML = HM_CHIPS.map(b => `<button data-hmbpm="${b}">${b}</button>`).join('');
   function syncHomeMetro() {
@@ -810,49 +883,70 @@ function renderHome() {
     const pb = now > gb + b.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
     return pa !== pb ? pa - pb : ga - gb;
   });
-  $('raceList').innerHTML = sorted.map(r => {
-    const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
-    const pf = raceProfile(r);
-    const curIt = (r.schedule && r.schedule.items || []).find(it => it.race === r.time.gun.slice(0, 10));
-    const isEst = curIt ? curIt.race_est : false;
-    const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off);
-    const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
-    const ncut = r.cutoffs.filter(c => c.km < pf.km - 0.01).length;
-    const tgt = p.target || r.params.target.default;
-    const paceSec = Math.round(tgt * 60 / pf.km), paceStr = Math.floor(paceSec / 60) + ':' + p2(paceSec % 60);
-    const limMin = r.time.limit_min, limStr = (limMin % 60 ? hm(limMin) : (limMin / 60) + '小時');
-    const specHTML = `<div class="rspec">` +
-      `<div><div class="t">總爬升</div><div class="v">+${pf.gain}m</div><div class="s">${pf.terr}</div></div>` +
-      `<div><div class="t">目標時間</div><div class="v">${hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
-      `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${ncut ? ncut + ' 個中途關' : '無中途關門'}</div></div>` +
-      `</div>`;
-    if (!past) {
-      const isNext = !nextDone; nextDone = true;
-      const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
-      return `<button class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}">` +
-        `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
-        `<div class="rmid"><div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(pf.st.route)}</div></div><div class="rcd">${cd}</div></div>` +
-        pf.svg + specHTML + nx(r) + `</button>`;
-    }
-    const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
-    return `<div class="rcard" style="--rc:${pf.st.col}" data-reg="${pf.region}" data-cat="${pf.distCat}">` +
-      `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
-      `<div class="rmid"><div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(pf.st.route)}</div></div>` +
-      `<div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div></div>` +
-      pf.svg + specHTML + nx(r) +
-      `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div>`;
-  }).join('');
-  $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
+  let curFilter = 'all';
+  function drawRaceList() {
+    nextDone = false;
+    $('raceList').innerHTML = sorted.map(r => {
+      const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
+      const pf = raceProfile(r);
+      const curIt = (r.schedule && r.schedule.items || []).find(it => it.race === r.time.gun.slice(0, 10));
+      const isEst = curIt ? curIt.race_est : false;
+      const when = dateTxtTz(g, off, true) + ' ' + (pf.sel.gun_txt || clkTz(g, off));
+      const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
+      const ncut = pf.sel.route ? r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length : 0;
+      const tgt = pf.sel.route ? (p.target || r.params.target.default) : pf.sel.def_target;
+      const paceSec = Math.round(tgt * 60 / pf.km), paceStr = Math.floor(paceSec / 60) + ':' + p2(paceSec % 60);
+      const limMin = pf.limitMin, limStr = (limMin % 60 ? hm(limMin) : (limMin / 60) + '小時');
+      const catsHTML = pf.cats.length > 1
+        ? `<div class="rcats" role="group" aria-label="報名組別">${pf.cats.map(c => `<button type="button" class="rcat${c.id === pf.sel.id ? ' on' : ''}" data-pick="${esc(r.id)}" data-cid="${esc(c.id)}">${esc(c.label)}</button>`).join('')}</div>`
+        : '';
+      const specHTML = `<div class="rspec">` +
+        `<div><div class="t">總爬升</div><div class="v">+${pf.gain}m</div><div class="s">${pf.terr}</div></div>` +
+        `<div><div class="t">目標時間</div><div class="v">${hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
+        `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${pf.sel.route ? (ncut ? ncut + ' 個中途關' : '無中途關門') : '依組別計時'}</div></div>` +
+        `</div>`;
+      const routeSub = pf.sel.note || pf.st.route;
+      if (!past) {
+        const isNext = !nextDone; nextDone = true;
+        const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
+        return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+          `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
+          `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rcd">${cd}</div></div>` +
+          catsHTML + pf.svg + specHTML + nx(r) + `</div>`;
+      }
+      const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
+      return `<div class="rcard" style="--rc:${pf.st.col}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+        `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
+        `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div>` +
+        `<div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div></div>` +
+        catsHTML + pf.svg + specHTML + nx(r) +
+        `<div class="grid2"><button type="button" class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button type="button" class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div>`;
+    }).join('');
+    $('raceList').querySelectorAll('[data-pick]').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const rid = b.dataset.pick, cid = b.dataset.cid;
+      const r = (window.RACES || []).find(x => x.id === rid);
+      const cat = r && getRaceCats(r).find(c => c.id === cid);
+      if (cat && cat.link) { goRace(cat.link); return; }
+      saveRaceCat(rid, cid);
+      drawRaceList();
+      applyFilter(curFilter);
+    });
+    $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
+  }
   function applyFilter(f) {
+    curFilter = f;
     $('raceFilters').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rf === f));
     let shown = 0;
     [...$('raceList').children].forEach(c => {
-      const match = f === 'all' || c.dataset.reg === f || c.dataset.cat === f;
+      const cats = (c.dataset.cats || '').split(' ');
+      const match = f === 'all' || c.dataset.reg === f || c.dataset.cat === f || cats.includes(f);
       c.hidden = !match;
       if (match) shown++;
     });
     $('raceCountNote').textContent = '共 ' + shown + ' 場';
   }
+  drawRaceList();
   $('raceFilters').querySelectorAll('button').forEach(b => b.onclick = () => applyFilter(b.dataset.rf));
   applyFilter('all');
 }
@@ -1758,9 +1852,34 @@ $('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab'
 function fillOpts(sel, opts, lab) { sel.innerHTML = opts.map(o => `<option value="${o.v}">${esc(o.label || lab(o.v))}</option>`).join(''); }
 function dateTxt(ms) { return dateTxtTz(ms, TZ, true); }
 function renderStatic() {
+  const pf = raceProfile(R), sel = pf.sel;
   document.title = R.short + '｜Run Navigator';
   $('topName').textContent = R.short; $('prepName').textContent = R.name;
-  $('prepSub').textContent = dateTxt(GUN) + ' ' + clk(GUN) + ' 鳴槍（' + R.time.tz_label + '）・' + (LIMIT % 60 ? fmtHM(LIMIT) : LIMIT / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
+  $('prepIcon').innerHTML = `<div class="ricon lg" style="--rc:${pf.st.col}">${ITEM_ICONS[R.id] || ''}</div>`;
+  const rcSel = $('regCat'), rcNote = $('regCatNote');
+  rcSel.innerHTML = pf.cats.map(c => `<option value="${esc(c.id)}">${esc(c.full)}</option>`).join('');
+  rcSel.value = sel.id;
+  function syncRegCatUI(cat) {
+    const lim = cat.limit_min, gunTxt = cat.gun_txt || clk(GUN);
+    $('prepSub').textContent = dateTxt(GUN) + ' ' + gunTxt + ' 鳴槍（' + R.time.tz_label + '）・' + (lim % 60 ? fmtHM(lim) : lim / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
+    if (!cat.route) {
+      rcNote.hidden = false;
+      rcNote.textContent = '已選「' + cat.full + '」：' + cat.note + '。GPS 導航、海拔剖面與水站目前以主賽道為準。';
+    } else if (pf.cats.length > 1 && cat.note) {
+      rcNote.hidden = false;
+      rcNote.textContent = cat.note;
+    } else {
+      rcNote.hidden = true;
+    }
+  }
+  syncRegCatUI(sel);
+  rcSel.onchange = () => {
+    const picked = pf.cats.find(c => c.id === rcSel.value);
+    if (!picked) return;
+    if (picked.link) { goRace(picked.link); return; }
+    saveRaceCat(R.id, picked.id);
+    syncRegCatUI(picked);
+  };
   $('checkin').textContent = R.checkin || '';
   $('schedCard').innerHTML = schedHTML(R); $('schedCard').hidden = !R.schedule;
   $('isoNote').textContent = '只影響' + R.short + '，不影響其他賽事';

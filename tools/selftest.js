@@ -60,6 +60,13 @@ const { chromium } = require('playwright');
     for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
     if (!(await p.isVisible('#bGoMetro'))) errs.push('首頁沒有跑步節拍器入口');
     if (!(await p.isVisible('#bHomeMetroPlay'))) errs.push('首頁沒有直接打拍按鈕');
+    const iconCount = await p.locator('#raceList .ricon svg').count();
+    if (iconCount !== races.length) errs.push('首頁賽事特色圖示數量不符：' + iconCount);
+    if ((await p.locator('#homeMetroIcon svg').count()) !== 1) errs.push('首頁節拍器沒有特色圖示');
+    await p.click('[data-pick="sunmoonlake-29k-2026"][data-cid="42k"]');
+    await p.waitForTimeout(100);
+    if (!(await p.textContent('#raceList')).includes('42.2K 全馬')) errs.push('日月潭切換 42.2K 全馬失敗');
+    (await overflow(p)).forEach(x => errs.push(x));
     const metroOnTop = await p.evaluate(() => {
       const m = document.getElementById('bGoMetro'), l = document.getElementById('raceList');
       return m && l && m.getBoundingClientRect().top < l.getBoundingClientRect().top;
