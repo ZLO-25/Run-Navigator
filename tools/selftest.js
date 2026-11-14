@@ -60,6 +60,12 @@ const { chromium } = require('playwright');
     for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
     if (!(await p.isVisible('#bGoMetro'))) errs.push('首頁沒有跑步節拍器入口');
     if (!(await p.isVisible('#bHomeMetroPlay'))) errs.push('首頁沒有直接打拍按鈕');
+    const sameRow = await p.evaluate(() => {
+      const a = document.getElementById('bHomeMetroPlay').getBoundingClientRect();
+      const b = document.querySelector('#homeMetroChips button:last-child').getBoundingClientRect();
+      return Math.abs(a.top - b.top) < 12;
+    });
+    if (!sameRow) errs.push('直接打拍與 170–190 捷徑應在同一行');
     const iconCount = await p.locator('#raceList .ricon svg').count();
     if (iconCount !== races.length) errs.push('首頁賽事特色圖示數量不符：' + iconCount);
     if ((await p.locator('#homeMetroIcon svg').count()) !== 1) errs.push('首頁節拍器沒有特色圖示');
