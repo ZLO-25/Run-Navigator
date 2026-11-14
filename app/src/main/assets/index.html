@@ -127,7 +127,8 @@ input[type=text]{font:inherit;color:var(--fg);background:var(--btn);border:1px s
 .chips button{min-height:38px;padding:6px 10px;font-size:15px}
 .note{font-size:15px;color:var(--sub)} .note b{color:var(--fg)}
 .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px}
-.kv select{min-height:42px;padding:6px 8px;font-size:16px}
+.kv label{flex:none}
+.kv select{min-height:42px;padding:6px 8px;font-size:16px;min-width:0;max-width:100%;flex:0 1 auto}
 table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
 td,th{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
 td:first-child,th:first-child{text-align:left}
@@ -774,10 +775,10 @@ const RACE_CATS = {
     { id: 'wheel', label: '輪椅 6.1K', full: '輪椅競技組（6.1K）', km: 6.1, limit_min: 60, def_target: 25, cat: 'short', route: false, gun_txt: '08:55', note: '西京極出發，08:55 鳴槍，限時 60 分鐘' }
   ],
   'tokyo-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松（含輪椅／雙人組）', km: 42.195, limit_min: 420, def_target: 270, cat: '42k', route: true, gun_txt: '09:10', note: '2027 第20屆起原 10.7K 組已併入 42.195K 平權與身心障礙組' }
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 420, def_target: 270, cat: '42k', route: true, gun_txt: '09:10', note: '含一般／輪椅／雙人組；2027 第20屆起原 10.7K 組已併入 42.195K' }
   ],
   'nyc-marathon-2027': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K（26.2 mi）全程馬拉松', km: 42.195, limit_min: 510, def_target: 300, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（史坦頓島 → 中央公園）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 510, def_target: 300, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（26.2 mi，史坦頓島 → 中央公園）' },
     { id: '5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六）', km: 5, limit_min: 90, def_target: 30, cat: 'short', route: false, gun_txt: '08:30', note: '週六 UN 總部 → 中央公園暖身賽（主賽日賽道以 42.2K 為主）' }
   ]
 };
