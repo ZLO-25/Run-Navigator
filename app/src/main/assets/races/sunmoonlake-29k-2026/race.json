@@ -1,7 +1,7 @@
 {
   "format": 1,
   "id": "sunmoonlake-29k-2026",
-  "name": "日月潭環湖 29K 2026",
+  "name": "日月潭環湖 29K 2027",
   "short": "日月潭 29K",
   "kind": "race",
   "start_name": "向山",
@@ -10,7 +10,7 @@
     "tz": "Asia/Taipei",
     "tz_label": "台灣時間",
     "tz_short": "台灣",
-    "gun": "2026-11-01T06:35:00+08:00",
+    "gun": "2027-10-31T06:35:00+08:00",
     "limit_min": 270
   },
   "distance_m": 28800,
@@ -19,7 +19,7 @@
     "out_and_back": false,
     "no_rebuild": "route.gpx 是從舊 App 每 100 m 一點反產生的，用它重跑 build_route.py 會失真；route.json 請直接保留"
   },
-  "checkin": "",
+  "checkin": "6:35 鳴槍（向山遊客中心）\n報名預計 2026/12–2027/1 開放",
   "params": {
     "target": {
       "default": 255,
@@ -508,8 +508,8 @@
     ]
   },
   "schedule": {
-    "rule": "10 月最後一個或 11 月第 1 個週日（2025：10/26、2026：11/1）；前一年 12 月到 1 月開放報名，額滿即止",
-    "checked": "2026-11-03",
+    "rule": "10 月最後一個或 11 月第 1 個週日（2025：10/26、2026：11/1 已完賽）；前一年 12 月到 1 月開放報名，額滿即止",
+    "checked": "2026-11-15",
     "items": [
       {
         "year": 2026,

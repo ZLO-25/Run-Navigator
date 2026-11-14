@@ -150,30 +150,45 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .phase div{font-size:16px} .phase div b{display:block;color:var(--fg);font-size:17px}
 .warnbox{border:2px solid var(--warn);border-radius:12px;padding:10px 12px;font-size:16px;margin-bottom:8px}
 .warnbox.bad{border-color:var(--bad)}
-/* ---------- 首頁：賽事清單（MVP 畫面 1） ---------- */
-.hhead{display:flex;justify-content:space-between;align-items:center;padding-top:8px}
+/* ---------- 首頁：訓練與賽事清單（MVP 畫面 1） ---------- */
+.hhead{display:flex;justify-content:space-between;align-items:center;padding-top:6px}
 .brand{font-size:14px;font-weight:800;letter-spacing:1px;color:var(--sub)}
-.htitle{margin:4px 0 4px;font-size:30px;font-weight:800}
-.hsec{font-size:13px;font-weight:700;color:var(--sub);margin-top:6px}
-.rcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--fg);font-weight:400;min-height:0}
-.rcard.next{border:2px solid var(--ok)}
-.rcard .rtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
-.rcard .rmid{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
-.rcard .rname{font-size:23px;font-weight:800;line-height:1.2}
-.rcard .rsub{font-size:14px;color:var(--sub);margin-top:2px}
-.rcard .rcd{text-align:right;white-space:nowrap} .rcard .rcd b{display:block;font-size:38px;line-height:1;font-variant-numeric:tabular-nums} .rcard .rcd span{font-size:13px;color:var(--sub)}
+.htitle{margin:2px 0 2px;font-size:28px;font-weight:800}
+.hsec{font-size:13px;font-weight:700;color:var(--sub);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.mcard{background:var(--card);border:2px solid var(--ok);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.mcard .mhero{background:transparent;border:none;border-radius:0;padding:0;gap:6px}
+.mcard .mgo{margin-left:auto;color:var(--ok);font-weight:800;font-size:13px}
+.mquick{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap}
+.mplay{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:6px 12px;font-size:15px;border-radius:99px;background:var(--btn);border:1px solid var(--line)}
+.mplay.on{background:var(--ok);color:#06251a;border-color:var(--ok)}
+.rcard{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--rc,var(--line));border-radius:16px;padding:12px 12px 12px 11px;color:var(--fg);font-weight:400;min-height:0}
+.rcard.next{border-color:var(--rc,var(--ok));box-shadow:0 0 0 1px var(--rc,var(--ok))}
+.rcard .rtop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.rcard .rmid{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.rcard .rname{font-size:21px;font-weight:800;line-height:1.22}
+.rcard .rsub{font-size:13px;color:var(--sub);margin-top:3px;line-height:1.3}
+.rcard .rcd{text-align:right;white-space:nowrap;flex:none} .rcard .rcd b{display:block;font-size:32px;line-height:1;font-variant-numeric:tabular-nums;color:var(--rc,var(--fg))} .rcard .rcd span{font-size:12px;color:var(--sub)}
 .rcard .rres{font-size:22px;font-weight:800;color:var(--ok);font-variant-numeric:tabular-nums}
-.pill{font-size:12px;font-weight:800;border-radius:99px;padding:2px 9px;white-space:nowrap;border:1.5px solid var(--sub);color:var(--sub)}
+.rprof{position:relative;background:var(--btn);border-radius:10px;overflow:hidden;height:42px;border:1px solid var(--line)}
+.rprof svg{display:block;width:100%;height:100%}
+.rprof .rplab{position:absolute;left:8px;right:8px;top:4px;display:flex;justify-content:space-between;gap:6px;font-size:11px;font-weight:700;color:var(--sub);pointer-events:none}
+.rspec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.rspec>div{background:var(--btn);border-radius:10px;padding:6px 4px;min-width:0;text-align:center}
+.rspec .t{font-size:11px;color:var(--sub);font-weight:700;line-height:1.2}
+.rspec .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.25;white-space:nowrap;margin-top:1px}
+.rspec .s{font-size:11px;color:var(--sub);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:12px;font-weight:800;border-radius:99px;padding:2px 8px;white-space:nowrap;border:1.5px solid var(--sub);color:var(--sub)}
 .pill.ok{background:var(--ok);border-color:var(--ok);color:#06251a}
 .pill.live{background:var(--warn);border-color:var(--warn);color:#161200}
 .pill.off{border-color:var(--line);color:var(--sub);font-weight:700}
+.pill.cat{border-color:var(--rc,var(--aid));color:var(--rc,var(--aid));background:color-mix(in srgb,var(--rc,var(--aid)) 14%,transparent)}
 .srow{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);margin-top:8px}
 .srow.done{opacity:.6}
 .srow .sy{flex:none;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .srow .sb{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
 .srow .sl{color:var(--sub);font-weight:700;margin-right:6px}
 .srow a{color:var(--aid)}
-.rnext{font-size:14px;color:var(--sub);margin-top:4px}
+.rnext{font-size:13px;color:var(--sub);padding-top:2px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
 .pcard{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-height:104px;opacity:.6}
 .pcard.dashed{border-style:dashed}
 .pcard .pill{align-self:flex-start}
@@ -214,17 +229,31 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 </head>
 <body>
 <main>
- <!-- 首頁：賽事與路線（MVP 畫面 1）。每次打開 App 先出現這裡，手動選一場 -->
+ <!-- 首頁：日常訓練置頂＋高鑑別度賽事卡片（MVP 畫面 1） -->
  <div class="page" id="pgHome" hidden>
   <div class="hhead"><span class="brand">RUN NAVIGATOR</span><span class="note" id="homeDate"></span></div>
-  <h1 class="htitle">要跑哪一場？</h1>
-  <div class="hsec">賽事</div>
+  <h1 class="htitle">今天練跑或備賽？</h1>
+  <div class="hsec"><span>🏃 日常訓練（最常用）</span><span>一鍵開跑</span></div>
+  <section class="mcard">
+   <button class="rcard mhero" id="bGoMetro">
+    <div class="rtop"><span class="pill ok">練習模式</span><span id="homeMetroZone">標準步頻・每步 0.33 秒</span><span class="mgo">完整設定 ›</span></div>
+    <div class="rmid"><div style="min-width:0"><div class="rname">跑步節拍器</div><div class="rsub" id="homeMetroSub">180 BPM・每 2 拍強音・清脆木魚</div></div><div class="rcd"><b id="homeMetroBpm">180</b><span>BPM</span></div></div>
+   </button>
+   <div class="mquick">
+    <button class="small mplay" id="bHomeMetroPlay"><span class="mpulse" id="homeMetroPulse"></span><span id="homeMetroPlayTxt">▶ 直接打拍</span></button>
+    <div class="chips" id="homeMetroChips"></div>
+   </div>
+  </section>
+  <div class="hsec"><span>🏁 目標賽事（依比賽日排序）</span><span id="raceCountNote"></span></div>
+  <div class="chips" id="raceFilters">
+   <button class="on" data-rf="all">全部</button>
+   <button data-rf="tw">🇹🇼 台灣</button>
+   <button data-rf="intl">🌏 海外</button>
+   <button data-rf="42k">全馬 42K</button>
+   <button data-rf="short">半馬・29K</button>
+  </div>
   <div id="raceList" class="ctl"></div>
-  <div class="hsec">練習</div>
-  <button class="rcard" id="bGoMetro">
-   <div class="rtop"><span class="pill ok">練習模式</span><span>步頻訓練・比賽可用</span></div>
-   <div class="rmid"><div><div class="rname">跑步節拍器</div><div class="rsub" id="homeMetroSub">180 BPM・每 2 拍強音・清脆木魚</div></div><div class="rcd"><b id="homeMetroBpm">180</b><span>BPM</span></div></div>
-  </button>
+  <div class="hsec"><span>更多工具</span></div>
   <div class="grid2">
    <div class="pcard"><b style="font-size:18px">自由跑</b><span class="note">不用路線，報距離與配速</span><span class="pill">即將推出</span></div>
    <div class="pcard dashed"><b style="font-size:18px">匯入路線</b><span class="note">My Maps KML、GPX</span><span class="pill">即將推出</span></div>
@@ -697,6 +726,35 @@ function schedHTML(r) {
     `<div class="note" style="margin-top:6px">「預估」是照往年慣例推的，官方公布後以官方為準。最後查證 ${esc(sc.checked.replace(/-0?/g, '/'))}。</div>`;
 }
 
+const RACE_STYLE = {
+  'kyoto-2027': { loc: '🇯🇵 日本京都', col: '#c9a7ff', route: '西京極 → 嵐山・鴨川 → 平安神宮' },
+  'tokyo-marathon': { loc: '🇯🇵 日本東京', col: '#5ab8ff', route: '東京都廳 → 淺草・銀座 → 東京站前' },
+  'nyc-marathon-2027': { loc: '🇺🇸 美國紐約', col: '#ffc24a', route: '史坦頓島 → 五區跨橋 → 中央公園' },
+  'sunmoonlake-29k-2026': { loc: '🇹🇼 南投日月潭', col: '#2dd4bf', route: '向山環湖一圈（文武廟・玄奘寺・頭社三坡）' },
+  'yangmingshan-21k-2026': { loc: '🇹🇼 台北陽明山', col: '#3ddc97', route: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
+  'yangmingshan-42k-2026': { loc: '🇹🇼 台北陽明山', col: '#ff6b5e', route: '中山樓 ⇄ 金山折返（後半 16K 長爬）' }
+};
+function raceProfile(r) {
+  const km = r.distance_m / 1000;
+  const st = RACE_STYLE[r.id] || { loc: (r.time.tz === 'Asia/Taipei' ? '🇹🇼 ' : '🌏 ') + (r.time.tz_short || ''), col: '#5ab8ff', route: (r.start_name || '') + ' → ' + (r.finish_name || '') };
+  const distBadge = km >= 40 ? '全馬 42.2K' : km >= 25 ? '環湖 ' + Math.round(km) + 'K' : '半馬 21.1K';
+  const distCat = km >= 40 ? '42k' : 'short';
+  const region = r.time.tz === 'Asia/Taipei' ? 'tw' : 'intl';
+  const raw = (r.route && r.route.elev) || [0, 0];
+  const n = raw.length, es = raw.map((_, i) => { let s = 0; for (let k = -2; k <= 2; k++) s += raw[Math.max(0, Math.min(n - 1, i + k))]; return s / 5; });
+  let gain = 0; for (let i = 3; i < n; i += 3) if (es[i] > es[i - 3]) gain += es[i] - es[i - 3];
+  gain = Math.round(gain);
+  const minE = Math.round(Math.min(...es)), maxE = Math.round(Math.max(...es)), span = Math.max(35, maxE - minE);
+  const terr = gain >= 900 ? '硬派山馬' : gain >= 550 ? '山路陡坡' : gain >= 350 ? '環湖三坡' : gain >= 140 ? '起伏多坡' : '高速平路';
+  const step = Math.max(1, Math.floor(n / 48)), pts = [];
+  for (let i = 0; i < n; i += step) pts.push([Math.round(i / (n - 1) * 240), Math.round(39 - (es[i] - minE) / span * 23)]);
+  pts.push([240, Math.round(39 - (es[n - 1] - minE) / span * 23)]);
+  const line = 'M' + pts.map(p => p[0] + ',' + p[1]).join('L');
+  const area = line + 'L240,42L0,42Z';
+  const svg = `<div class="rprof"><svg viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true"><path d="${area}" fill="${st.col}" fill-opacity="0.18"/><path d="${line}" fill="none" stroke="${st.col}" stroke-width="2"/></svg><div class="rplab"><span>⛰ 海拔 ${minE}–${maxE} m</span><span>最高 ${maxE} m</span></div></div>`;
+  return { km, st, distBadge, distCat, region, gain, terr, svg };
+}
+
 window.R = null;
 (function boot() {
   if (Q.has('metro')) { renderMetroPage(); return; }
@@ -715,36 +773,88 @@ function renderHome() {
   Metro.load(P0);
   if (!activeRace()) Metro.syncNative();
   $('pgHome').hidden = false;
-  $('homeMetroBpm').textContent = Metro.bpm;
-  $('homeMetroSub').textContent = Metro.bpm + ' BPM・' + MACC_TXT[Metro.acc] + '・' + MSND_TXT[Metro.snd];
-  $('bGoMetro').onclick = () => { location.hash = 'metro'; location.reload(); };
+  const HM_CHIPS = [170, 175, 180, 185, 190];
+  $('homeMetroChips').innerHTML = HM_CHIPS.map(b => `<button data-hmbpm="${b}">${b}</button>`).join('');
+  function syncHomeMetro() {
+    $('homeMetroBpm').textContent = Metro.bpm;
+    $('homeMetroZone').textContent = Metro.zone(Metro.bpm) + '・每步 ' + (60 / Metro.bpm).toFixed(2) + ' 秒';
+    $('homeMetroSub').textContent = Metro.bpm + ' BPM・' + MACC_TXT[Metro.acc] + '・' + MSND_TXT[Metro.snd];
+    $('homeMetroPlayTxt').textContent = Metro.on ? '⏸ 停止打拍' : '▶ 直接打拍';
+    $('bHomeMetroPlay').classList.toggle('on', Metro.on);
+    if (!Metro.on) $('homeMetroPulse').className = 'mpulse';
+    $('homeMetroChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', Number(b.dataset.hmbpm) === Metro.bpm));
+  }
+  Metro.onBeat = (b, isAcc) => {
+    const p = $('homeMetroPulse');
+    if (p) { p.className = 'mpulse on' + (isAcc ? ' acc' : ''); setTimeout(() => { p.className = 'mpulse'; }, 110); }
+  };
+  syncHomeMetro();
+  $('bGoMetro').onclick = () => { Metro.stop(); location.hash = 'metro'; location.reload(); };
+  $('bHomeMetroPlay').onclick = () => { if (Metro.on) Metro.stop(); else Metro.start(Metro.bpm); syncHomeMetro(); };
+  $('homeMetroChips').querySelectorAll('button').forEach(b => b.onclick = () => {
+    Metro.setBpm(Number(b.dataset.hmbpm)); gset('_', 'mbpm', Metro.bpm); syncHomeMetro();
+  });
   const now = Date.now(), act = activeRace(), dn = new Date();
   $('homeDate').textContent = (dn.getMonth() + 1) + '/' + dn.getDate() + '（' + WD[dn.getDay()] + '）';
   let nextDone = false;
-  /* 卡片底下一行：下一個還能報名的一屆（這一屆已經報完名就看下一屆） */
   const today = todayStr();
-  const nx = (r, g) => { const it = schedNext(r, today); if (!it) return '';
+  const nx = r => {
+    const it = schedNext(r, today); if (!it) return '';
     const st = entryState(it, today), same = it.race === r.time.gun.slice(0, 10);
-    return '<div class="rnext">' + (same ? '' : '下一屆 ' + esc(ymdTxt(it.race)) + (it.race_est ? '（預估）' : '') + '・') + '報名 ' + esc(it.entry_short || it.entry) + (it.entry_est ? '（預估）' : '') + (st ? '・' + st[0] : '') + '</div>'; };
-  $('raceList').innerHTML = window.RACES.map(r => {
+    const pill = st ? `<span class="pill ${st[1]}">${st[0]}</span>` : '';
+    return `<div class="rnext"><span>${same ? '' : '下一屆 ' + esc(ymdTxt(it.race)) + (it.race_est ? '（預估）' : '') + '・'}報名：${esc(it.entry_short || it.entry)}${it.entry_est ? '（預估）' : ''}</span>${pill}</div>`;
+  };
+  const sorted = [...window.RACES].sort((a, b) => {
+    const ga = Date.parse(a.time.gun), gb = Date.parse(b.time.gun);
+    const pa = now > ga + a.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
+    const pb = now > gb + b.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
+    return pa !== pb ? pa - pb : ga - gb;
+  });
+  $('raceList').innerHTML = sorted.map(r => {
     const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
-    const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off) + ' ' + r.time.tz_label;
+    const pf = raceProfile(r);
+    const curIt = (r.schedule && r.schedule.items || []).find(it => it.race === r.time.gun.slice(0, 10));
+    const isEst = curIt ? curIt.race_est : false;
+    const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off);
     const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
-    const ncut = r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length;
+    const ncut = r.cutoffs.filter(c => c.km < pf.km - 0.01).length;
+    const tgt = p.target || r.params.target.default;
+    const paceSec = Math.round(tgt * 60 / pf.km), paceStr = Math.floor(paceSec / 60) + ':' + p2(paceSec % 60);
+    const limMin = r.time.limit_min, limStr = (limMin % 60 ? hm(limMin) : (limMin / 60) + '小時');
+    const specHTML = `<div class="rspec">` +
+      `<div><div class="t">總爬升</div><div class="v">+${pf.gain}m</div><div class="s">${pf.terr}</div></div>` +
+      `<div><div class="t">目標時間</div><div class="v">${hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
+      `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${ncut ? ncut + ' 個中途關' : '無中途關門'}</div></div>` +
+      `</div>`;
     if (!past) {
       const isNext = !nextDone; nextDone = true;
       const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
-      const tgt = p.target || r.params.target.default, dly = p.delay != null ? p.delay : r.params.delay.default;
-      const mb = p.raceBpm ? '・節拍 ' + p.raceBpm : '';
-      return `<button class="rcard${isNext ? ' next' : ''}" data-go="${esc(r.id)}"><div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">下一場</span>' : ''}<span>${esc(when)}</span></div>` +
-        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門${mb}</div></div><div class="rcd">${cd}</div></div>${nx(r, g)}</button>`;
+      return `<button class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}">` +
+        `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
+        `<div class="rmid"><div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(pf.st.route)}</div></div><div class="rcd">${cd}</div></div>` +
+        pf.svg + specHTML + nx(r) + `</button>`;
     }
-    return `<div class="rcard"><div class="rtop"><span class="pill">${fin ? '已完賽' : '已結束'}</span><span>${esc(dateTxtTz(g, off, true))}</span></div>` +
-      `<div class="rmid"><div class="rname">${esc(r.name)}</div><div class="rres">${fin && fin.t != null ? hms(fin.t) : ''}</div></div>` +
-      nx(r, g) +
-      `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">明年再跑／模擬</button></div></div>`;
+    const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
+    return `<div class="rcard" style="--rc:${pf.st.col}" data-reg="${pf.region}" data-cat="${pf.distCat}">` +
+      `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
+      `<div class="rmid"><div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(pf.st.route)}</div></div>` +
+      `<div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div></div>` +
+      pf.svg + specHTML + nx(r) +
+      `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div>`;
   }).join('');
   $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
+  function applyFilter(f) {
+    $('raceFilters').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rf === f));
+    let shown = 0;
+    [...$('raceList').children].forEach(c => {
+      const match = f === 'all' || c.dataset.reg === f || c.dataset.cat === f;
+      c.hidden = !match;
+      if (match) shown++;
+    });
+    $('raceCountNote').textContent = '共 ' + shown + ' 場';
+  }
+  $('raceFilters').querySelectorAll('button').forEach(b => b.onclick = () => applyFilter(b.dataset.rf));
+  applyFilter('all');
 }
 
 function renderMetroPage() {

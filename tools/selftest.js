@@ -51,16 +51,26 @@ const { chromium } = require('playwright');
     }
     return o;
   });
-  // 首頁：每場賽事都要出現在清單，且有練習節拍器入口
+  // 首頁：日常訓練置頂、每場賽事都要出現在清單（含坡度縮圖與三格規格），且 300 px 不超框
   {
-    const { p, ctx, errs } = await open('home');
-    await p.waitForTimeout(300);
+    const { p, ctx, errs } = await open('home&selftest', 300);
+    await p.waitForTimeout(250);
+    (await overflow(p)).forEach(x => errs.push(x));
     const txt = await p.textContent('#raceList');
     for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
     if (!(await p.isVisible('#bGoMetro'))) errs.push('首頁沒有跑步節拍器入口');
-    if (errs.length) { fails++; console.log('❌ 首頁：' + errs.join('；')); } else console.log('✅ 首頁：' + races.length + ' 場賽事與跑步節拍器都在清單上');
-    await p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });
+    if (!(await p.isVisible('#bHomeMetroPlay'))) errs.push('首頁沒有直接打拍按鈕');
+    const metroOnTop = await p.evaluate(() => {
+      const m = document.getElementById('bGoMetro'), l = document.getElementById('raceList');
+      return m && l && m.getBoundingClientRect().top < l.getBoundingClientRect().top;
+    });
+    if (!metroOnTop) errs.push('日常訓練應置於賽事清單上方');
     await ctx.close();
+    const h = await open('home&selftest', 390);
+    await h.p.waitForTimeout(250);
+    await h.p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });
+    await h.ctx.close();
+    if (errs.length) { fails++; console.log('❌ 首頁：' + errs.join('；')); } else console.log('✅ 首頁：日常訓練置頂＋' + races.length + ' 場高鑑別度賽事卡片檢查通過');
   }
   // 練習模式：跑步節拍器（功能＋300 px 窄螢幕）
   {
