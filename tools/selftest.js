@@ -33,16 +33,6 @@ const { chromium } = require('playwright');
     await p.goto(page0 + '#' + hash);
     return { p, ctx, errs };
   };
-  // 首頁：每場賽事都要出現在清單
-  {
-    const { p, ctx, errs } = await open('home');
-    await p.waitForTimeout(300);
-    const txt = await p.textContent('#raceList');
-    for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
-    if (errs.length) { fails++; console.log('❌ 首頁：' + errs.join('；')); } else console.log('✅ 首頁：' + races.length + ' 場賽事都在清單上');
-    await p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });
-    await ctx.close();
-  }
   // 量「字超出框」：不換行的字比框寬、或整頁出現左右捲動
   const overflow = p => p.evaluate(() => {
     const o = [];
@@ -61,6 +51,36 @@ const { chromium } = require('playwright');
     }
     return o;
   });
+  // 首頁：每場賽事都要出現在清單，且有練習節拍器入口
+  {
+    const { p, ctx, errs } = await open('home');
+    await p.waitForTimeout(300);
+    const txt = await p.textContent('#raceList');
+    for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
+    if (!(await p.isVisible('#bGoMetro'))) errs.push('首頁沒有跑步節拍器入口');
+    if (errs.length) { fails++; console.log('❌ 首頁：' + errs.join('；')); } else console.log('✅ 首頁：' + races.length + ' 場賽事與跑步節拍器都在清單上');
+    await p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });
+    await ctx.close();
+  }
+  // 練習模式：跑步節拍器（功能＋300 px 窄螢幕）
+  {
+    const { p, ctx, errs } = await open('metro', 300);
+    await p.waitForTimeout(200);
+    (await overflow(p)).forEach(x => errs.push(x));
+    await p.click('[data-mstep="5"]');
+    if ((await p.textContent('#mBpmBig')) !== '185') errs.push('節拍器 +5 後應為 185 BPM');
+    await p.click('#bMetroGo');
+    await p.waitForTimeout(450);
+    const steps = parseInt(await p.textContent('#mSteps'), 10);
+    if (!(steps >= 1)) errs.push('節拍器啟動後步數沒有增加');
+    (await overflow(p)).forEach(x => errs.push(x));
+    await p.click('#bMetroGo');
+    await p.click('#bMetroReset');
+    if ((await p.textContent('#mSteps')) !== '0 步') errs.push('節拍器歸零後應為 0 步');
+    if (errs.length) { fails++; console.log('❌ 跑步節拍器：' + errs.join('；')); } else console.log('✅ 跑步節拍器：功能與 300 px 窄螢幕檢查通過');
+    await p.screenshot({ path: path.join(out, 'metro.png'), fullPage: true });
+    await ctx.close();
+  }
   for (const r of races) {
     // 窄螢幕：示範跑全程，每 0.2 秒量一次，最後每個分頁再量一次
     {

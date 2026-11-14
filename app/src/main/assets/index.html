@@ -127,7 +127,7 @@ input[type=text]{font:inherit;color:var(--fg);background:var(--btn);border:1px s
 .chips button{min-height:38px;padding:6px 10px;font-size:15px}
 .note{font-size:15px;color:var(--sub)} .note b{color:var(--fg)}
 .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px}
-.kv select{min-height:42px;padding:6px 8px;font-size:16px}
+.kv select{min-height:42px;padding:6px 8px;font-size:16px;max-width:62%;min-width:0}
 table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
 td,th{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
 td:first-child,th:first-child{text-align:left}
@@ -200,6 +200,14 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 .tgt3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
 .tgt3>div{background:var(--btn);border-radius:10px;padding:8px 4px;min-width:0;text-align:center}
 .tgt3 .t{font-size:12px;color:var(--sub);font-weight:700} .tgt3 .v{font-size:clamp(15px,4.8vw,19px);letter-spacing:-.5px;white-space:nowrap;font-weight:800;font-variant-numeric:tabular-nums}
+/* ---------- 節拍器（練習模式＆比賽節拍） ---------- */
+.mbeats{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:8px;margin-top:10px}
+.mbeat{background:var(--btn);border:1.5px solid var(--line);border-radius:12px;padding:10px 4px;min-width:0;text-align:center;font-weight:800;font-size:16px;color:var(--sub);transition:transform .06s,background .06s}
+.mbeat.on{background:var(--aid);border-color:var(--aid);color:#04121f;transform:scale(1.03)}
+.mbeat.on.acc{background:var(--ok);border-color:var(--ok);color:#06251a}
+.mpulse{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--line);flex:none;transition:transform .06s,background .06s}
+.mpulse.on{background:var(--aid);transform:scale(1.3)}
+.mpulse.on.acc{background:var(--ok);transform:scale(1.4)}
 @media (prefers-reduced-motion:no-preference){#alert.show{animation:pop .25s ease-out}}
 @keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
 </style>
@@ -213,6 +221,10 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <div class="hsec">賽事</div>
   <div id="raceList" class="ctl"></div>
   <div class="hsec">練習</div>
+  <button class="rcard" id="bGoMetro">
+   <div class="rtop"><span class="pill ok">練習模式</span><span>步頻訓練・比賽可用</span></div>
+   <div class="rmid"><div><div class="rname">跑步節拍器</div><div class="rsub" id="homeMetroSub">180 BPM・每 2 拍強音・清脆木魚</div></div><div class="rcd"><b id="homeMetroBpm">180</b><span>BPM</span></div></div>
+  </button>
   <div class="grid2">
    <div class="pcard"><b style="font-size:18px">自由跑</b><span class="note">不用路線，報距離與配速</span><span class="pill">即將推出</span></div>
    <div class="pcard dashed"><b style="font-size:18px">匯入路線</b><span class="note">My Maps KML、GPX</span><span class="pill">即將推出</span></div>
@@ -221,6 +233,46 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
  </div>
 
  <div id="topbar" hidden><button class="back" id="bBack">‹ 賽事清單</button><span id="topName"></span></div>
+
+ <!-- 練習模式：可設定的跑步節拍器 -->
+ <div class="page" id="pgMetro" hidden>
+  <section class="card glance">
+   <div class="row">
+    <div><div class="lab">目前步頻</div><div class="km"><span id="mBpmBig">180</span><small>BPM</small></div></div>
+    <div><div class="lab" style="text-align:right">節奏區間</div><div class="dbig" id="mZone" style="font-size:clamp(18px,6.5vw,28px)">標準步頻</div><div class="dsub" id="mSub">每步 0.33 秒</div></div>
+   </div>
+   <div class="mbeats" id="mBeats"></div>
+   <div class="tgt3">
+    <div><div class="t">練習時間</div><div class="v" id="mTime">0:00:00</div></div>
+    <div><div class="t">累積步數</div><div class="v" id="mSteps">0 步</div></div>
+    <div><div class="t">目標倒數</div><div class="v" id="mLeft">不限時</div></div>
+   </div>
+  </section>
+  <section class="card ctl">
+   <div class="kv"><b>步頻設定</b><span class="note" id="mCadNote">建議 170–185</span></div>
+   <input type="range" id="mSlider" min="140" max="210" step="1" value="180" aria-label="設定步頻 BPM">
+   <div class="stepper">
+    <button class="small" data-mstep="-5">−5</button>
+    <button class="small" data-mstep="-1">−1</button>
+    <button class="small" data-mstep="1">+1</button>
+    <button class="small" data-mstep="5">+5</button>
+   </div>
+   <div class="chips" id="mChips"></div>
+   <button class="small wide" id="bMetroTap">👆 連點測步頻（跟著腳步點 4 下）</button>
+  </section>
+  <section class="card ctl">
+   <b>節拍與練習設定</b>
+   <div class="kv"><label for="mAcc">強拍模式</label><select id="mAcc"><option value="2">每 2 拍（左右腳）</option><option value="4">每 4 拍（1 強 3 弱）</option><option value="1">平拍（每步同音）</option></select></div>
+   <div class="kv"><label for="mSnd">節拍音色</label><select id="mSnd"><option value="wood">清脆木魚（推薦）</option><option value="beep">電子嗶聲</option><option value="soft">柔和滴答</option><option value="off">靜音（僅閃燈／震動）</option></select></div>
+   <div class="kv"><span>節拍震動</span><button class="small" id="bMetroVib">關</button></div>
+   <div class="kv"><label for="mDur">練習時間目標</label><select id="mDur"><option value="0">不限時</option><option value="5">5 分鐘</option><option value="10">10 分鐘</option><option value="15">15 分鐘</option><option value="20">20 分鐘</option><option value="30">30 分鐘</option><option value="45">45 分鐘</option><option value="60">60 分鐘</option></select></div>
+  </section>
+  <section class="ctl">
+   <button class="wide go" id="bMetroGo">▶ 開始節拍練習</button>
+   <button class="small wide" id="bMetroReset">歸零時間與步數</button>
+   <div class="note" style="text-align:center">這裡調好的音色、強拍與步頻，比賽時也會直接套用。</div>
+  </section>
+ </div>
 
  <!-- 賽事準備（MVP 畫面 2）：這一場的參數、關門提醒、開始定位、練習模擬 -->
  <div class="page" id="pgPrep" hidden>
@@ -235,6 +287,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <div class="kv"><b>這一場的參數</b><span class="note" id="isoNote"></span></div>
    <div class="kv"><label for="target">目標完賽時間</label><select id="target"></select></div>
    <div class="kv"><label for="delay">預估過起跑線延遲</label><select id="delay"></select></div>
+   <div class="kv"><label for="raceBpm">跑步節拍</label><select id="raceBpm"></select></div>
    <div class="note" id="delayNote"></div>
   </section>
   <div id="prepWarn"></div>
@@ -353,6 +406,20 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
     <canvas id="cvZoom"></canvas>
   </section>
 
+  <section class="card ctl" id="raceMetroCard">
+    <div class="kv">
+      <div style="min-width:0"><b>跑步節拍</b> <span class="note" id="rmInfo">180 BPM</span></div>
+      <div style="display:flex;align-items:center;gap:8px;flex:none"><span class="mpulse" id="rmPulse"></span><button class="small" id="bRmToggle">開啟</button></div>
+    </div>
+    <div class="stepper">
+      <button class="small" data-rmstep="-5">−5</button>
+      <button class="small" data-rmstep="-1">−1</button>
+      <button class="small" data-rmstep="1">+1</button>
+      <button class="small" data-rmstep="5">+5</button>
+    </div>
+    <div class="chips" id="rmChips"></div>
+  </section>
+
   <section class="card ctl">
     <div class="grid2" id="finRow" hidden><button id="bFinish" style="background:var(--fg);color:var(--bg);border:none;font-size:19px">🏁 我完賽了</button><button id="bStopRun">停止定位</button></div>
     <button class="small wide" id="bMore">全程剖面・分段紀錄・設定</button>
@@ -438,6 +505,9 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
         <div class="kv"><span>語音提醒（口袋裡也聽得到）</span><button class="small" id="bTts">開</button></div>
         <div class="kv"><span>每 1K 語音報告</span><button class="small" id="bKmv">開</button></div>
         <div class="kv"><span>停下 10 秒自動報告位置與計畫</span><button class="small" id="bStopv">開</button></div>
+        <div class="kv"><label for="sMsnd">節拍器音色</label><select id="sMsnd"><option value="wood">清脆木魚</option><option value="beep">電子嗶聲</option><option value="soft">柔和滴答</option><option value="off">靜音</option></select></div>
+        <div class="kv"><label for="sMacc">節拍器強拍</label><select id="sMacc"><option value="2">每 2 拍（左右腳）</option><option value="4">每 4 拍</option><option value="1">平拍</option></select></div>
+        <div class="kv"><span>節拍器震動</span><button class="small" id="bMvib">關</button></div>
         <div class="kv" id="rowKeep" hidden><span>看畫面時螢幕恆亮</span><button class="small" id="bKeep">關</button></div>
         <div class="grid2"><button class="small" id="bTestVib">測試震動</button><button class="small" id="bTestTts">測試語音</button></div>
         <div class="kv"><span>亮 / 暗（戶外太亮可切亮色）</span><button class="small" id="bTheme">切換</button></div>
@@ -483,20 +553,112 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');      // 賽事包文字只認 **粗體**，其他一律當純文字
 const Q = new URLSearchParams(location.hash.slice(1));
 const SELFTEST = Q.has('selftest'), SAID = [];
-/* 儲存：個人偏好全 App 共用；其他（目標、延遲、起跑時間、分段、完賽）每場賽事各存一格 */
-const SHARED = new Set(['name', 'vib', 'tts', 'kmv', 'stopv', 'keepOn', 'theme', 'win']);
+/* 儲存：個人偏好全 App 共用；其他（目標、延遲、起跑時間、分段、完賽、比賽步頻）每場賽事各存一格 */
+const SHARED = new Set(['name', 'vib', 'tts', 'kmv', 'stopv', 'keepOn', 'theme', 'win', 'mbpm', 'macc', 'msnd', 'mvib', 'mdur']);
 function lget(k) { try { return localStorage.getItem('rn_' + k); } catch (e) { return null; } }
 function lset(k, v) { try { if (v == null) localStorage.removeItem('rn_' + k); else localStorage.setItem('rn_' + k, v); } catch (e) { } }
+function gset(id, k, v) {
+  if (SELFTEST) return;
+  if (NATIVE) Android.setPref(id || '_', k, v == null ? 'null' : String(v));
+  else if (SHARED.has(k)) lset(k, v == null ? null : String(v));
+  else lset((id || '_') + '.' + k, v == null ? null : String(v));
+}
 function racePrefs(id) {
   if (NATIVE) { try { return JSON.parse(Android.getPrefs(id)); } catch (e) { return {}; } }
   const j = k => { try { return JSON.parse(lget(id + '.' + k)); } catch (e) { return null; } };
   const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
+  const sn = (k, d) => { const v = lget(k); return v == null ? d : Number(v); };
   const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
-  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'),
-    name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '' };
+  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0,
+    name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '',
+    mbpm: sn('mbpm', 180), macc: sn('macc', 2), msnd: lget('msnd') || 'wood', mvib: b('mvib', false), mdur: sn('mdur', 0) };
 }
 function activeRace() { try { return NATIVE ? Android.activeRace() : ''; } catch (e) { return ''; } }
-function goRace(id, page) { location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
+function goRace(id, page) { Metro.stop(); location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
+
+/* ---------- 共用節拍器引擎（練習頁＆比賽頁共用；APK 走原生 AudioTrack 取樣精準計時，網頁走 Web Audio） ---------- */
+const MSND_TXT = { wood: '清脆木魚', beep: '電子嗶聲', soft: '柔和滴答', off: '靜音' };
+const MACC_TXT = { 2: '每 2 拍強音', 4: '每 4 拍強音', 1: '平拍' };
+const Metro = {
+  on: false, bpm: 180, acc: 2, snd: 'wood', vib: false, dur: 0,
+  beat: 0, elapsedMs: 0, startedAt: 0, timer: null, actx: null, onBeat: null, onDone: null,
+  load(p) {
+    this.bpm = Math.max(140, Math.min(210, Number(p.mbpm) || 180));
+    this.acc = [1, 2, 4].includes(Number(p.macc)) ? Number(p.macc) : 2;
+    this.snd = MSND_TXT[p.msnd] ? p.msnd : 'wood';
+    this.vib = !!p.mvib;
+    this.dur = Number(p.mdur) || 0;
+  },
+  syncNative() {
+    if (NATIVE && window.Android && Android.setMetro && !SELFTEST) {
+      const rem = this.on && this.dur > 0 ? Math.max(1, Math.ceil((this.dur * 60000 - this.totalMs()) / 1000)) : 0;
+      try { Android.setMetro(this.on ? this.bpm : 0, this.acc, this.snd, this.vib, rem); } catch (e) { }
+    }
+  },
+  click(isAcc) {
+    if (SELFTEST) return;
+    if (NATIVE && window.Android && Android.setMetro) return;
+    if (this.vib && navigator.vibrate) { try { navigator.vibrate(isAcc ? 25 : 15); } catch (e) { } }
+    if (this.snd === 'off') return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!this.actx) this.actx = new Ctx();
+      if (this.actx.state === 'suspended') this.actx.resume();
+      const t = this.actx.currentTime;
+      const osc = this.actx.createOscillator(), g = this.actx.createGain();
+      const freq = this.snd === 'beep' ? (isAcc ? 1320 : 880) : this.snd === 'soft' ? (isAcc ? 720 : 540) : (isAcc ? 1150 : 860);
+      osc.type = this.snd === 'wood' ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      if (this.snd === 'wood') osc.frequency.exponentialRampToValueAtTime(freq * 0.55, t + 0.022);
+      const peak = isAcc ? 0.45 : 0.28, dur = this.snd === 'soft' ? 0.018 : 0.025;
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(peak, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.connect(g); g.connect(this.actx.destination);
+      osc.start(t); osc.stop(t + dur + 0.005);
+    } catch (e) { }
+  },
+  step() {
+    if (!this.on) return;
+    const isAcc = this.acc > 1 && (this.beat % this.acc === 0);
+    this.click(isAcc);
+    const b = this.beat++;
+    if (this.onBeat) this.onBeat(b, isAcc);
+    if (this.dur > 0 && this.totalMs() >= this.dur * 60000) {
+      this.stop();
+      if (this.onDone) this.onDone();
+    }
+  },
+  resched() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    if (!this.on) return;
+    const iv = Math.round(60000 / Math.max(120, Math.min(240, this.bpm)));
+    this.timer = setInterval(() => this.step(), iv);
+  },
+  start(bpm) {
+    if (bpm) this.bpm = Math.max(140, Math.min(210, Number(bpm)));
+    if (!this.on) { this.on = true; this.startedAt = Date.now(); }
+    this.syncNative();
+    this.step();
+    this.resched();
+  },
+  stop() {
+    if (this.on) { this.elapsedMs += Date.now() - this.startedAt; this.on = false; }
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    this.syncNative();
+  },
+  reset() {
+    this.stop();
+    this.beat = 0; this.elapsedMs = 0; this.startedAt = 0;
+  },
+  setBpm(b) {
+    this.bpm = Math.max(140, Math.min(210, Math.round(Number(b) || 180)));
+    if (this.on) { this.syncNative(); this.resched(); }
+  },
+  totalMs() { return this.elapsedMs + (this.on ? Date.now() - this.startedAt : 0); },
+  zone(b) { return b < 165 ? '輕鬆慢跑' : b < 175 ? '穩定長跑' : b <= 185 ? '標準步頻' : '高頻推進'; }
+};
 /* 時區：用鳴槍時間字串裡的 +09:00 / +08:00 */
 function tzOffMs(r) { const m = /([+-])(\d\d):?(\d\d)$/.exec(r.time.gun); return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) * 60000 : 0; }
 const WD = '日一二三四五六';
@@ -537,19 +699,25 @@ function schedHTML(r) {
 
 window.R = null;
 (function boot() {
+  if (Q.has('metro')) { renderMetroPage(); return; }
   let id = Q.get('race');
   if (!id && !Q.has('home')) id = activeRace();
   window.R = (window.RACES || []).find(r => r.id === id) || null;
   if (!window.R) renderHome();
 })();
 
-/* Android 返回鍵：賽事頁 → 回清單 */
-window.onBack = () => { if (window.R) { goRace(null); return true; } return false; };
+/* Android 返回鍵：賽事頁／節拍器 → 回清單 */
+window.onBack = () => { if (window.R || Q.has('metro')) { goRace(null); return true; } return false; };
 
 function renderHome() {
   const P0 = racePrefs((window.RACES[0] || {}).id || '_');
   if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
+  Metro.load(P0);
+  if (!activeRace()) Metro.syncNative();
   $('pgHome').hidden = false;
+  $('homeMetroBpm').textContent = Metro.bpm;
+  $('homeMetroSub').textContent = Metro.bpm + ' BPM・' + MACC_TXT[Metro.acc] + '・' + MSND_TXT[Metro.snd];
+  $('bGoMetro').onclick = () => { location.hash = 'metro'; location.reload(); };
   const now = Date.now(), act = activeRace(), dn = new Date();
   $('homeDate').textContent = (dn.getMonth() + 1) + '/' + dn.getDate() + '（' + WD[dn.getDay()] + '）';
   let nextDone = false;
@@ -567,8 +735,9 @@ function renderHome() {
       const isNext = !nextDone; nextDone = true;
       const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
       const tgt = p.target || r.params.target.default, dly = p.delay != null ? p.delay : r.params.delay.default;
+      const mb = p.raceBpm ? '・節拍 ' + p.raceBpm : '';
       return `<button class="rcard${isNext ? ' next' : ''}" data-go="${esc(r.id)}"><div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">下一場</span>' : ''}<span>${esc(when)}</span></div>` +
-        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門</div></div><div class="rcd">${cd}</div></div>${nx(r, g)}</button>`;
+        `<div class="rmid"><div><div class="rname">${esc(r.name)}</div><div class="rsub">目標 ${hm(tgt)}・起跑延遲 ${dly} 分・${ncut} 個關門${mb}</div></div><div class="rcd">${cd}</div></div>${nx(r, g)}</button>`;
     }
     return `<div class="rcard"><div class="rtop"><span class="pill">${fin ? '已完賽' : '已結束'}</span><span>${esc(dateTxtTz(g, off, true))}</span></div>` +
       `<div class="rmid"><div class="rname">${esc(r.name)}</div><div class="rres">${fin && fin.t != null ? hms(fin.t) : ''}</div></div>` +
@@ -576,6 +745,83 @@ function renderHome() {
       `<div class="grid2"><button class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button class="small" data-go="${esc(r.id)}">明年再跑／模擬</button></div></div>`;
   }).join('');
   $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
+}
+
+function renderMetroPage() {
+  const P0 = racePrefs((window.RACES[0] || {}).id || '_');
+  if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
+  Metro.load(P0); Metro.syncNative();
+  document.title = '跑步節拍器｜Run Navigator';
+  $('topbar').hidden = false; $('topName').textContent = '跑步節拍器';
+  $('bBack').onclick = () => goRace(null);
+  $('pgMetro').hidden = false;
+  const PRESETS = [160, 165, 170, 175, 180, 185, 190, 195];
+  $('mChips').innerHTML = PRESETS.map(b => `<button data-mbpm="${b}">${b}</button>`).join('');
+  function buildPads() {
+    const labels = Metro.acc === 4 ? ['1 強', '2', '3', '4'] : Metro.acc === 2 ? ['左腳 1', '右腳 2'] : ['左步', '右步'];
+    $('mBeats').innerHTML = labels.map((l, i) => `<div class="mbeat" data-bi="${i}">${l}</div>`).join('');
+  }
+  function syncUI() {
+    $('mBpmBig').textContent = Metro.bpm;
+    $('mZone').textContent = Metro.zone(Metro.bpm);
+    $('mSub').textContent = '每步 ' + (60 / Metro.bpm).toFixed(2) + ' 秒';
+    $('mSlider').value = Metro.bpm;
+    $('mChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', Number(b.dataset.mbpm) === Metro.bpm));
+    $('mAcc').value = String(Metro.acc);
+    $('mSnd').value = Metro.snd;
+    $('mDur').value = String(Metro.dur);
+    $('bMetroVib').textContent = Metro.vib ? '開' : '關';
+    $('bMetroVib').classList.toggle('on', Metro.vib);
+    $('bMetroGo').textContent = Metro.on ? '⏸ 暫停節拍' : (Metro.elapsedMs > 0 ? '▶ 繼續節拍練習' : '▶ 開始節拍練習');
+  }
+  function syncTime() {
+    const sec = Math.floor(Metro.totalMs() / 1000);
+    $('mTime').textContent = hms(sec);
+    $('mSteps').textContent = Metro.beat + ' 步';
+    $('mLeft').textContent = Metro.dur > 0 ? hms(Math.max(0, Metro.dur * 60 - sec)) : '不限時';
+  }
+  function setBpm(v) {
+    Metro.setBpm(v);
+    gset('_', 'mbpm', Metro.bpm);
+    syncUI();
+  }
+  buildPads(); syncUI(); syncTime();
+  Metro.onBeat = (b, isAcc) => {
+    const pads = $('mBeats').children, n = pads.length, idx = b % n;
+    for (let i = 0; i < n; i++) {
+      pads[i].classList.toggle('on', i === idx);
+      pads[i].classList.toggle('acc', i === idx && isAcc);
+    }
+    syncTime();
+  };
+  Metro.onDone = () => {
+    syncUI(); syncTime();
+    if (NATIVE && window.Android && Android.testVibrate) Android.testVibrate();
+    else if (navigator.vibrate) { try { navigator.vibrate([300, 120, 300]); } catch (e) { } }
+  };
+  $('mSlider').oninput = e => setBpm(e.target.value);
+  document.querySelectorAll('[data-mstep]').forEach(b => b.onclick = () => setBpm(Metro.bpm + Number(b.dataset.mstep)));
+  $('mChips').querySelectorAll('button').forEach(b => b.onclick = () => setBpm(b.dataset.mbpm));
+  let taps = [], tapTimer = null;
+  $('bMetroTap').onclick = () => {
+    const now = Date.now();
+    taps = taps.filter(t => now - t < 3000);
+    taps.push(now);
+    if (taps.length >= 4) {
+      const dt = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
+      setBpm(Math.round(60000 / dt));
+      $('bMetroTap').textContent = '👆 測得 ' + Metro.bpm + ' BPM（可繼續點）';
+    } else $('bMetroTap').textContent = '👆 再點 ' + (4 - taps.length) + ' 下…';
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { $('bMetroTap').textContent = '👆 連點測步頻（跟著腳步點 4 下）'; }, 2500);
+  };
+  $('mAcc').onchange = e => { Metro.acc = Number(e.target.value); gset('_', 'macc', Metro.acc); buildPads(); Metro.syncNative(); syncUI(); };
+  $('mSnd').onchange = e => { Metro.snd = e.target.value; gset('_', 'msnd', Metro.snd); Metro.syncNative(); syncUI(); };
+  $('bMetroVib').onclick = () => { Metro.vib = !Metro.vib; gset('_', 'mvib', Metro.vib ? '1' : '0'); Metro.syncNative(); syncUI(); };
+  $('mDur').onchange = e => { Metro.dur = Number(e.target.value); gset('_', 'mdur', Metro.dur); Metro.syncNative(); syncUI(); syncTime(); };
+  $('bMetroGo').onclick = () => { if (Metro.on) Metro.stop(); else Metro.start(); syncUI(); syncTime(); };
+  $('bMetroReset').onclick = () => { Metro.reset(); buildPads(); syncUI(); syncTime(); };
+  setInterval(() => { if (Metro.on) syncTime(); }, 250);
 }
 </script>
 <script>
@@ -704,8 +950,11 @@ const NP = racePrefs(RID);
 const S = {
   target: NP.target || R.params.target.default, delay: NP.delay != null ? NP.delay : R.params.delay.default,
   name: NP.name || '', vib: NP.vib !== false, tts: NP.tts !== false, kmv: NP.kmv !== false, stopv: NP.stopv !== false, keepOn: !!NP.keepOn,
-  theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {}
+  theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {},
+  mbpm: NP.mbpm || 180, macc: NP.macc || 2, msnd: NP.msnd || 'wood', mvib: !!NP.mvib, raceBpm: NP.raceBpm || 0
 };
+Metro.load(S);
+if (S.raceBpm > 0) Metro.bpm = S.raceBpm;
 let FIN = NP.finished || null;     // 完賽紀錄 {how: auto|manual, t: 淨秒數, c: 時刻, s: 里程, d: 離終點 m}
 if (S.theme) document.documentElement.setAttribute('data-theme', S.theme);
 function pset(k, v) {
@@ -779,8 +1028,8 @@ let nativePace = -1, NS = null;
 window.onNativeState = function (st) {
   if (!st) return;
   if (st.race && st.race !== RID) return;                 // 別場賽事的狀態，不關這一頁
-  if (st.finished && !FIN) { FIN = st.finished; mode = 'idle'; renderFinish(); showPage('pgFinish'); schedule(); return; }
-  if (st.running === false && mode === 'gps' && !st.err) { mode = 'idle'; gpsMsg = '定位已停止。'; schedule(); }
+  if (st.finished && !FIN) { FIN = st.finished; mode = 'idle'; Metro.stop(); syncRaceMetro(); renderFinish(); showPage('pgFinish'); schedule(); return; }
+  if (st.running === false && mode === 'gps' && !st.err) { mode = 'idle'; Metro.stop(); syncRaceMetro(); gpsMsg = '定位已停止。'; schedule(); }
   if (st.err === 'noperm') { gpsMsg = '沒有定位權限。請到系統設定允許「位置」→「一律允許」。'; mode = 'manual'; schedule(); return; }
   if (st.err === 'gpsoff') { gpsMsg = '手機的定位功能是關的，請打開。'; schedule(); return; }
   NS = st;
@@ -848,8 +1097,10 @@ function setMode(m) {
   if (m !== 'gps') stopGPS();
   if (m === 'gps' && prev === 'gps') return;
   mode = m; voiceReset();
-  if (m === 'gps') { gpsMsg = '正在搜尋 GPS…請站在空曠處。'; startGPS(); }
-  else if (m === 'demo') { demoT0 = Date.now(); hist = []; wake(); }
+  if (m === 'gps') { gpsMsg = '正在搜尋 GPS…請站在空曠處。'; startGPS(); if (S.raceBpm > 0 && !Metro.on && !SELFTEST) Metro.start(S.raceBpm); }
+  else if (m === 'demo') { demoT0 = Date.now(); hist = []; wake(); if (S.raceBpm > 0 && !Metro.on && !SELFTEST) Metro.start(S.raceBpm); }
+  else if (m === 'idle') { if (Metro.on) Metro.stop(); }
+  syncRaceMetro();
   startTick(); schedule();
 }
 
@@ -1286,12 +1537,62 @@ $('target').value = String(S.target); $('delay').value = String(S.delay);
 $('target').onchange = e => { S.target = Number(e.target.value); pset('target', S.target); replan(); };
 $('delay').onchange = e => { S.delay = Number(e.target.value); pset('delay', S.delay); replan(); };
 $('name').value = S.name; $('name').onchange = e => { S.name = e.target.value.trim(); pset('name', S.name); };
+/* 比賽節拍器（準備頁預先設定、跑步中隨時開關與微調步頻） */
+const RM_CHIPS = [165, 170, 175, 180, 185, 190];
+$('rmChips').innerHTML = RM_CHIPS.map(b => `<button data-rmbpm="${b}">${b}</button>`).join('');
+function fillRaceBpm() {
+  const opts = [0, 160, 165, 170, 172, 175, 178, 180, 182, 185, 188, 190, 195, 200];
+  for (const v of [S.raceBpm, Metro.bpm]) if (v > 0 && !opts.includes(v)) opts.push(v);
+  opts.sort((a, b) => a - b);
+  $('raceBpm').innerHTML = opts.map(v => `<option value="${v}">${v === 0 ? '關閉（跑中可開）' : v + ' BPM' + (v === 180 ? '（推薦）' : '')}</option>`).join('');
+  $('raceBpm').value = String(S.raceBpm || 0);
+}
+function syncRaceMetro() {
+  fillRaceBpm();
+  $('rmInfo').textContent = Metro.bpm + ' BPM・' + MSND_TXT[Metro.snd];
+  $('bRmToggle').textContent = Metro.on ? '關閉' : '開啟';
+  $('bRmToggle').classList.toggle('on', Metro.on);
+  if (!Metro.on) $('rmPulse').className = 'mpulse';
+  $('rmChips').querySelectorAll('button').forEach(b => b.classList.toggle('on', Number(b.dataset.rmbpm) === Metro.bpm));
+  $('sMsnd').value = Metro.snd;
+  $('sMacc').value = String(Metro.acc);
+  $('bMvib').textContent = Metro.vib ? '開' : '關';
+  $('bMvib').classList.toggle('on', Metro.vib);
+}
+function setRaceBpm(b, saveRace) {
+  Metro.setBpm(b);
+  S.mbpm = Metro.bpm; pset('mbpm', S.mbpm);
+  if (saveRace || S.raceBpm > 0 || Metro.on) { S.raceBpm = Metro.bpm; pset('raceBpm', S.raceBpm); }
+  syncRaceMetro();
+}
+Metro.onBeat = (b, isAcc) => {
+  const p = $('rmPulse');
+  if (p) { p.className = 'mpulse on' + (isAcc ? ' acc' : ''); setTimeout(() => { p.className = 'mpulse'; }, 110); }
+};
+$('raceBpm').onchange = e => {
+  const v = Number(e.target.value);
+  S.raceBpm = v; pset('raceBpm', v);
+  if (v > 0) { Metro.setBpm(v); S.mbpm = Metro.bpm; pset('mbpm', S.mbpm); if (mode === 'gps' || (mode === 'demo' && !SELFTEST)) Metro.start(v); }
+  else if (Metro.on) Metro.stop();
+  syncRaceMetro();
+};
+$('bRmToggle').onclick = () => {
+  if (Metro.on) { Metro.stop(); S.raceBpm = 0; pset('raceBpm', 0); }
+  else { Metro.start(Metro.bpm); S.raceBpm = Metro.bpm; pset('raceBpm', S.raceBpm); }
+  syncRaceMetro();
+};
+document.querySelectorAll('[data-rmstep]').forEach(b => b.onclick = () => setRaceBpm(Metro.bpm + Number(b.dataset.rmstep), false));
+$('rmChips').querySelectorAll('button').forEach(b => b.onclick = () => setRaceBpm(Number(b.dataset.rmbpm), false));
+$('sMsnd').onchange = e => { Metro.snd = S.msnd = e.target.value; pset('msnd', S.msnd); Metro.syncNative(); syncRaceMetro(); };
+$('sMacc').onchange = e => { Metro.acc = S.macc = Number(e.target.value); pset('macc', S.macc); Metro.syncNative(); syncRaceMetro(); };
+$('bMvib').onclick = () => { Metro.vib = S.mvib = !Metro.vib; pset('mvib', S.mvib ? '1' : '0'); Metro.syncNative(); syncRaceMetro(); };
+syncRaceMetro();
 function toggles() { for (const [id, k] of [['bVib', 'vib'], ['bTts', 'tts'], ['bKmv', 'kmv'], ['bStopv', 'stopv'], ['bKeep', 'keepOn']]) { $(id).textContent = S[k] ? '開' : '關'; $(id).classList.toggle('on', !!S[k]); } }
 for (const [id, k] of [['bVib', 'vib'], ['bTts', 'tts'], ['bKmv', 'kmv'], ['bStopv', 'stopv'], ['bKeep', 'keepOn']]) $(id).onclick = () => { S[k] = !S[k]; pset(k, S[k] ? '1' : '0'); toggles(); if (k === 'vib' && S.vib && !NATIVE) buzz([100]); };
 toggles();
 $('bTestVib').onclick = () => { if (NATIVE) Android.testVibrate(); else { try { navigator.vibrate([200, 100, 200]); } catch (e) { } } };
 $('bTestTts').onclick = () => { if (NATIVE) Android.testSpeak(); else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance('語音測試，18公里，比計畫快2分10秒'); u.lang = 'zh-TW'; if (zhVoice) u.voice = zhVoice; speechSynthesis.speak(u); } };
-if (NATIVE) { $('rowKeep').hidden = false; $('bGps').textContent = '開始定位'; if (Android.activeRace() === RID) { mode = 'gps'; gpsMsg = ''; } }
+if (NATIVE) { $('rowKeep').hidden = false; $('bGps').textContent = '開始定位'; if (Android.activeRace() === RID) { mode = 'gps'; gpsMsg = ''; if (S.raceBpm > 0 && !Metro.on) { Metro.start(S.raceBpm); syncRaceMetro(); } } }
 $('bTheme').onclick = () => {
   const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nx); pset('theme', nx);
@@ -1422,7 +1723,8 @@ function doFinish(how, el, sM, dFin) {
   buzz([500, 150, 500]);
   say('完賽！' + (FIN.t != null ? '淨時間' + sayHMS(FIN.t) + '。' : '') + '辛苦了。');
   if (!NATIVE) stopGPS();
-  mode = 'idle'; voiceReset();
+  if (Metro.on) Metro.stop();
+  mode = 'idle'; voiceReset(); syncRaceMetro();
   renderFinish(); showPage('pgFinish'); startTick(); schedule();
 }
 function sayHMS(sec) { sec = Math.round(sec); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + '小時' : '') + m + '分' + s + '秒'; }

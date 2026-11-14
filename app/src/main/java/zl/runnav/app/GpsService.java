@@ -141,6 +141,7 @@ public class GpsService extends Service implements LocationListener {
 
     @Override public void onDestroy() {
         running = false; h.removeCallbacks(tickR); h.removeCallbacks(stopR);
+        MainActivity.stopMetro();
         try { lm.removeUpdates(this); if (gnssCb != null) lm.unregisterGnssStatusCallback(gnssCb); } catch (Exception ignored) { }
         if (wl != null && wl.isHeld()) wl.release();
         if (tts != null) tts.shutdown();
@@ -183,6 +184,7 @@ public class GpsService extends Service implements LocationListener {
             rs.edit().putString("finished", f.toString()).putFloat("pos", (float) T.curS).putLong("posT", now).apply();
         } catch (JSONException ignored) { }
         finished = true;
+        MainActivity.stopMetro();
         buzz(new long[]{0, 500, 150, 500});
         speak("完賽！" + (el >= 0 ? "淨時間" + sayHMS(el * 60) + "。" : "") + "定位會自動停止，辛苦了。", true);
         try { lm.removeUpdates(this); } catch (Exception ignored) { }
