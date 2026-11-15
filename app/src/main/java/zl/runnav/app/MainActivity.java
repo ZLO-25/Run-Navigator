@@ -20,6 +20,8 @@ import android.provider.Settings;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -30,7 +32,8 @@ import org.json.JSONObject;
 public class MainActivity extends Activity {
     private WebView web;
     private SharedPreferences sp;
-    private static final int REQ_LOC = 1, REQ_NOTIF = 2;
+    private static final int REQ_LOC = 1, REQ_NOTIF = 2, REQ_FILE = 3;
+    private ValueCallback<Uri[]> fileCb;   // 訓練紀錄「匯入 CSV」：網頁的 <input type=file> 交給系統選檔
     private boolean pendingStart = false;
     private String pendingRace = "";
 
@@ -46,6 +49,19 @@ public class MainActivity extends Activity {
             @Override public boolean shouldOverrideUrlLoading(WebView v, String url) {
                 if (url.startsWith("file:")) return false;
                 try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ignored) { }
+                return true;
+            }
+        });
+        // 讓網頁的 <input type=file>（匯入 Garmin／Strava CSV）能打開系統選檔
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams fp) {
+                if (fileCb != null) fileCb.onReceiveValue(null);
+                fileCb = cb;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
+                i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"text/csv", "text/comma-separated-values", "text/plain", "application/csv", "application/vnd.ms-excel", "application/octet-stream"});
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                try { startActivityForResult(Intent.createChooser(i, "選擇 CSV 檔"), REQ_FILE); }
+                catch (Exception e) { fileCb = null; return false; }
                 return true;
             }
         });
@@ -81,6 +97,18 @@ public class MainActivity extends Activity {
         pendingStart = false;
         GpsService.start(this, pendingRace);
         askIgnoreBattery();
+    }
+    @Override protected void onActivityResult(int req, int res, Intent data) {
+        super.onActivityResult(req, res, data);
+        if (req != REQ_FILE || fileCb == null) return;
+        Uri[] r = null;
+        if (res == RESULT_OK && data != null) {
+            if (data.getClipData() != null) {
+                r = new Uri[data.getClipData().getItemCount()];
+                for (int k = 0; k < r.length; k++) r[k] = data.getClipData().getItemAt(k).getUri();
+            } else if (data.getData() != null) r = new Uri[]{data.getData()};
+        }
+        fileCb.onReceiveValue(r); fileCb = null;
     }
     @Override public void onRequestPermissionsResult(int req, String[] p, int[] r) {
         super.onRequestPermissionsResult(req, p, r);
@@ -248,6 +276,13 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void finish(String id, String json) {
             if (id.equals(activeRace())) GpsService.finishNow(MainActivity.this);
             else race(id).edit().putString("finished", json).apply();
+        }
+        /** 訓練紀錄（匯入的 Garmin／Strava 活動）與月跑量目標：跟賽事無關，存在獨立的 store，不會被任何賽事的清除動作影響 */
+        @JavascriptInterface public String getStore(String k) { return getSharedPreferences("store", MODE_PRIVATE).getString(k, null); }
+        @JavascriptInterface public void setStore(String k, String v) {
+            SharedPreferences.Editor e = getSharedPreferences("store", MODE_PRIVATE).edit();
+            if (v == null) e.remove(k); else e.putString(k, v);
+            e.apply();
         }
         @JavascriptInterface public void unfinish(String id) { race(id).edit().remove("finished").apply(); }
         @JavascriptInterface public void testVibrate() { try { android.os.Vibrator v = Build.VERSION.SDK_INT >= 31 ? ((android.os.VibratorManager) getSystemService(VIBRATOR_MANAGER_SERVICE)).getDefaultVibrator() : (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE); v.vibrate(android.os.VibrationEffect.createWaveform(new long[]{0, 200, 100, 200}, -1)); } catch (Exception ignored) { } }

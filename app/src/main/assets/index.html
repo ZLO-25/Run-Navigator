@@ -155,6 +155,31 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .hhead{display:flex;justify-content:space-between;align-items:center;padding-top:6px}
 .brand{font-size:14px;font-weight:800;letter-spacing:1px;color:var(--sub)}
 .htitle{margin:2px 0 2px;font-size:28px;font-weight:800}
+/* 訓練紀錄（首頁總覽、紀錄頁） */
+.tl-empty{display:flex;align-items:center;gap:10px}.tl-empty>div{flex:1;min-width:0}.tl-empty button{flex:none}
+.tl-mon{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.tl-big b{font-size:clamp(30px,10vw,40px);font-weight:800;color:var(--aid);font-variant-numeric:tabular-nums}.tl-big span{color:var(--sub);font-weight:700;font-size:16px}
+.tl-go{font-size:13px;color:var(--sub);text-align:right;font-weight:700}
+.tl-bar{height:10px;border-radius:99px;background:var(--btn);overflow:hidden;margin-top:6px}.tl-bar i{display:block;height:100%;background:var(--aid);border-radius:99px}
+.tl-s{font-size:12px;color:var(--sub);font-weight:700;white-space:nowrap}
+.tl-up{color:var(--ok)}.tl-down{color:var(--bad)}.tl-flat{color:var(--aid)}
+.tl-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-top:8px}
+.tl-wd{font-size:12px;color:var(--sub);text-align:center;font-weight:700}.tl-wd.we,.tl-day.we .tl-dn{color:var(--bad)}
+.tl-day{min-height:46px;border-radius:8px;background:var(--btn);padding:2px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.tl-day.today{outline:2px solid var(--aid)}
+.tl-dn{font-size:12px;font-weight:700}
+.tl-chip{font-size:11px;font-weight:800;border-radius:6px;padding:1px 3px;background:color-mix(in srgb,var(--kc) 25%,transparent);color:var(--fg);border:1.5px solid var(--kc);font-variant-numeric:tabular-nums;max-width:100%;overflow:hidden}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);margin-top:4px}
+.tl-leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--sub);font-weight:700;margin-top:8px;justify-content:center}
+.tl-leg i{display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--kc);margin-right:3px}
+.tl-nav{display:flex;align-items:center;justify-content:space-between;gap:6px}.tl-nav button{min-height:40px;min-width:44px;padding:4px 10px}
+.tl-tab{width:100%;border-collapse:collapse;font-size:14px}.tl-tab td,.tl-tab th{padding:7px 2px;border-bottom:1px solid var(--line);text-align:right}.tl-tab th{color:var(--sub);font-size:12px}
+.tl-tab td:first-child,.tl-tab th:first-child{text-align:left}.tl-tab td b{font-variant-numeric:tabular-nums}
+.tl-row{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.tl-row:last-child{border-bottom:none}
+.tl-k{flex:none;width:6px;align-self:stretch;border-radius:3px;background:var(--kc)}
+.tl-row .tl-main{flex:1;min-width:0}.tl-row .tl-ti{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-row .tl-km{flex:none;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.tl-howto li{margin:3px 0}
 .hsec{font-size:13px;font-weight:700;color:var(--sub);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 .mcard{background:var(--card);border:2px solid var(--ok);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .mcard .mhero{background:transparent;border:none;border-radius:0;padding:0;gap:6px}
@@ -250,6 +275,8 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
  <div class="page" id="pgHome" hidden>
   <div class="hhead"><span class="brand">RUN NAVIGATOR</span><span class="note" id="homeDate"></span></div>
   <h1 class="htitle">今天練跑或備賽？</h1>
+  <div class="hsec"><span>📊 訓練總覽</span><button class="linkish" id="bGoLog" style="min-height:32px;padding:2px 0;font-size:13px;color:var(--aid);font-weight:800">訓練紀錄 ›</button></div>
+  <section class="card" id="homeTL"></section>
   <div class="hsec"><span>🏃 日常訓練（最常用）</span><span>一鍵開跑</span></div>
   <section class="mcard">
    <button class="rcard mhero" id="bGoMetro" style="--rc:var(--ok)">
@@ -279,6 +306,41 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
  </div>
 
  <div id="topbar" hidden><button class="back" id="bBack">‹ 賽事清單</button><span id="topName"></span></div>
+
+ <!-- 訓練紀錄：匯入 Garmin／Strava CSV、月曆、近 28 天趨勢、紀錄列表 -->
+ <div class="page" id="pgLog" hidden>
+  <section class="card" id="logTop"></section>
+  <section class="card">
+   <div class="tl-nav"><button class="small" id="bCalPrev" aria-label="上個月">‹</button><b id="calTitle"></b><button class="small" id="bCalNext" aria-label="下個月">›</button></div>
+   <div id="calBody"></div>
+   <div class="tl-leg" id="calLeg"></div>
+  </section>
+  <section class="card" id="logTrend"></section>
+  <section class="card">
+   <div class="kv"><b>紀錄</b><span class="note" id="logCount"></span></div>
+   <div class="chips" id="logFilters" style="margin-top:8px">
+    <button class="on" data-lf="all">全部</button><button data-lf="run">跑步</button><button data-lf="race">比賽</button><button data-lf="cross">交叉訓練</button>
+   </div>
+   <div id="logList"></div>
+   <button class="small wide" id="bLogMore" hidden>顯示更多</button>
+  </section>
+  <section class="card ctl">
+   <b>匯入紀錄</b>
+   <button class="wide go" id="bLogImport" style="min-height:52px;font-size:18px">📥 選擇 CSV 檔（Garmin／Strava）</button>
+   <input type="file" id="logFile" accept=".csv,text/csv,text/comma-separated-values,text/plain" multiple hidden>
+   <div class="note" id="logMsg" hidden></div>
+   <details class="tl-howto"><summary class="note"><b>怎麼匯出 CSV？</b></summary>
+    <ul class="note" style="padding-left:20px;margin:6px 0">
+     <li><b>Garmin</b>：電腦打開 Garmin Connect 網頁 →「活動」→「所有活動」，往下捲到想要的日期（只會匯出已載入的列）→ 右上「匯出 CSV」。</li>
+     <li><b>Strava</b>：網頁「設定」→「我的帳號」→「下載或刪除帳號」→「申請封存檔」，收到 email 解壓縮後，選裡面的 <b>activities.csv</b>。</li>
+     <li>同一筆活動重複匯入不會變兩筆，可以每週匯一次新的。</li>
+     <li>種類自動判斷：標題有「比賽、馬拉松」＝比賽；「間歇、節奏、tempo、3x1000」＝品質課；15 km 以上＝長跑；其他＝輕鬆跑。</li>
+    </ul>
+   </details>
+   <div class="kv"><label for="logGoal">每月跑量目標</label><select id="logGoal"></select></div>
+   <button class="small wide linkish" id="bLogClear">清除全部訓練紀錄</button>
+  </section>
+ </div>
 
  <!-- 練習模式：可設定的跑步節拍器 -->
  <div class="page" id="pgMetro" hidden>
@@ -586,6 +648,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 <nav class="tabs" hidden><button id="tPrep" class="on">準備</button><button id="tRace">賽道</button><button id="tPlan">計畫</button><button id="tMap">地圖</button></nav>
 
 <script src="races.js"></script>
+<script src="training.js"></script>
 <script>
 "use strict";
 /* ================= 開機：先出現賽事清單，選了哪一場才載入那一場 =================
@@ -836,6 +899,7 @@ function raceProfile(r) {
 window.R = null;
 (function boot() {
   if (Q.has('metro')) { renderMetroPage(); return; }
+  if (Q.has('log')) { renderLogPage(); return; }
   let id = Q.get('race');
   if (!id && !Q.has('home')) id = activeRace();
   window.R = (window.RACES || []).find(r => r.id === id) || null;
@@ -843,7 +907,7 @@ window.R = null;
 })();
 
 /* Android 返回鍵：賽事頁／節拍器 → 回清單 */
-window.onBack = () => { if (window.R || Q.has('metro')) { goRace(null); return true; } return false; };
+window.onBack = () => { if (window.R || Q.has('metro') || Q.has('log')) { goRace(null); return true; } return false; };
 
 function renderHome() {
   const P0 = racePrefs((window.RACES[0] || {}).id || '_');
@@ -854,6 +918,11 @@ function renderHome() {
   $('homeMetroIcon').innerHTML = ITEM_ICONS.metro;
   $('icoFreeRun').innerHTML = ITEM_ICONS.freerun;
   $('icoImport').innerHTML = ITEM_ICONS.import;
+  $('homeTL').innerHTML = TL.homeCard(todayStr());
+  const goLog = () => { Metro.stop(); location.hash = 'log'; location.reload(); };
+  $('bGoLog').onclick = goLog;
+  if ($('bHomeLog')) $('bHomeLog').onclick = goLog;
+  $('homeTL').onclick = e => { if (!e.target.closest('button')) goLog(); };
   const HM_CHIPS = [170, 175, 180, 185, 190];
   $('homeMetroChips').innerHTML = HM_CHIPS.map(b => `<button data-hmbpm="${b}">${b}</button>`).join('');
   function syncHomeMetro() {
@@ -967,6 +1036,91 @@ function renderHome() {
   drawRaceList();
   $('raceFilters').querySelectorAll('button').forEach(b => b.onclick = () => applyFilter(b.dataset.rf));
   applyFilter('all');
+}
+
+/* ---------- 訓練紀錄頁（#log） ---------- */
+function renderLogPage() {
+  const P0 = racePrefs((window.RACES[0] || {}).id || '_');
+  if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
+  document.title = '訓練紀錄｜Run Navigator';
+  $('topbar').hidden = false; $('topName').textContent = '訓練紀錄';
+  $('bBack').onclick = () => goRace(null);
+  $('pgLog').hidden = false;
+  const today = todayStr();
+  let cy = Number(today.slice(0, 4)), cm = Number(today.slice(5, 7)), filt = 'all', shown = 15, clearArm = false;
+  const GOALS = [60, 80, 100, 120, 150, 180, 200, 250, 300];
+  const g0 = TL.goal();
+  $('logGoal').innerHTML = (GOALS.includes(g0) ? GOALS : [...GOALS, g0].sort((a, b) => a - b)).map(v => `<option value="${v}"${v === g0 ? ' selected' : ''}>${v} km</option>`).join('');
+  $('calLeg').innerHTML = ['easy', 'quality', 'long', 'race', 'cross'].map(k => `<span style="--kc:${TL.KIND[k].col}"><i></i>${TL.KIND[k].name}</span>`).join('');
+  function drawTop(list) {
+    if (!list.length) { $('logTop').innerHTML = '<b>還沒有紀錄</b><div class="note" style="margin-top:4px">按最下面的「選擇 CSV 檔」匯入 Garmin 或 Strava 的活動，月曆和趨勢就會出現。</div>'; return; }
+    $('logTop').innerHTML = TL.homeCard(today);
+  }
+  function drawCal(list) {
+    $('calTitle').textContent = cy + ' 年 ' + cm + ' 月';
+    const c = TL.calendar(list, cy, cm, today);
+    $('calBody').innerHTML = c.html + `<div style="text-align:center;margin-top:8px;font-weight:800;color:var(--aid)">🏃 ${TL.f1(c.km)} km</div>`;
+    $('bCalNext').disabled = cy * 12 + cm >= Number(today.slice(0, 4)) * 12 + Number(today.slice(5, 7));
+  }
+  function drawTrend(list) {
+    if (!list.length) { $('logTrend').hidden = true; return; }
+    $('logTrend').hidden = false;
+    const w = TL.summary(list, today).w, a = w.now, b = w.prev;
+    const row = (name, pv, nv, unit, cmp) => `<tr><td>${name}</td><td>${pv}${unit}</td><td><b>${nv}</b>${unit}</td><td>${cmp}</td></tr>`;
+    $('logTrend').innerHTML = `<div class="kv"><b>近 28 天 vs 前 28 天</b></div>` +
+      `<table class="tl-tab"><thead><tr><th>項目</th><th>前 28 天</th><th>近 28 天</th><th>變化</th></tr></thead><tbody>` +
+      row('跑量', TL.f1(b.km), TL.f1(a.km), '', TL.chg(a.km, b.km)) +
+      row('總訓練時間', TL.f1(b.hours), TL.f1(a.hours), 'h', TL.chg(a.hours, b.hours)) +
+      row('最長跑（非比賽）', TL.f1(b.longest), TL.f1(a.longest), '', TL.chg(a.longest, b.longest)) +
+      row('跑步天數', b.days, a.days, '', TL.chg(a.days, b.days)) +
+      row('平均配速', TL.paceTxt(b.pace), TL.paceTxt(a.pace), '', a.pace && b.pace ? TL.chg(a.pace, b.pace, true) : '—') +
+      `</tbody></table><div class="note" style="margin-top:6px">跑量、最長跑單位 km；配速 分:秒/km。近 28 天有比賽的話，賽前減量、賽後恢復會讓跑量看起來下降。</div>`;
+  }
+  function drawList(list) {
+    const L = list.filter(a => filt === 'all' || (filt === 'run' ? a.sport === 'run' : filt === 'race' ? a.kind === 'race' : a.sport !== 'run'));
+    $('logCount').textContent = '共 ' + L.length + ' 筆';
+    $('logList').innerHTML = L.length ? L.slice(0, shown).map(a => {
+      const d = new Date(a.t + 'T12:00:00'), k = TL.KIND[a.kind];
+      const pace = a.sport === 'run' && a.km > 0 && a.sec ? TL.paceTxt(a.sec / a.km) + '/km' : '';
+      const meta = [Number(a.t.slice(5, 7)) + '/' + Number(a.t.slice(8)) + '（' + WD[d.getDay()] + '）', a.sport === 'run' ? k.name + (a.tm ? '・跑步機' : '') : TL.SPORT[a.sport], a.sec ? TL.durTxt(a.sec) : '', pace, a.hr ? '♥' + Math.round(a.hr) : ''].filter(Boolean).join('・');
+      return `<div class="tl-row" style="--kc:${k.col}"><span class="tl-k"></span><div class="tl-main"><div class="tl-ti">${esc(a.title || TL.SPORT[a.sport])}</div><div class="note" style="font-size:13px">${esc(meta)}</div></div><div class="tl-km">${TL.f1(a.km)}<span class="note" style="font-size:12px"> km</span></div></div>`;
+    }).join('') : '<div class="note" style="padding:10px 0">這個分類還沒有紀錄。</div>';
+    $('bLogMore').hidden = L.length <= shown;
+  }
+  function drawAll() { const list = TL.load(); drawTop(list); drawCal(list); drawTrend(list); drawList(list); }
+  $('bCalPrev').onclick = () => { if (--cm < 1) { cm = 12; cy--; } drawCal(TL.load()); };
+  $('bCalNext').onclick = () => { if (++cm > 12) { cm = 1; cy++; } drawCal(TL.load()); };
+  $('logFilters').querySelectorAll('button').forEach(b => b.onclick = () => {
+    filt = b.dataset.lf; shown = 15;
+    $('logFilters').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    drawList(TL.load());
+  });
+  $('bLogMore').onclick = () => { shown += 30; drawList(TL.load()); };
+  $('logGoal').onchange = () => { TL.setGoal(Number($('logGoal').value)); drawAll(); };
+  $('bLogImport').onclick = () => $('logFile').click();
+  $('logFile').onchange = async () => {
+    const files = [...$('logFile').files]; if (!files.length) return;
+    const msgs = []; let added = 0, dup = 0;
+    for (const f of files) {
+      let text = '';
+      try { text = await f.text(); } catch (e) { msgs.push(f.name + '：讀不到檔案'); continue; }
+      const r = TL.parse(text);
+      if (r.err) { msgs.push(f.name + '：' + r.err); continue; }
+      const m = TL.merge(r.items); added += m.added; dup += m.dup;
+      msgs.push(`${f.name}（${r.src}）：讀到 ${r.items.length} 筆` + (r.skipped ? `，略過 ${r.skipped} 列沒有日期或距離` : ''));
+    }
+    msgs.unshift(`<b>新增 ${added} 筆</b>` + (dup ? `，${dup} 筆已經有了（沒重複加）` : ''));
+    $('logMsg').innerHTML = msgs.map(esc).join('<br>').replace(/&lt;(\/?)b&gt;/g, '<$1b>');
+    $('logMsg').hidden = false;
+    $('logFile').value = '';
+    const list = TL.load(); if (list.length) { cy = Number(list[0].t.slice(0, 4)); cm = Number(list[0].t.slice(5, 7)); }
+    drawAll();
+  };
+  $('bLogClear').onclick = () => {
+    if (!clearArm) { clearArm = true; $('bLogClear').textContent = '確定要清除？再按一次（無法復原）'; $('bLogClear').style.color = 'var(--bad)'; setTimeout(() => { clearArm = false; $('bLogClear').textContent = '清除全部訓練紀錄'; $('bLogClear').style.color = ''; }, 4000); return; }
+    TL.save([]); clearArm = false; $('bLogClear').textContent = '已清除'; $('logMsg').hidden = true; drawAll();
+  };
+  drawAll();
 }
 
 function renderMetroPage() {
