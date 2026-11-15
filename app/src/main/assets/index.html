@@ -620,7 +620,7 @@ function racePrefs(id) {
   const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
   const sn = (k, d) => { const v = lget(k); return v == null ? d : Number(v); };
   const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
-  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0,
+  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '',
     name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '',
     mbpm: sn('mbpm', 180), macc: sn('macc', 2), msnd: lget('msnd') || 'wood', mvib: b('mvib', false), mdur: sn('mdur', 0) };
 }
@@ -761,18 +761,18 @@ const ITEM_ICONS = {
 };
 const RACE_CATS = {
   'sunmoonlake-29k-2026': [
-    { id: '29k', label: '29K 環湖', full: '29K 超半馬環湖組', km: 29, limit_min: 270, def_target: 230, cat: 'short', route: true, gun_txt: '06:00', note: '環湖一圈（向山・文武廟・玄奘寺・頭社三坡）' },
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 390, def_target: 330, cat: '42k', route: false, gun_txt: '06:00', note: '環湖一圈＋水社／九龍口折返（導航路線與水站以 29K 環湖為主）' },
-    { id: '6k', label: '6K 健走', full: '6K 活力健走組', km: 6, limit_min: 150, def_target: 60, cat: 'short', route: false, gun_txt: '06:00', note: '向山周邊體驗組，限時 2 小時 30 分（導航路線以 29K 環湖為主）' }
+    { id: '29k', label: '29K 環湖', full: '29K 超半馬環湖組', km: 28.8, limit_min: 270, def_target: 255, cat: 'short', route: true, gun_txt: '06:35', note: '環湖一圈（向山・文武廟・玄奘寺・頭社三坡）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 390, def_target: 330, cat: '42k', route: false, gun_txt: '06:35', note: '環湖一圈＋水社／九龍口折返（導航路線與水站以 29K 環湖為主）' },
+    { id: '6k', label: '6K 健走', full: '6K 活力健走組', km: 6, limit_min: 150, def_target: 60, cat: 'short', route: false, gun_txt: '06:35', note: '向山周邊體驗組，限時 2 小時 30 分（導航路線以 29K 環湖為主）' }
   ],
   'yangmingshan-21k-2026': [
-    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 185, cat: 'short', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
+    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
     { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
   ],
   'yangmingshan-42k-2026': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
-    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 185, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
+    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
     { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
   ],
   'kyoto-2027': [
@@ -782,10 +782,10 @@ const RACE_CATS = {
     { id: 'wheel', label: '輪椅 6.1K', full: '輪椅競技組（6.1K）', km: 6.1, limit_min: 60, def_target: 25, cat: 'short', route: false, gun_txt: '08:55', note: '西京極出發，08:55 鳴槍，限時 60 分鐘' }
   ],
   'tokyo-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 420, def_target: 270, cat: '42k', route: true, gun_txt: '09:10', note: '含一般／輪椅／雙人組；2027 第20屆起原 10.7K 組已併入 42.195K' }
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 420, def_target: 330, cat: '42k', route: true, gun_txt: '09:10', note: '含一般／輪椅／雙人組；2027 第20屆起原 10.7K 組已併入 42.195K' }
   ],
   'nyc-marathon-2027': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 510, def_target: 300, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（26.2 mi，史坦頓島 → 中央公園）' },
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 770, def_target: 330, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（26.2 mi，史坦頓島 → 中央公園）' },
     { id: '5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六）', km: 5, limit_min: 90, def_target: 30, cat: 'short', route: false, gun_txt: '08:30', note: '週六 UN 總部 → 中央公園暖身賽（主賽日賽道以 42.2K 為主）' }
   ]
 };
@@ -1342,7 +1342,8 @@ function say(text) {
 if (navigator.getBattery) navigator.getBattery().then(b => { const u = () => { batLevel = b.level; schedule(); }; u(); b.addEventListener('levelchange', u); }).catch(() => { });
 
 /* 語音內容（與 APK 背景服務同一套說法） */
-function vsDiff(el, km) { const d = planMin(km) * 60 - el; return (d >= 0 ? '比計畫快' : '比計畫慢') + sayMS(d); }
+function vsSec(d) { return Math.abs(d) < 5 ? '跟計畫一樣' : '比計畫' + (d >= 0 ? '快' : '慢') + sayMS(d); }
+function vsDiff(el, km) { return vsSec(planMin(km) * 60 - el); }
 function vsCut(km, gm) {
   const nc = CUT.find(c => c.km > km + 0.02); if (!nc) return '';
   const left = nc.min - gm; return left > 0 ? '下一個關門' + nc.name + '，還有' + Math.floor(left) + '分鐘' : '';
@@ -1388,7 +1389,7 @@ function checkSplits(sM) {
       if (mode !== 'demo') pset('splits', JSON.stringify(S.splits));
       buzz([80]); renderSplits(); showArrive(l, S.splits[l.n]);
       const d = S.splits[l.n].plan - S.splits[l.n].t;
-      say(l.name + '，比計畫' + (d >= 0 ? '快' : '慢') + sayMS(d) + '。');
+      say(l.name + '，' + vsSec(d) + '。');
     }
   }
   lastSplitS = sM;
@@ -2038,7 +2039,10 @@ function selfTest() {
     for (const a of AID) if (!SAID.some(t => t.startsWith('前方水站' + a.n + '號') || t.startsWith(a.n + '號水站，站內走路吃'))) errs.push('水站 ' + a.n + ' 沒有提醒');
     if (Math.abs(PLAN_TOTAL - S.target) > 3) errs.push('計畫總時間 ' + fmtHM(PLAN_TOTAL) + ' 跟目標 ' + fmtHM(S.target) + ' 差太多');
     for (let i = 1; i < N; i++) if (!(PC[i] >= PC[i - 1])) { errs.push('配速計畫不是遞增（第 ' + i + ' 點）'); break; }
-    for (const t of SAID) if (/NaN|undefined|null/.test(t)) errs.push('語音內容有錯：' + t);
+    for (const t of SAID) {
+      if (/NaN|undefined|null/.test(t)) errs.push('語音內容有錯：' + t);
+      if (/比計畫[快慢]0秒/.test(t)) errs.push('語音不應出現 0 秒：' + t);
+    }
     renderFinish(); renderPrep(); renderPlan();
     for (const id of ['pgFinish', 'pgPrep', 'pgPlan']) { const tx = $(id).textContent; if (/NaN|undefined/.test(tx)) errs.push(id + ' 畫面有 NaN / undefined'); }
     if (/—/.test($('finCuts').textContent)) errs.push('完賽頁有關門餘裕算不出來');
