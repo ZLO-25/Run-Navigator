@@ -211,7 +211,7 @@ public class MainActivity extends Activity {
                     .put("keepOn", sp.getBoolean("keepOn", false)).put("name", sp.getString("name", "")).put("theme", sp.getString("theme", "")).put("win", sp.getString("win", ""))
                     .put("mbpm", sp.getInt("mbpm", 180)).put("macc", sp.getInt("macc", 2)).put("msnd", sp.getString("msnd", "wood"))
                     .put("mvib", sp.getBoolean("mvib", false)).put("mdur", sp.getInt("mdur", 0))
-                    .put("raceBpm", r.getInt("raceBpm", 0))
+                    .put("raceBpm", r.getInt("raceBpm", 0)).put("regCat", r.getString("regCat", ""))
                     .put("start", r.getLong("start", 0)).put("splits", new JSONObject(r.getString("splits", "{}")));
                 if (r.contains("target")) o.put("target", r.getInt("target", 0));
                 if (r.contains("delay")) o.put("delay", r.getInt("delay", 0));

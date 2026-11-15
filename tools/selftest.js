@@ -85,7 +85,41 @@ const { chromium } = require('playwright');
       return m && l && m.getBoundingClientRect().top < l.getBoundingClientRect().top;
     });
     if (!metroOnTop) errs.push('日常訓練應置於賽事清單上方');
+    const catSyncErrs = await p.evaluate(() => {
+      const out = [];
+      for (const r of window.RACES) {
+        const c = getRaceCats(r)[0];
+        const g = Date.parse(r.time.gun), off = tzOffMs(r), d = new Date(g + off);
+        const gun = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+        if (c.limit_min !== r.time.limit_min) out.push(r.id + ' 時限不一致');
+        if (c.def_target !== r.params.target.default) out.push(r.id + ' 預設目標不一致');
+        if (c.gun_txt && c.gun_txt !== gun) out.push(r.id + ' 鳴槍不一致 ' + c.gun_txt + '!=' + gun);
+      }
+      return out;
+    });
+    errs.push(...catSyncErrs);
+    if (!txt.includes('06:35')) errs.push('首頁日月潭應顯示 06:35 鳴槍');
     await ctx.close();
+    // 報名組別持久性：選組別 → 重新載入 → 仍是剛選的組別（獨立無痕 context，不寫回主環境）
+    {
+      const rCtx = await open('home', 390);
+      await rCtx.p.waitForTimeout(200);
+      await rCtx.p.click('[data-more="kyoto-2027"]');
+      await rCtx.p.click('[data-pick="kyoto-2027"][data-cid="pair1"]');
+      await rCtx.p.reload();
+      await rCtx.p.waitForTimeout(200);
+      const homeCardTxt = await rCtx.p.textContent('[data-go="kyoto-2027"]');
+      if (!homeCardTxt.includes('接力1棒 27.6K')) errs.push('首頁重載後報名組別跳回預設');
+      await rCtx.p.click('[data-go="kyoto-2027"]');
+      await rCtx.p.waitForLoadState('load');
+      await rCtx.p.waitForTimeout(200);
+      if ((await rCtx.p.inputValue('#regCat')) !== 'pair1') errs.push('進入準備頁時報名組別未帶入 pair1');
+      await rCtx.p.selectOption('#regCat', 'pair2');
+      await rCtx.p.reload();
+      await rCtx.p.waitForTimeout(200);
+      if ((await rCtx.p.inputValue('#regCat')) !== 'pair2') errs.push('準備頁重載後報名組別未保留 pair2');
+      await rCtx.ctx.close();
+    }
     const h = await open('home&selftest', 390);
     await h.p.waitForTimeout(250);
     await h.p.screenshot({ path: path.join(out, 'home.png'), fullPage: true });

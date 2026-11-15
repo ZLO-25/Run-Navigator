@@ -239,7 +239,7 @@ public class GpsService extends Service implements LocationListener {
             lastKm = k;
         }
     }
-    String vsPlan(double diffSec) { return (diffSec >= 0 ? "比計畫快" : "比計畫慢") + sayMS(diffSec); }
+    String vsPlan(double diffSec) { return Math.abs(diffSec) < 5 ? "跟計畫一樣" : (diffSec >= 0 ? "比計畫快" : "比計畫慢") + sayMS(diffSec); }
     String kmSay(int k, double el) {
         String t = k + "公里，" + vsPlan(C.planMin(curS() / 1000) * 60 - el * 60) + "。";
         int nc = C.nextCut(k); double gm = gunMin();
