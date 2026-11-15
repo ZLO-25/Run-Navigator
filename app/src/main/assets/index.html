@@ -129,9 +129,9 @@ input[type=text]{font:inherit;color:var(--fg);background:var(--btn);border:1px s
 .kv{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px}
 .kv label{flex:none}
 .kv select{min-height:42px;padding:6px 8px;font-size:16px;min-width:0;max-width:100%;flex:0 1 auto}
-table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
-td,th{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
-td:first-child,th:first-child{text-align:left}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+td,th{padding:5px 3px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child,th:first-child{text-align:left;overflow-wrap:anywhere}
 th{font-size:13px;color:var(--sub);font-weight:600}
 table.aid td,table.aid th{text-align:left}
 table.aid td.num{font-weight:800;color:var(--aid);text-align:center}
@@ -533,7 +533,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   </section>
   <section class="card">
    <h2 id="cutTitle">關門</h2>
-   <table id="cutTbl"><thead><tr><th>關門點</th><th>K</th><th>關門</th><th>計畫到</th><th>餘裕</th></tr></thead><tbody></tbody></table>
+   <div style="overflow-x:auto"><table id="cutTbl"><thead><tr><th>關門點</th><th>K</th><th>關門</th><th>計畫到</th><th>餘裕</th></tr></thead><tbody></tbody></table></div>
    <div class="note" style="margin-top:8px" id="cutNote"></div>
   </section>
   <section class="card">
@@ -543,7 +543,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <section class="card">
    <h2 id="aidTitle">水站</h2>
    <div style="margin:-2px 0 8px" id="aidLegend"></div>
-   <table class="aid" id="aidTbl"><thead><tr><th>站</th><th>K</th><th>地點・補給</th><th>計畫到</th></tr></thead><tbody></tbody></table>
+   <div style="overflow-x:auto"><table class="aid" id="aidTbl"><thead><tr><th>站</th><th>K</th><th>地點・補給</th><th>計畫到</th></tr></thead><tbody></tbody></table></div>
    <div class="note" style="margin-top:8px" id="aidNote"></div>
   </section>
   <section class="card">
