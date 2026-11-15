@@ -7,8 +7,8 @@ android {
         applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
         minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
         targetSdk 34
-        versionCode 14
-        versionName '0.14'   // 加入世界七大馬拉松其餘 5 場（波士頓、倫敦、雪梨、柏林、芝加哥）與路線圖
+        versionCode 15
+        versionName '0.15'   // 修陽明山 21K/42K 跨卡片切換與篩選（不再卡在 5K）
     }
     signingConfigs {
         release {

@@ -192,7 +192,7 @@ nav.tabs button.on{background:var(--btn);color:var(--fg)}
 .pill.off{border-color:var(--line);color:var(--sub);font-weight:700}
 .pill.cat{border-color:var(--rc,var(--aid));color:var(--rc,var(--aid));background:color-mix(in srgb,var(--rc,var(--aid)) 14%,transparent)}
 .rcats{display:flex;flex-wrap:wrap;gap:5px}
-.rcat{min-height:28px;padding:3px 9px;font-size:12px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2}
+.rcat{min-height:32px;padding:4px 10px;font-size:12.5px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2}
 .rcat.on{border-color:var(--rc,var(--ok));background:color-mix(in srgb,var(--rc,var(--ok)) 18%,var(--btn));color:var(--fg)}
 .rright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
 .rmore{min-height:24px;padding:2px 8px;font-size:11px;font-weight:700;border-radius:99px;border:1px solid var(--line);background:var(--btn);color:var(--sub);line-height:1.2;white-space:nowrap}
@@ -821,12 +821,12 @@ const RACE_CATS = {
   ],
   'yangmingshan-21k-2026': [
     { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
+    { id: '42k', label: '42.2K 全馬 ↗', full: '42.195K 全程馬拉松組（切到全馬賽道）', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
     { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
   ],
   'yangmingshan-42k-2026': [
     { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
-    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
+    { id: '21k', label: '21.1K 半馬 ↗', full: '21.0975K 半程馬拉松組（切到半馬賽道）', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
     { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
   ],
   'kyoto-2027': [
@@ -894,7 +894,7 @@ function raceProfile(r) {
   const icon = `<div class="ricon">${ITEM_ICONS[r.id] || ITEM_ICONS.metro}</div>`;
   const distBadge = sel.label;
   const distCat = sel.cat;
-  const allCats = [...new Set(cats.map(c => c.cat))].join(' ');
+  const allCats = [...new Set(cats.filter(c => !c.link && (c.route || c.km >= 20)).map(c => c.cat))].join(' ');
   const region = r.time.tz === 'Asia/Taipei' ? 'tw' : 'intl';
   const raw = (r.route && r.route.elev) || [0, 0];
   const n = raw.length, es = raw.map((_, i) => { let s = 0; for (let k = -2; k <= 2; k++) s += raw[Math.max(0, Math.min(n - 1, i + k))]; return s / 5; });
@@ -1000,13 +1000,13 @@ function renderHome() {
       if (!past) {
         const isNext = !nextDone; nextDone = true;
         const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
-        return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+        return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-rid="${esc(r.id)}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
           `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
           `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rright"><div class="rcd">${cd}</div>${moreBtn}</div></div>` +
           `<div class="rmore-body"${isOpen ? '' : ' hidden'}>${catsHTML}${pf.svg}${specHTML}${nx(r)}</div></div>`;
       }
       const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
-      return `<div class="rcard" style="--rc:${pf.st.col}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+      return `<div class="rcard" style="--rc:${pf.st.col}" data-rid="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
         `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
         `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div>` +
         `<div class="rright"><div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div>${moreBtn}</div></div>` +
@@ -1025,7 +1025,20 @@ function renderHome() {
       const rid = b.dataset.pick, cid = b.dataset.cid;
       const r = (window.RACES || []).find(x => x.id === rid);
       const cat = r && getRaceCats(r).find(c => c.id === cid);
-      if (cat && cat.link) { goRace(cat.link); return; }
+      if (cat && cat.link) {
+        saveRaceCat(cat.link, cat.id);
+        openMore.delete(rid);
+        openMore.add(cat.link);
+        const tr = (window.RACES || []).find(x => x.id === cat.link);
+        const tpf = tr && raceProfile(tr);
+        const vis = curFilter === 'all' || (tpf && (tpf.region === curFilter || tpf.distCat === curFilter || tpf.allCats.split(' ').includes(curFilter)));
+        if (!vis) curFilter = 'all';
+        drawRaceList();
+        applyFilter(curFilter);
+        const targetCard = $('raceList').querySelector('[data-rid="' + cat.link + '"]');
+        if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       saveRaceCat(rid, cid);
       drawRaceList();
       applyFilter(curFilter);
@@ -2112,7 +2125,7 @@ function renderStatic() {
   rcSel.onchange = () => {
     const picked = pf.cats.find(c => c.id === rcSel.value);
     if (!picked) return;
-    if (picked.link) { goRace(picked.link); return; }
+    if (picked.link) { saveRaceCat(picked.link, picked.id); goRace(picked.link); return; }
     saveRaceCat(R.id, picked.id);
     syncRegCatUI(picked);
   };
