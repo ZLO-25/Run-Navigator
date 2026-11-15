@@ -24,6 +24,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /** 畫面外殼：WebView 載入 assets/index.html（先出現賽事清單），透過 Android 橋接取得服務狀態。 */
@@ -100,7 +101,7 @@ public class MainActivity extends Activity {
     }
 
     /** JS 可呼叫的介面。個人偏好存 pref（全 App 共用），賽事參數與紀錄存 race_<id>（每場各一格）。 */
-    static final java.util.Set<String> SHARED = new java.util.HashSet<>(java.util.Arrays.asList("name", "vib", "tts", "kmv", "stopv", "keepOn", "theme", "win", "mbpm", "macc", "msnd", "mvib", "mdur"));
+    static final java.util.Set<String> SHARED = new java.util.HashSet<>(java.util.Arrays.asList("name", "vib", "tts", "kmv", "stopv", "keepOn", "theme", "win", "mbpm", "macc", "msnd", "mvib", "mdur", "pbs"));
     static final java.util.Set<String> BOOLS = new java.util.HashSet<>(java.util.Arrays.asList("vib", "tts", "kmv", "stopv", "keepOn", "mvib"));
     SharedPreferences race(String id) { return GpsService.racePrefs(this, id); }
 
@@ -217,6 +218,7 @@ public class MainActivity extends Activity {
                 if (r.contains("delay")) o.put("delay", r.getInt("delay", 0));
                 String f = r.getString("finished", ""); if (!f.isEmpty()) o.put("finished", new JSONObject(f));
                 String cy = r.getString("cycle", ""); if (!cy.isEmpty()) o.put("cycle", new JSONObject(cy));
+                String pb = sp.getString("pbs", ""); if (!pb.isEmpty()) try { o.put("pbs", new JSONArray(pb)); } catch (Exception ignored) { }
                 return o.toString();
             } catch (Exception e) { return "{}"; }
         }
