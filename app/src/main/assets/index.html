@@ -240,6 +240,19 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 .mpulse{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--line);flex:none;transition:transform .06s,background .06s}
 .mpulse.on{background:var(--aid);transform:scale(1.3)}
 .mpulse.on.acc{background:var(--ok);transform:scale(1.4)}
+/* ---------- 備賽週期計畫卡（①） ---------- */
+.cyc-barwrap{position:relative;padding-bottom:20px;margin-top:2px}
+.cyc-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--btn);gap:2px}
+.cyc-seg{height:100%;min-width:4px}
+.cyc-mark{position:absolute;top:12px;font-size:12px;font-weight:800;color:var(--fg);white-space:nowrap}
+.cyc-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cyc-tiles>div{background:var(--btn);border-radius:10px;padding:8px;text-align:center;min-width:0}
+.cyc-tiles .t{font-size:12px;color:var(--sub);font-weight:700}
+.cyc-tiles .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+.cyc-focus{background:var(--btn);border-radius:10px;padding:9px 10px;font-size:15px;line-height:1.4}
+.cyc-tbl{font-size:13px;font-variant-numeric:tabular-nums}
+.cyc-tbl th,.cyc-tbl td{padding:4px 3px;white-space:nowrap}
+.cyc-mini{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;min-height:48px}
 @media (prefers-reduced-motion:no-preference){#alert.show{animation:pop .25s ease-out}}
 @keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
 </style>
@@ -332,7 +345,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <div id="busyBox" class="warnbox bad" hidden></div>
   <div id="finBox" class="warnbox" hidden></div>
   <section class="card cdcard"><div><div class="lab" id="cdLab">距離鳴槍</div><div class="big" id="cdVal">—</div></div><div class="note" id="checkin" style="text-align:right;white-space:pre-line"></div></section>
-  <section class="card ctl">
+  <section class="card ctl" id="prepParamsCard">
    <div class="kv"><b>這一場的參數</b><span class="note" id="isoNote"></span></div>
    <div class="kv"><label for="regCat">報名組別</label><select id="regCat"></select></div>
    <div class="note" id="regCatNote" hidden></div>
@@ -341,14 +354,16 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <div class="kv"><label for="raceBpm">跑步節拍</label><select id="raceBpm"></select></div>
    <div class="note" id="delayNote"></div>
   </section>
+  <div id="prepCycleTop"></div>
   <div id="prepWarn"></div>
   <div class="cuttiles" id="cutTiles"></div>
   <div class="grid2"><button id="bToPlan">計畫表</button><button id="bToMap">路線地圖</button></div>
-  <section class="ctl" style="margin-top:4px">
+  <section class="ctl" id="prepActions" style="margin-top:4px">
    <button class="wide go" id="bPrepGo">開始定位（比賽）</button>
    <button class="wide" id="bPrepDemo">練習模擬：在這條路線上試跑（示範）</button>
    <div class="note" style="text-align:center">同時只能有一場在定位：別場正在定位時，會先請你停止那一場。</div>
   </section>
+  <div id="prepCycleLow"></div>
   <section class="card" id="schedCard"></section>
  </div>
 
@@ -586,6 +601,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 <nav class="tabs" hidden><button id="tPrep" class="on">準備</button><button id="tRace">賽道</button><button id="tPlan">計畫</button><button id="tMap">地圖</button></nav>
 
 <script src="races.js"></script>
+<script src="prep.js"></script>
 <script>
 "use strict";
 /* ================= 開機：先出現賽事清單，選了哪一場才載入那一場 =================
@@ -620,7 +636,7 @@ function racePrefs(id) {
   const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
   const sn = (k, d) => { const v = lget(k); return v == null ? d : Number(v); };
   const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
-  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '',
+  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '', cycle: j('cycle'),
     name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '',
     mbpm: sn('mbpm', 180), macc: sn('macc', 2), msnd: lget('msnd') || 'wood', mvib: b('mvib', false), mdur: sn('mdur', 0) };
 }
@@ -720,7 +736,7 @@ function hm(min) { min = Math.round(min); return Math.floor(min / 60) + ':' + p2
 /* 接下來幾年的報名與比賽（賽事包 schedule）：官方＝有來源；預估＝依往年慣例推算 */
 const ymd = s => { const [y, m, d] = s.split('-').map(Number); return { y, m, d, w: WD[new Date(Date.UTC(y, m - 1, d)).getUTCDay()] }; };
 const ymdTxt = s => { const t = ymd(s); return t.y + '/' + t.m + '/' + t.d + '（' + t.w + '）'; };
-function todayStr() { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+function todayStr() { if (SELFTEST && /^\d{4}-\d{2}-\d{2}$/.test(Q.get('today') || '')) return Q.get('today'); const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
 function entryState(it, today) {
   if (it.close && today > it.close) return ['已截止', ''];
   if (it.open && today >= it.open) return ['報名中', 'ok'];
@@ -1173,8 +1189,21 @@ const S = {
   target: NP.target || R.params.target.default, delay: NP.delay != null ? NP.delay : R.params.delay.default,
   name: NP.name || '', vib: NP.vib !== false, tts: NP.tts !== false, kmv: NP.kmv !== false, stopv: NP.stopv !== false, keepOn: !!NP.keepOn,
   theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {},
-  mbpm: NP.mbpm || 180, macc: NP.macc || 2, msnd: NP.msnd || 'wood', mvib: !!NP.mvib, raceBpm: NP.raceBpm || 0
+  mbpm: NP.mbpm || 180, macc: NP.macc || 2, msnd: NP.msnd || 'wood', mvib: !!NP.mvib, raceBpm: NP.raceBpm || 0,
+  cycle: NP.cycle || null
 };
+if (SELFTEST && Q.has('cycle') && window.PREP) {
+  const parts = (Q.get('cycle') || '').split(',');
+  const wk0 = +parts[0], long0 = +parts[1];
+  if (wk0 > 0 && long0 > 0) {
+    if (parts.length >= 4 && /^\d{4}-\d{2}-\d{2}$/.test(parts[2]) && +parts[3] >= 1) {
+      S.cycle = { s: parts[2], n: Math.round(+parts[3]), wk0, long0, tgt0: S.target };
+    } else {
+      const info = PREP.startInfo(R.time.gun.slice(0, 10), todayStr());
+      if (info.status === 'ok') S.cycle = { s: info.s, n: info.N, wk0, long0, tgt0: S.target };
+    }
+  }
+}
 Metro.load(S);
 if (S.raceBpm > 0) Metro.bpm = S.raceBpm;
 let FIN = NP.finished || null;     // 完賽紀錄 {how: auto|manual, t: 淨秒數, c: 時刻, s: 里程, d: 離終點 m}
@@ -1918,6 +1947,80 @@ function renderStatic() {
   $('tipsTitle').textContent = R.text.tips_title || '提醒';
   $('tipsList').innerHTML = (R.text.tips || []).map(t => '<li>' + rich(t) + '</li>').join('');
 }
+let cycleTblOpen = false, cycleLowOpen = false, lastCycleKey = '';
+function renderCycle() {
+  const topEl = $('prepCycleTop'), lowEl = $('prepCycleLow');
+  if (!topEl || !lowEl || !window.PREP) return;
+  const raceDay = R.time.gun.slice(0, 10), today = todayStr(), days = PREP.diffDays(today, raceDay);
+  const key = days + '|' + today + '|' + S.target + '|' + JSON.stringify(S.cycle) + '|' + cycleTblOpen + '|' + cycleLowOpen;
+  if (key === lastCycleKey) return;
+  lastCycleKey = key;
+  if (days < 0) { topEl.innerHTML = ''; lowEl.innerHTML = ''; return; }
+  const isNear = days <= 7;
+  const slot = isNear ? lowEl : topEl, other = isNear ? topEl : lowEl;
+  other.innerHTML = '';
+  const fmtMD = s => Number(s.slice(5, 7)) + '/' + s.slice(8, 10);
+  if (!S.cycle) {
+    const info = PREP.startInfo(raceDay, today);
+    if (info.status === 'early') {
+      slot.innerHTML = `<section class="card ctl"><b>🗓 備賽計畫</b><div class="note">距備賽期還有 ${info.waitWeeks} 週，先維持目前跑量，到倒數第 24 週再開始。</div></section>`;
+      return;
+    }
+    const wkOpts = [10, 15, 20, 25, 30, 35, 40, 50], longOpts = [5, 8, 10, 12, 14, 16, 18, 20, 22, 25, 28, 30];
+    const defLong = TOTAL_KM >= 30 ? 16 : 12;
+    const intro = info.N <= 3 ? '離比賽太近，現在加量只會累，照減量跑就好。' : info.N >= 8 ? `距比賽 ${info.N} 週，夠排完整四階段。` : `距比賽 ${info.N} 週，依剩餘時間排課表。`;
+    slot.innerHTML = `<section class="card ctl"><b>🗓 備賽計畫</b><div class="note">${esc(intro)}</div>` +
+      `<div class="kv"><label for="cycWk0">目前一週大約跑</label><select id="cycWk0">${wkOpts.map(v => `<option value="${v}"${v === 25 ? ' selected' : ''}>${v} km</option>`).join('')}</select></div>` +
+      `<div class="kv"><label for="cycLong0">最近 4 週最長一次</label><select id="cycLong0">${longOpts.map(v => `<option value="${v}"${v === defLong ? ' selected' : ''}>${v} km</option>`).join('')}</select></div>` +
+      `<button class="wide" id="bCycBuild">排出我的課表</button></section>`;
+    $('bCycBuild').onclick = () => {
+      S.cycle = { s: info.s, n: info.N, wk0: Number($('cycWk0').value), long0: Number($('cycLong0').value), tgt0: S.target };
+      pset('cycle', JSON.stringify(S.cycle));
+      renderCycle();
+    };
+    return;
+  }
+  const res = PREP.cycle({ n: S.cycle.n, d: TOTAL_KM, target: S.target, wk0: S.cycle.wk0, long0: S.cycle.long0, s: S.cycle.s });
+  const rawIdx = Math.floor(PREP.diffDays(S.cycle.s, today) / 7);
+  const beforeStart = rawIdx < 0;
+  const curIdx = Math.max(0, Math.min(res.weeks.length - 1, rawIdx));
+  const cur = res.weeks[curIdx];
+  if (isNear && !cycleLowOpen) {
+    slot.innerHTML = `<button type="button" class="cyc-mini" id="bCycExpand"><span>🗓 ${cur.rec ? '恢復週' : cur.phase + '期'}・倒數第 ${cur.w} 週・本週 ${cur.wk} km${cur.w === 1 ? '（不含比賽）' : ''}</span><span>▾</span></button>`;
+    $('bCycExpand').onclick = () => { cycleLowOpen = true; renderCycle(); };
+    return;
+  }
+  const segs = [['base', 'var(--aid)'], ['build', 'var(--warn)'], ['peak', 'var(--plan)'], ['taper', 'var(--ok)']]
+    .filter(([k]) => res.phases[k] > 0)
+    .map(([k, col]) => `<div class="cyc-seg" style="flex:${res.phases[k]};background:${col}"></div>`).join('');
+  const pct = ((curIdx + 0.5) / res.n) * 100;
+  const mPos = pct <= 18 ? 'left:0' : pct >= 82 ? 'right:0' : `left:${pct.toFixed(1)}%;transform:translateX(-50%)`;
+  const ym = (beforeStart ? S.cycle.s : today).slice(0, 7);
+  const mKm = res.months[ym];
+  const mSuffix = ym === S.cycle.s.slice(0, 7) && Number(S.cycle.s.slice(8)) > 1 ? `（${Number(S.cycle.s.slice(8))} 日起）` : ym === raceDay.slice(0, 7) ? '（不含比賽）' : '';
+  const nw = res.weeks[curIdx + 1];
+  const tblHTML = cycleTblOpen ? `<div style="overflow-x:auto"><table class="cyc-tbl"><thead><tr><th>週</th><th>日期</th><th>階段</th><th>週量</th><th>長跑</th></tr></thead><tbody>` +
+    res.weeks.map((w, idx) => `<tr class="${idx === curIdx ? 'cur' : idx < curIdx ? 'past' : ''}"><td>${w.w}</td><td>${fmtMD(w.start)}</td><td>${w.phase}${w.rec ? '<div style="font-size:11px;color:var(--ok)">恢復</div>' : ''}</td><td>${w.wk}</td><td>${w.long === '比賽' ? '比賽' : w.long}</td></tr>`).join('') +
+    `</tbody></table></div>` : '';
+  slot.innerHTML = `<section class="card ctl">` +
+    `<div class="kv"><b>🗓 備賽計畫</b><span class="note">${beforeStart ? fmtMD(cur.start) + ' 開始・' : ''}倒數第 ${cur.w} 週</span></div>` +
+    (S.cycle.tgt0 && S.cycle.tgt0 !== S.target ? `<div class="note" style="color:var(--ok)">已依新目標 ${fmtHM(S.target)} 更新</div>` : '') +
+    (res.taperOnly ? `<div class="note" style="color:var(--warn)">離比賽太近，現在加量只會累，照減量跑就好。</div>` : '') +
+    `<div><div class="note" style="margin-bottom:4px">基礎→強化→巔峰→減量</div><div class="cyc-barwrap"><div class="cyc-bar">${segs}</div><div class="cyc-mark" style="${mPos}">▲你在這</div></div></div>` +
+    `<div style="font-weight:700;font-size:16px">本週 ${fmtMD(cur.start)}–${fmtMD(cur.end)}・${cur.rec ? '恢復週' : cur.phase + '期'}</div>` +
+    `<div class="cyc-tiles"><div><div class="t">週跑量</div><div class="v">${cur.wk} km</div></div><div><div class="t">長跑</div><div class="v">${cur.long === '比賽' ? '比賽' : cur.long + ' km'}</div></div></div>` +
+    `<div class="cyc-focus">👉 ${esc(cur.focus)}${cur.phase === '巔峰' && R.text && R.text.prep_warn ? `<div class="note" style="margin-top:4px;color:var(--warn)">⚠ ${esc(R.text.prep_warn)}</div>` : ''}</div>` +
+    (mKm != null ? `<div class="note">${Number(ym.slice(5))} 月目標 ${mKm} km${mSuffix}</div>` : '') +
+    (nw ? `<div class="note">下週：${nw.wk} km・${nw.long === '比賽' ? '比賽週' : '長跑 ' + nw.long + ' km'}</div>` : '') +
+    `<div class="grid2"><button class="small" id="bCycTbl">${cycleTblOpen ? '收合課表 ▴' : `看完整 ${res.n} 週 ▾`}</button><button class="small" id="bCycReset">重設</button></div>` +
+    (isNear ? `<button class="small wide" id="bCycCollapse">收成一行 ▴</button>` : '') +
+    tblHTML +
+    `<div class="note">有痛就休息。少跑一週不會影響完賽，帶傷硬跑會。${res.highLongRatio ? '<br>長跑佔一週的比例偏高，平日的輕鬆跑請盡量跑到。' : ''}</div>` +
+    `</section>`;
+  $('bCycTbl').onclick = () => { cycleTblOpen = !cycleTblOpen; renderCycle(); };
+  twoTap($('bCycReset'), '再按一次：確定重設', () => { S.cycle = null; cycleTblOpen = false; cycleLowOpen = false; pset('cycle', null); renderCycle(); });
+  if ($('bCycCollapse')) $('bCycCollapse').onclick = () => { cycleLowOpen = false; renderCycle(); };
+}
 function renderPrep() {
   const now = Date.now(), d = GUN - now, end = GUN + LIMIT * 60000;
   $('cdLab').textContent = d > 0 ? '距離鳴槍' : now < end ? '比賽進行中' : '已鳴槍';
@@ -1932,6 +2035,7 @@ function renderPrep() {
   if (FIN && !FIN.demo) { fb.hidden = false; fb.innerHTML = '這場已完賽' + (FIN.t != null ? '（淨時間 <b>' + fmtHMS(FIN.t) + '</b>）' : '') + '。再按「開始定位」會清掉完賽狀態。 <button class="small" id="bSeeFin">看成績</button>'; $('bSeeFin').onclick = () => { renderFinish(); showPage('pgFinish'); }; }
   else fb.hidden = true;
   $('bPrepGo').textContent = mode === 'gps' ? '定位中：回到賽道畫面' : NATIVE ? '開始定位（比賽）' : '開始 GPS 定位（網頁版僅供測試）';
+  renderCycle();
 }
 function prepGo() {
   if (mode === 'gps') { showPage('pgRace'); return; }

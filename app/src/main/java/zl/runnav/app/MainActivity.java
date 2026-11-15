@@ -216,6 +216,7 @@ public class MainActivity extends Activity {
                 if (r.contains("target")) o.put("target", r.getInt("target", 0));
                 if (r.contains("delay")) o.put("delay", r.getInt("delay", 0));
                 String f = r.getString("finished", ""); if (!f.isEmpty()) o.put("finished", new JSONObject(f));
+                String cy = r.getString("cycle", ""); if (!cy.isEmpty()) o.put("cycle", new JSONObject(cy));
                 return o.toString();
             } catch (Exception e) { return "{}"; }
         }
