@@ -17,7 +17,7 @@ jobs:
       - name: 組合網頁版（與 APK 內的畫面同一份）
         run: |
           mkdir -p site
-          cp app/src/main/assets/index.html app/src/main/assets/races.js site/
+          cp app/src/main/assets/index.html app/src/main/assets/races.js app/src/main/assets/prep.js site/
           cp -r app/src/main/assets/races site/
           cp web/* site/
       - uses: actions/configure-pages@v5

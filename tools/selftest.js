@@ -177,6 +177,86 @@ const { chromium } = require('playwright');
     await v.p.screenshot({ path: path.join(out, 'prep-' + r.id + '.png'), fullPage: true });
     await v.ctx.close();
   }
+  // ① 備賽週期計畫：純計算＋性質檢查＋畫面（300 px 與 390 px）
+  {
+    const prepErrs = [];
+    require(path.join(root, 'app/src/main/assets/prep.js'));
+    const ex = globalThis.PREP.cycle({ n: 14, d: 42.195, target: 330, wk0: 25, long0: 16, s: '2026-11-16' });
+    const expW = [25, 27, 29, 24, 32, 35, 38, 30, 41, 44, 48, 36, 26, 17];
+    const expL = [16, 17, 18, 13, 19, 20, 21, 15, 22, 23, 24, 16, 11, '比賽'];
+    if (ex.Lmax !== 24 || ex.wkPeak !== 48) prepErrs.push(`範例 Lmax=${ex.Lmax} wkPeak=${ex.wkPeak}`);
+    ex.weeks.forEach((w, i) => {
+      if (w.wk !== expW[i] || w.long !== expL[i]) prepErrs.push(`第${i + 1}週 ${w.wk}/${w.long} != ${expW[i]}/${expL[i]}`);
+    });
+    const moExp = { '2026-11': 56, '2026-12': 138, '2027-01': 179, '2027-02': 79 };
+    for (const [k, v] of Object.entries(moExp)) if (ex.months[k] !== v) prepErrs.push(`${k} 月目標 ${ex.months[k]} != ${v}`);
+    for (const N of [1, 2, 3, 6, 8, 12, 14, 20, 24]) {
+      for (const D of [42.195, 21.0975, 28.8]) {
+        const c = globalThis.PREP.cycle({ n: N, d: D, target: D >= 40 ? 330 : D >= 25 ? 255 : 195, wk0: 25, long0: 12 });
+        const pSum = c.phases.base + c.phases.build + c.phases.peak + c.phases.taper;
+        if (pSum !== N) prepErrs.push(`N=${N} D=${D} 階段總和 ${pSum}`);
+        let prevNonRec = null;
+        c.weeks.forEach((w, idx) => {
+          if (Number.isNaN(w.wk) || (typeof w.long === 'number' && Number.isNaN(w.long))) prepErrs.push(`N=${N} D=${D} 第${idx + 1}週 NaN`);
+          if (typeof w.long === 'number' && w.long > c.Lmax) prepErrs.push(`N=${N} D=${D} 長跑 ${w.long} > Lmax ${c.Lmax}`);
+          if (idx < N - c.phases.taper && !w.rec) {
+            if (prevNonRec != null && w.wk > prevNonRec * 1.10 + 1) prepErrs.push(`N=${N} D=${D} 週量跳太多 ${prevNonRec}->${w.wk}`);
+            prevNonRec = w.wk;
+          }
+        });
+        if (c.weeks[N - 1].long !== '比賽') prepErrs.push(`N=${N} D=${D} 最後一週長跑應為比賽`);
+      }
+    }
+    // 畫面驗收：2026-11-16（300 與 390 + 展開 14 週表）、2027-01-27、2027-02-18、2027-02-22、2027-02-10
+    for (const w of [300, 390]) {
+      const { p, ctx, errs } = await open('race=kyoto-2027&selftest&today=2026-11-16&cycle=25,16', w);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(150);
+      const t = await p.textContent('#prepCycleTop');
+      for (const s of ['倒數第 14 週', '基礎期', '25 km', '16 km']) if (!t.includes(s)) prepErrs.push(`11/16(${w}) 缺「${s}」`);
+      (await overflow(p)).forEach(x => prepErrs.push(`11/16(${w}) ${x}`));
+      await p.click('#bCycTbl'); await p.waitForTimeout(100);
+      (await overflow(p)).forEach(x => prepErrs.push(`11/16展開(${w}) ${x}`));
+      if (w === 390 && !(await p.textContent('#prepCycleTop')).includes('11/16')) prepErrs.push('課表展開缺少 11/16');
+      errs.forEach(x => prepErrs.push(x));
+      await ctx.close();
+    }
+    {
+      const { p, ctx } = await open('race=kyoto-2027&selftest&today=2027-01-27&cycle=25,16,2026-11-16,14', 390);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      const t = await p.textContent('#prepCycleTop');
+      for (const s of ['倒數第 4 週', '巔峰期', '48 km', '24 km']) if (!t.includes(s)) prepErrs.push(`01/27 缺「${s}」`);
+      await ctx.close();
+    }
+    {
+      const { p, ctx } = await open('race=kyoto-2027&selftest&today=2027-02-18&cycle=25,16,2026-11-16,14', 300);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      const lowTxt = await p.textContent('#prepCycleLow');
+      if ((await p.textContent('#prepCycleTop')).trim() !== '') prepErrs.push('02/18 備賽卡應移到下方');
+      if (!lowTxt.includes('減量期') || !lowTxt.includes('倒數第 1 週') || !lowTxt.includes('17 km')) prepErrs.push('02/18 收合列文字不符：' + lowTxt);
+      (await overflow(p)).forEach(x => prepErrs.push(`02/18(300) ${x}`));
+      await ctx.close();
+    }
+    {
+      const { p, ctx } = await open('race=kyoto-2027&selftest&today=2027-02-22&cycle=25,16,2026-11-16,14', 390);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      if ((await p.textContent('#prepCycleTop')).trim() !== '' || (await p.textContent('#prepCycleLow')).trim() !== '') prepErrs.push('賽後不應顯示備賽卡');
+      await ctx.close();
+    }
+    {
+      const { p, ctx } = await open('race=kyoto-2027&selftest&today=2027-02-10', 300);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      if (!(await p.textContent('#prepCycleTop')).includes('離比賽太近')) prepErrs.push('2 週前未顯示「離比賽太近」');
+      (await overflow(p)).forEach(x => prepErrs.push(`02/10(300) ${x}`));
+      await ctx.close();
+    }
+    if (prepErrs.length) { fails++; console.log('❌ ① 備賽週期計畫：\n   - ' + prepErrs.join('\n   - ')); }
+    else console.log('✅ ① 備賽週期計畫：純計算、性質檢查與 300 px 畫面驗收全過');
+  }
   await browser.close();
   if (fails) { console.log(`\n${fails} 項沒過，不發佈。`); process.exit(1); }
   console.log('\n全部賽事包示範跑完，沒有錯誤。');
