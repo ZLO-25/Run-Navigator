@@ -1,0 +1,181 @@
+{
+  "format": 1,
+  "id": "london-marathon",
+  "name": "倫敦馬拉松 2027（全馬）",
+  "short": "倫敦 42K",
+  "kind": "race",
+  "start_name": "Blackheath／格林威治公園",
+  "finish_name": "The Mall（白金漢宮前）",
+  "time": {
+    "tz": "Europe/London",
+    "tz_label": "英國時間",
+    "tz_short": "英國",
+    "gun": "2027-04-25T09:30:00+01:00",
+    "limit_min": 600
+  },
+  "distance_m": 42195,
+  "route": {
+    "source": "TCS London Marathon 2026 GPX（JaseMK/marathon-predictor-map，955 點含海拔，縮放成 42.195 km）",
+    "out_and_back": true
+  },
+  "checkin": "報到：賽前週三至週六\nExCeL London 博覽會",
+  "params": {
+    "target": {
+      "default": 330,
+      "options": [
+        { "v": 240 },
+        { "v": 270 },
+        { "v": 300 },
+        { "v": 330 },
+        { "v": 360 },
+        { "v": 420 }
+      ]
+    },
+    "delay": {
+      "default": 35,
+      "options": [
+        { "v": 5, "label": "前波 9:30" },
+        { "v": 35, "label": "第 2 時段 10:00" },
+        { "v": 65, "label": "第 3 時段 10:30" },
+        { "v": 95, "label": "第 4 時段 11:00" },
+        { "v": 120, "label": "末波 11:30" }
+      ],
+      "note": "倫敦分藍／綠／紅三色起跑區並分多波出發（約 09:30–11:30）。賽前 3 週信件會寫確切起跑區時間。"
+    }
+  },
+  "landmarks": [
+    { "n": "起", "name": "Blackheath 起跑區", "km": 0, "note": "前 5K 穿過 Charlton 與 Woolwich 小下坡（40 m 降到 15 m），順順熱身。" },
+    { "n": "1", "name": "Woolwich 匯合點", "km": 4.79, "note": "藍／綠／紅三條起跑路線在 3 英里前後匯合，路面變寬但人潮密集。" },
+    { "n": "2", "name": "Cutty Sark 卡蒂薩克號", "km": 10.59, "note": "繞過百年帆船，倫敦第一波人潮最高峰！別被加油聲帶太快。" },
+    { "n": "3", "name": "Surrey Quays（15K）", "km": 14.99, "note": "泰晤士河南岸住宅區轉折，準備向西跑往塔橋。" },
+    { "n": "4", "name": "Tower Bridge 倫敦塔橋", "km": 19.94, "note": "第 12–13 英里全場最震撼！橫跨泰晤士河、全場歡呼聲最大的一段。" },
+    { "n": "掃1", "name": "半程點（The Highway 入口）", "km": 21.1, "cut": true, "note": "過塔橋北岸後右轉進 The Highway，與對向 35K 回程跑者擦身而過。" },
+    { "n": "5", "name": "Isle of Dogs 南端", "km": 27.05, "note": "狗島南端路段彎多、風景較單調，盯住前面跑者穩定巡航。" },
+    { "n": "掃2", "name": "Canary Wharf 金絲雀碼頭", "km": 29.98, "cut": true, "note": "摩天大樓群之間 GPS 極易亂飄！配速請看手錶公里牌或體感，別慌。" },
+    { "n": "6", "name": "Limehouse 回程（35K）", "km": 35.03, "note": "離開金融區回到 The Highway，左側就是剛過半程的跑者，代表你剩 7 公里！" },
+    { "n": "7", "name": "Tower of London 倫敦塔", "km": 36.76, "note": "最後 5 公里開始！經隧道（Blackfriars 下穿道 GPS 會短暫飄移）接上河濱大道。" },
+    { "n": "8", "name": "大笨鐘・國會大廈（40.9K）", "km": 40.85, "note": "經過大笨鐘右轉 Birdcage Walk，距離白金漢宮剩不到 1.5 公里！" },
+    { "n": "終", "name": "The Mall（白金漢宮前）", "km": 42.195, "note": "轉過維多利亞紀念碑衝進林蔭大道 The Mall！標準 8 小時關門（2027 特別版週日夜間亦延長收尾）。" }
+  ],
+  "sections": [
+    { "a": 0, "b": 10.59, "from": "Blackheath", "to": "Cutty Sark", "terr": "前 5K 緩下坡（40→10 m），Woolwich 後平直", "act": "利用前段緩下輕鬆找節奏，不要閃人消耗腳踝" },
+    { "a": 10.59, "b": 21.1, "from": "Cutty Sark", "to": "塔橋過半程", "terr": "全程幾乎平坦，19.9K 上塔橋微緩升", "act": "塔橋氣氛爆棚，出橋記得進 13 英里膠站" },
+    { "a": 21.1, "b": 29.98, "from": "The Highway", "to": "金絲雀碼頭", "terr": "微起伏與轉彎多，大樓遮蔽 GPS", "act": "GPS 飄移正常！改看路邊英里牌，穩步進 18–19 英里" },
+    { "a": 29.98, "b": 36.76, "from": "金絲雀碼頭", "to": "倫敦塔", "terr": "平坦略帶彎道，35K 接回 The Highway 西行", "act": "剩 7K 開始數公里，36K 最後一包膠" },
+    { "a": 36.76, "b": 40.85, "from": "倫敦塔", "to": "大笨鐘", "terr": "沿 Embankment 泰晤士河寬廣大道微升", "act": "加油人潮密密麻麻，把最後力氣帶過國會大廈" },
+    { "a": 40.85, "b": 42.195, "from": "大笨鐘", "to": "The Mall 終點", "terr": "Birdcage Walk 平直轉進白金漢宮", "act": "看到 385 Yards 牌子後全開衝刺" }
+  ],
+  "cutoffs": [
+    { "km": 21.1, "name": "Tailwalker 半程參考（8 小時均速）", "min": 360 },
+    { "km": 29.98, "name": "金絲雀碼頭解封參考（8 小時均速）", "min": 462 },
+    { "km": 42.195, "name": "標準 8 小時收尾參考（19:30）", "min": 600 }
+  ],
+  "aid": {
+    "labels": { "w": "水", "g": "運動飲料", "e": "膠" },
+    "say": { "w": "Buxton 水", "g": "Lucozade 運動飲料", "ge": "Lucozade 能量膠" },
+    "legend": [["w", "Buxton 水（瓶裝／自助站）"], ["g", "Lucozade Sport 飲料"], ["e", "Lucozade 能量膠"]],
+    "stations": [
+      { "n": 1, "km": 4.8, "km_text": "Mile 3", "name": "Woolwich（水）", "s": "w" },
+      { "n": 2, "km": 9.7, "km_text": "Mile 6", "name": "Greenwich 前（水）", "s": "w" },
+      { "n": 3, "km": 11.3, "km_text": "Mile 7", "name": "Deptford（Lucozade 飲料）", "s": "g" },
+      { "n": 4, "km": 14.5, "km_text": "Mile 9", "name": "Rotherhithe（水）", "s": "w" },
+      { "n": 5, "km": 19.3, "km_text": "Mile 12", "name": "塔橋前（水）", "s": "w" },
+      { "n": 6, "km": 20.9, "km_text": "Mile 13", "name": "塔橋過後（能量膠）", "s": "e" },
+      { "n": 7, "km": 22.5, "km_text": "Mile 14", "name": "The Highway（水）", "s": "w" },
+      { "n": 8, "km": 24.1, "km_text": "Mile 15", "name": "Limehouse（飲料）", "s": "g" },
+      { "n": 9, "km": 25.7, "km_text": "Mile 16", "name": "Isle of Dogs（水）", "s": "w" },
+      { "n": 10, "km": 29.0, "km_text": "Mile 18", "name": "Canary Wharf 前（水）", "s": "w" },
+      { "n": 11, "km": 30.6, "km_text": "Mile 19", "name": "Canary Wharf（能量膠）", "s": "e" },
+      { "n": 12, "km": 32.2, "km_text": "Mile 20", "name": "Poplar（水）", "s": "w" },
+      { "n": 13, "km": 33.8, "km_text": "Mile 21", "name": "The Highway 回程（飲料）", "s": "g" },
+      { "n": 14, "km": 35.4, "km_text": "Mile 22", "name": "Wapping（水）", "s": "w" },
+      { "n": 15, "km": 37.0, "km_text": "Mile 23", "name": "Tower Hill（飲料）", "s": "g" },
+      { "n": 16, "km": 38.6, "km_text": "Mile 24", "name": "Embankment（水）", "s": "w" }
+    ]
+  },
+  "gels": [
+    { "km": 9.7, "label": "#1", "aid": 2, "note": "第 6 英里水站配自備膠（倫敦官網僅 13、19 英里供膠）" },
+    { "km": 20.9, "label": "#2", "aid": 6, "note": "第 13 英里（過塔橋官方供膠站，或吃自備膠）" },
+    { "km": 30.6, "label": "#3", "aid": 11, "note": "第 19 英里金絲雀碼頭官方供膠站" },
+    { "km": 35.4, "label": "#4", "aid": 14, "note": "第 22 英里水站配自備最後一包膠" }
+  ],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      { "from": 0, "to": 5, "x": 1.02, "why": "三起跑線匯合人潮擁擠" },
+      { "from": 27, "to": 31, "x": 1.02, "why": "金絲雀碼頭轉彎多" }
+    ],
+    "fatigue": { "from_km": 29, "x": 0.06 },
+    "cut_buffer_min": { "first_n": 2, "early": 4, "later": 6 },
+    "tight_hint": "倫敦收尾極為友善（末波起約 8 小時），只要不被塔橋與前段人潮拖快，後半段非常穩。"
+  },
+  "finish": { "radius_m": 100, "min_frac": 0.98 },
+  "text": {
+    "pre_start": "2027 為雙日特別版（4/24 週六 & 4/25 週日）。按自己分到的日期與波次設定延遲，過線按「我過起跑線了」。",
+    "plan_note": "英國夏令時間（BST, UTC+1）。金絲雀碼頭高樓林立且有地下穿道，GPS 飄移時不用慌，App 會靠路線鎖定幫你對位。",
+    "cut_title_note": "8 小時步速收尾（2027 特別版週日延長）",
+    "cut_note": "官方以 11:30 末波起 8 小時步速（tailwalkers）管理道路解封；落後可能被請上人行道。2027 年週日 Green Park 終點特別開放至 23:59。",
+    "prep_warn": "倫敦前段極易在 Cutty Sark 和塔橋被萬人吶喊帶超速；守住配速，才能笑著跑過金絲雀碼頭。",
+    "aid_note": "水站（Buxton 小瓶裝水）在 Mile 3–12 每 3 英里、Mile 12–24 每 2 英里一站；Lucozade 飲料在 Mile 7/15/21/23；能量膠只在 Mile 13/19，請務必自備主力膠。",
+    "gel_pre": ["起跑前", "Blackheath 起跑區出發前 15 分吃一包"],
+    "gel_note": "Lucozade 站以紙杯裝飲料且在較少數站別提供；多數水站提供整瓶 250 ml 礦泉水，好拿好配膠。",
+    "map_note": "藍線為 The Highway 21K–23K 與 35K–37K 並排行進段（已往右側微偏移 60m）。",
+    "phases": [
+      ["0–10.6K", "格林威治緩下與匯流", "前 5K 順勢推進不急衝，注意三區匯流處人潮"],
+      ["10.6–21.1K", "帆船與倫敦塔橋", "全場氣氛巔峰！別忘記補充第 13 英里能量膠"],
+      ["21.1–35.0K", "狗島與金絲雀碼頭", "轉彎多、高樓遮蔽 GPS；穩住呼吸撐出金融區"],
+      ["35.0–42.2K", "河濱大道衝進白金漢宮", "看到大笨鐘代表剩 1.3K，轉進 The Mall 享受榮耀"]
+    ],
+    "tips_title": "倫敦特有的提醒",
+    "tips": [
+      "**2027 年罕見採週六 4/24 ＋週日 4/25 雙日開催**（週六終點約 17:30 關、週日 Green Park 延長至午夜），看清楚信件通知自己跑哪一天。",
+      "起跑寄物袋放在**卡車車廂**裡（車號依號碼布），寄物後卡車直接開往終點 St James's Park，記得抓準寄物截止時間。",
+      "黑石坡（Blackheath）與公園草地清晨常濕冷（8–14°C），帶可拋棄舊衣或透明雨衣在等待區保暖。",
+      "金絲雀碼頭與 Blackfriars 隧道容易短暫失訊或漂移 50 m，App 切勿一直低頭滑手機，配合英里牌報時即可。",
+      "完賽後從 The Mall 領完寄物要走一段到地鐵（Charing Cross / Piccadilly），避開最擠的 Westminster 站。"
+    ]
+  },
+  "schedule": {
+    "rule": "通常為每年 4 月第 4 個週日（2027 因需求創紀錄加開 4/24 週六＋4/25 週日兩日）；一般抽籤在前一年 4 月底（比賽隔週）開放約 1 週",
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-04-25",
+        "race_est": false,
+        "entry": "一般抽籤 2026/4/24–5/1（雙日同步抽），7/9 公布並於 7/31 前確認；海外可走官方旅行社／慈善",
+        "entry_short": "抽籤已結束 2026/5/1",
+        "entry_est": false,
+        "open": "2026-04-24",
+        "close": "2026-05-01",
+        "src": [
+          ["London Marathon 2027 Ballot", "https://www.londonmarathonevents.co.uk/london-marathon"]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-04-23",
+        "race_est": true,
+        "entry": "預計 2027/4 下旬（2027 賽後隔週）開放抽籤一週，7 月初公布",
+        "entry_short": "約 2027/4 下旬抽籤",
+        "entry_est": true,
+        "basis": "4 月第 4 個週日＋每年比賽隔週開抽下屆的慣例"
+      },
+      {
+        "year": 2029,
+        "race": "2029-04-22",
+        "race_est": true,
+        "entry": "預計 2028/4 下旬開放抽籤一週，7 月公布（同上）",
+        "entry_short": "約 2028/4 下旬抽籤",
+        "entry_est": true,
+        "basis": "4 月第 4 個週日＋往年抽籤時程"
+      }
+    ],
+    "note": "全球中籤率最低的馬拉松之一（英國外中籤率極低）；台灣跑者實務上多透過 Abbott WMM 抽籤池、慈善募款或官方合作旅行社取得資格。"
+  },
+  "sources": [
+    { "item": "2027 賽期與雙日制", "src": "londonmarathonevents.co.uk（2027/4/24–25 雙日活動公告）", "trust": "高" },
+    { "item": "路線與海拔", "src": "2026 TCS London Marathon GPX（955 點含海拔），塔橋 19.9K、金絲雀 30K 與大笨鐘 40.9K 完全吻合", "trust": "高" },
+    { "item": "水站與膠站", "src": "官方賽道補給規則：Buxton 水 Mile 3–24、Lucozade 飲料 7/15/21/23、膠 13/19", "trust": "高" }
+  ]
+}

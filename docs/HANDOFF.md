@@ -185,6 +185,7 @@ PR #6 另有獨立的 "store"（網頁 rn_tlog、rn_tgoal）：訓練紀錄與�
 | v0.11 | 11 | 11/15 | ③ PB 與目標建議：`PREP.difficulty/riegel/suggest/harvestPbs`、準備頁一鍵套用＋算式展開、`pgMore` PB 管理 | PR #10 |
 | v0.12 | 12 | 11/15 | ② 目標時間區間：`makePlan()` 純函式＋理想／保底雙線、語音／瞄一眼／計畫表／Strip ▽ 標記與 `Course.zone()` | PR #11 |
 | v0.13 | 13 | 11/15 | 小維護：京都每週排程改為監看 `Run-Navigator`（GitHub Actions）；更新京都／東京／紐約最後查核日為 `2026-11-15` | PR #12 |
+| v0.14 | 14 | 11/15 | 加入世界七大馬拉松其餘 5 場（波士頓、倫敦、雪梨、柏林、芝加哥）完整賽事包、`map.png`、特色圖示與組別（含東京・紐約湊齊七大馬） | PR #13 |
 
 接下來的三件事建議用 v0.9、v0.10、v0.11（versionCode 9、10、11），把 0.8 留給 PR #6。`versionCode` 在 `main` 上必須一直變大；哪個 PR 比較晚合併，就由它在合併前改成比 `main` 大的號碼。
 

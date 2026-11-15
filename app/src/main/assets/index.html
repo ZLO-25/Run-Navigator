@@ -93,7 +93,7 @@ canvas{display:block;width:100%}
 .lm{display:flex;gap:12px;align-items:center}
 .lmnum{flex:none;width:46px;height:46px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:17px}
 .lmnum.cut{background:var(--bad);color:#fff}
-.lmname{font-size:21px;font-weight:800;line-height:1.2}
+.lmname{font-size:21px;font-weight:800;line-height:1.2;min-width:0;overflow-wrap:anywhere}
 .lmdist{margin-left:auto;font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .lmnote{margin-top:8px;font-size:17px}
 .eta{margin-top:8px;font-size:17px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -805,6 +805,11 @@ const ITEM_ICONS = {
   'yangmingshan-21k-2026': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M4 25 13 11l6 8 4-5 9 11" stroke="#3ddc97" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 29c4-3.5 18-3.5 22 0" stroke="#5ab8ff" stroke-width="2.2" stroke-linecap="round"/><path d="M13 28v-2.5M23 28v-2.5" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
   'yangmingshan-42k-2026': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M3 28 12 12l5 6 5-7 11 17H3Z" stroke="#ff6b5e" stroke-width="2.1" stroke-linejoin="round"/><path d="M19 9c0-2 2.5-2.5 2-4.5M23.5 9.5c0-1.8 2-2 1.8-4" stroke="#ffc24a" stroke-width="1.8" stroke-linecap="round"/><path d="M10 28c3-2.5 6-2 9-4s5-1 8 4" stroke="#ffc24a" stroke-width="1.8" stroke-linecap="round" opacity=".85"/></svg>',
   'nyc-marathon-2027': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M11 8c1.5-2.5 3.5-2.5 3 0-.5 1.8-2.5 2-3 0Z" fill="#ffc24a"/><path d="M12.5 11v12M10 13h5M21 15l-3 13h7l-2-13h-2Z" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 28c4-4 10-4 14 0M18 28c4-4 10-4 14 0" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  'boston-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M9 26V13h18v13" stroke="#5ab8ff" stroke-width="2" stroke-linejoin="round"/><path d="M13 13l5-6 5 6" stroke="#ffc24a" stroke-width="2.1" stroke-linejoin="round"/><path d="M6 27c4-2 8-2 12 0s8 2 12 0" stroke="#2dd4bf" stroke-width="1.9" stroke-linecap="round"/><circle cx="18" cy="19.5" r="2.2" fill="#ffc24a"/></svg>',
+  'london-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M9 27V11l2.5-4 2.5 4v16M22 27V11l2.5-4 2.5 4v16" stroke="#ff6b5e" stroke-width="2" stroke-linejoin="round"/><path d="M14 16h8M4 25c5-2.5 9-2.5 14 0s9 2.5 14 0" stroke="#5ab8ff" stroke-width="2" stroke-linecap="round"/></svg>',
+  'sydney-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 24c4-9 11-12 16-7-4 1-7 4-8 7H6Z" stroke="#2dd4bf" stroke-width="2" stroke-linejoin="round"/><path d="M17 24c3-7 8-9 12-5-3 1-5 3-6 5h-6Z" stroke="#ffc24a" stroke-width="1.9" stroke-linejoin="round"/><path d="M4 27h28M7 18c6-8 16-8 22 0" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round" opacity=".85"/></svg>',
+  'berlin-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 14h22M5 27h26M9 14v13M13.5 14v13M18 14v13M22.5 14v13M27 14v13" stroke="#ffc24a" stroke-width="2" stroke-linecap="round"/><path d="M13 14l2-5h6l2 5" stroke="#ff6b5e" stroke-width="2" stroke-linejoin="round"/></svg>',
+  'chicago-marathon': '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 27V14h5v13M14 27V9l3-3 3 3v18M22 27V16h6v11" stroke="#3ddc97" stroke-width="2" stroke-linejoin="round"/><path d="M4 28c6-2 10-2 14 0s8 2 14 0" stroke="#5ab8ff" stroke-width="1.8" stroke-linecap="round"/></svg>',
   freerun: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 24c4 0 6-6 9-10l3 3c2 2 5 3 10 3.5 1.5.2 2.5 1.3 2.5 2.5 0 1.2-1 2-2.5 2H7.5C6.4 25 5.5 24.5 6 24Z" stroke="#5ab8ff" stroke-width="2.1" stroke-linejoin="round"/><circle cx="26" cy="10" r="2.2" fill="#3ddc97"/><path d="M22.5 10a3.5 3.5 0 0 1 7 0" stroke="#3ddc97" stroke-width="1.7" stroke-linecap="round" opacity=".75"/></svg>',
   import: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 27c3-6 7-6 10-1s7 5 11-4" stroke="#c9a7ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/><path d="M25 8a4.5 4.5 0 0 1 4.5 4.5c0 3.2-4.5 7.5-4.5 7.5s-4.5-4.3-4.5-7.5A4.5 4.5 0 0 1 25 8Z" stroke="#c9a7ff" stroke-width="2"/><circle cx="25" cy="12.5" r="1.5" fill="#c9a7ff"/></svg>'
 };
@@ -836,6 +841,25 @@ const RACE_CATS = {
   'nyc-marathon-2027': [
     { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 770, def_target: 330, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（26.2 mi，史坦頓島 → 中央公園）' },
     { id: '5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六）', km: 5, limit_min: 90, def_target: 30, cat: 'short', route: false, gun_txt: '08:30', note: '週六 UN 總部 → 中央公園暖身賽（主賽日賽道以 42.2K 為主）' }
+  ],
+  'boston-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松（點對點）', km: 42.195, limit_min: 450, def_target: 270, cat: '42k', route: true, gun_txt: '10:00', note: '愛國者日週一經典點對點賽道（Hopkinton → Boston Boylston St，Wave 1 10:00 / Wave 4 11:15）' },
+    { id: '5k', label: '週六 5K', full: 'B.A.A. 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '08:00', note: '週六 Boston Common → Boylston St 終點暖身賽（主賽日賽道以 42.2K 為主）' }
+  ],
+  'london-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 600, def_target: 330, cat: '42k', route: true, gun_txt: '09:30', note: 'Blackheath 分色起跑（含 2027 特別版週日延長 8 小時步速收尾；週六為青少年 Mini Marathon）' }
+  ],
+  'sydney-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 540, def_target: 330, cat: '42k', route: true, gun_txt: '06:30', note: '世界第七大馬（2025 升格）：Miller St → 港灣大橋 → 雪梨歌劇院前院' },
+    { id: '10k', label: '10K', full: 'TCS Sydney Marathon 10K', km: 10, limit_min: 110, def_target: 60, cat: 'short', route: false, gun_txt: '06:45', note: '港灣大橋體驗短程組（此賽道指南以 42.2K 全馬為主）' }
+  ],
+  'berlin-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 465, def_target: 300, cat: '42k', route: true, gun_txt: '09:15', note: '世界紀錄溫床高速環線（Straße des 17. Juni 起跑 → 布蘭登堡門衝線，淨計時 6h15）' },
+    { id: '5k', label: '週六 5K', full: 'GENERALI 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '10:00', note: '賽前週六最後 5 公里預演進布蘭登堡門（此賽道指南以 42.2K 為主）' }
+  ],
+  'chicago-marathon': [
+    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 460, def_target: 300, cat: '42k', route: true, gun_txt: '07:30', note: 'Grant Park 同點起終極平坦環線（穿梭芝加哥 29 區・限時 6h30，末波 08:40 → 15:10）' },
+    { id: '5k', label: '週六 5K', full: 'Abbott Chicago 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '07:30', note: '賽前週六 Grant Park → 市中心環線暖身賽（此賽道指南以 42.2K 為主）' }
   ]
 };
 function getRaceCats(r) {
@@ -854,6 +878,11 @@ const RACE_STYLE = {
   'kyoto-2027': { loc: '🇯🇵 日本京都', col: '#c9a7ff', route: '西京極 → 嵐山・鴨川 → 平安神宮' },
   'tokyo-marathon': { loc: '🇯🇵 日本東京', col: '#5ab8ff', route: '東京都廳 → 淺草・銀座 → 東京站前' },
   'nyc-marathon-2027': { loc: '🇺🇸 美國紐約', col: '#ffc24a', route: '史坦頓島 → 五區跨橋 → 中央公園' },
+  'boston-marathon': { loc: '🇺🇸 美國波士頓', col: '#5ab8ff', route: 'Hopkinton → Wellesley・心碎坡 → Boylston St' },
+  'london-marathon': { loc: '🇬🇧 英國倫敦', col: '#ff6b5e', route: 'Blackheath → 倫敦塔橋・金絲雀碼頭 → 白金漢宮' },
+  'sydney-marathon': { loc: '🇦🇺 澳洲雪梨', col: '#2dd4bf', route: 'North Sydney → 港灣大橋・百年公園 → 雪梨歌劇院' },
+  'berlin-marathon': { loc: '🇩🇪 德國柏林', col: '#ffc24a', route: '勝利紀念柱 → 亞歷山大廣場・波茨坦 → 布蘭登堡門' },
+  'chicago-marathon': { loc: '🇺🇸 美國芝加哥', col: '#3ddc97', route: 'Grant Park → 林肯公園・唐人街 → 羅斯福坡' },
   'sunmoonlake-29k-2026': { loc: '🇹🇼 南投日月潭', col: '#2dd4bf', route: '向山環湖一圈（文武廟・玄奘寺・頭社三坡）' },
   'yangmingshan-21k-2026': { loc: '🇹🇼 台北陽明山', col: '#3ddc97', route: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
   'yangmingshan-42k-2026': { loc: '🇹🇼 台北陽明山', col: '#ff6b5e', route: '中山樓 ⇄ 金山折返（後半 16K 長爬）' }

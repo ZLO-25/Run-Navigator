@@ -1,0 +1,183 @@
+{
+  "format": 1,
+  "id": "chicago-marathon",
+  "name": "芝加哥馬拉松 2027（全馬）",
+  "short": "芝加哥 42K",
+  "kind": "race",
+  "start_name": "Grant Park（Columbus Dr）",
+  "finish_name": "Grant Park（Columbus Dr 終點）",
+  "time": {
+    "tz": "America/Chicago",
+    "tz_label": "美中時間",
+    "tz_short": "美中",
+    "gun": "2027-10-10T07:30:00-05:00",
+    "limit_min": 460
+  },
+  "distance_m": 42195,
+  "route": {
+    "source": "Bank of America Chicago Marathon 2026 GPX（Bearwick/marathon-medal-map-display，1260 點含海拔，42.193→42.195 km）",
+    "out_and_back": true
+  },
+  "checkin": "報到：賽前週四至週六\nMcCormick Place 博覽會",
+  "params": {
+    "target": {
+      "default": 300,
+      "options": [
+        { "v": 210 },
+        { "v": 240 },
+        { "v": 270 },
+        { "v": 300 },
+        { "v": 330 },
+        { "v": 360 }
+      ]
+    },
+    "delay": {
+      "default": 35,
+      "options": [
+        { "v": 5, "label": "第 1 波 7:30" },
+        { "v": 35, "label": "第 2 波 8:00" },
+        { "v": 70, "label": "第 3 波 8:35" }
+      ],
+      "note": "大眾分 3 波出發（約 7:30 / 8:00 / 8:35），每波再細分 Corral。依你號碼布的波次選擇過線延遲。"
+    }
+  },
+  "landmarks": [
+    { "n": "起", "name": "Grant Park（Columbus Dr）", "km": 0, "note": "一開跑就鑽進芝加哥高樓下與地下道（Lower Wacker）！前 3K GPS 必飄，看錶別看瞬時配速。" },
+    { "n": "1", "name": "River North（LaSalle St）", "km": 5.43, "note": "穿過芝加哥河鋼橋，沿寬直的 LaSalle 街一路往北進林肯公園。" },
+    { "n": "2", "name": "林肯公園 Lincoln Park（8.6K）", "km": 8.56, "note": "跑進綠樹林蔭區，GPS 訊號變得很乾淨，穩定輸出目標均速。" },
+    { "n": "3", "name": "Boystown 北端折返（13.4K）", "km": 13.4, "note": "全賽道最北端（Addison 附近）大迴轉南下，加油氣氛超熱鬧。" },
+    { "n": "4", "name": "Old Town 老城區（18.3K）", "km": 18.34, "note": "穿過 Wells St 回市中心邊緣，20K 前注意 Mile 12.4 官方 Maurten 膠站。" },
+    { "n": "掃1", "name": "半程點（21.1K 市中心西緣）", "km": 21.1, "cut": true, "note": "21.1K！剛過半程轉往西區（West Loop），留意 6:30（約 15:00/mi）收尾線。" },
+    { "n": "5", "name": "小義大利／西向極點（25K）", "km": 25.0, "note": "Jackson Blvd 折返前緣，路寬人穩，守住均速準備往南切。" },
+    { "n": "6", "name": "Pilsen 皮爾森區（30.8K）", "km": 30.84, "note": "18th St 拉丁壁畫與街頭音樂熱情加油！29.1K 先領第二波官方 Maurten 膠。" },
+    { "n": "掃2", "name": "Chinatown 唐人街（34.4K）", "km": 34.43, "cut": true, "note": "過 Cermak 橋見中國城牌樓、鑼鼓舞獅！第 21 英里最關鍵的心態提振點。" },
+    { "n": "7", "name": "Bronzeville 最南折返（37.5K）", "km": 37.49, "note": "第 35 街折返點！沿密西根大道筆直向北剩不到 5 公里，與南下跑者隔街並進。" },
+    { "n": "8", "name": "Mount Roosevelt 最後斜坡（41.7K）", "km": 41.72, "note": "第 26 英里！全場幾乎平路後唯一最有感的 200 m 短上坡（Roosevelt Rd 天橋），撐過左轉就是終點直路！" },
+    { "n": "終", "name": "Grant Park 終點", "km": 42.195, "note": "Columbus Dr 最後 400 公尺衝刺！末波起限 6 小時 30 分（約 15:10 關閉）。" }
+  ],
+  "sections": [
+    { "a": 0, "b": 8.56, "from": "Grant Park", "to": "林肯公園", "terr": "市中心平路（頭 3K 含地下穿道／高樓遮蔽）", "act": "前 3K GPS 亂跳是正常現象！用體感與英里牌穩住" },
+    { "a": 8.56, "b": 21.1, "from": "林肯公園", "to": "市中心半程", "terr": "北返綠蔭接市區平坦大道", "act": "13.4K 折返後一路順跑，Mile 12.4 領第一站官方膠" },
+    { "a": 21.1, "b": 30.84, "from": "市中心西緣", "to": "Pilsen", "terr": "西區平直路面，29K 前後進膠站", "act": "撞牆前兆區：數好 20 個水站的節奏，別停步" },
+    { "a": 30.84, "b": 37.49, "from": "Pilsen", "to": "Bronzeville", "terr": "經 Cermak 小橋入唐人街，往南 35th St 折返", "act": "靠唐人街鑼鼓聲醒神，35 街大折返後準備最後 5K" },
+    { "a": 37.49, "b": 41.72, "from": "Bronzeville", "to": "Mount Roosevelt", "terr": "Michigan Ave 長直路（注意 36–39K 去回程並排）", "act": "盯緊前方芝加哥天際線，一步步把距離收完" },
+    { "a": 41.72, "b": 42.195, "from": "Mount Roosevelt", "to": "Grant Park 終點", "terr": "先上 Roosevelt Rd 短斜坡，隨即下坡轉 Columbus Dr", "act": "翻過小坡左轉就是 400 公尺終點拱門！" }
+  ],
+  "cutoffs": [
+    { "km": 21.1, "name": "6 小時 30 分半程收尾線（12:00）", "min": 270 },
+    { "km": 34.43, "name": "唐人街收尾線參考（14:05）", "min": 395 },
+    { "km": 42.195, "name": "終點 6 小時 30 分關門（15:10）", "min": 460 }
+  ],
+  "aid": {
+    "labels": { "w": "水", "g": "運動飲料", "e": "膠", "f": "食" },
+    "say": { "wg": "開特力和水", "wge": "開特力、水和 Maurten 膠", "wgf": "開特力、水和香蕉" },
+    "legend": [["w", "水（每站後段）"], ["g", "Gatorade Endurance（每站前段）"], ["e", "Maurten 膠站"], ["f", "香蕉"]],
+    "stations": [
+      { "n": 1, "km": 2.6, "km_text": "Mile 1.6", "name": "第1站 Dearborn（Loop）", "s": "wg" },
+      { "n": 2, "km": 5.3, "km_text": "Mile 3.3", "name": "第2站 LaSalle（River North）", "s": "wg" },
+      { "n": 3, "km": 7.6, "km_text": "Mile 4.7", "name": "第3站 Lincoln Park 南", "s": "wg" },
+      { "n": 4, "km": 9.8, "km_text": "Mile 6.1", "name": "第4站 Lincoln Park 中", "s": "wg" },
+      { "n": 5, "km": 12.1, "km_text": "Mile 7.5", "name": "第5站 Lakeview", "s": "wg" },
+      { "n": 6, "km": 14.3, "km_text": "Mile 8.9", "name": "第6站 Boystown 回程", "s": "wg" },
+      { "n": 7, "km": 16.4, "km_text": "Mile 10.2", "name": "第7站 Lincoln Park 西", "s": "wg" },
+      { "n": 8, "km": 18.2, "km_text": "Mile 11.3", "name": "第8站 Old Town Wells St", "s": "wg" },
+      { "n": 9, "km": 20.0, "km_text": "Mile 12.4", "name": "第9站 市中心北（官方膠站）", "s": "wge" },
+      { "n": 10, "km": 21.9, "km_text": "Mile 13.6", "name": "第10站 West Loop", "s": "wg" },
+      { "n": 11, "km": 24.0, "km_text": "Mile 14.9", "name": "第11站 Jackson West", "s": "wg" },
+      { "n": 12, "km": 26.2, "km_text": "Mile 16.3", "name": "第12站 Little Italy", "s": "wg" },
+      { "n": 13, "km": 27.7, "km_text": "Mile 17.2", "name": "第13站 Racine", "s": "wg" },
+      { "n": 14, "km": 29.1, "km_text": "Mile 18.1", "name": "第14站 Halsted（官方膠站）", "s": "wge" },
+      { "n": 15, "km": 31.1, "km_text": "Mile 19.3", "name": "第15站 Pilsen 18th St", "s": "wg" },
+      { "n": 16, "km": 33.2, "km_text": "Mile 20.6", "name": "第16站 Halsted/Cermak（香蕉）", "s": "wgf" },
+      { "n": 17, "km": 35.1, "km_text": "Mile 21.8", "name": "第17站 唐人街／Wentworth", "s": "wgf" },
+      { "n": 18, "km": 37.2, "km_text": "Mile 23.1", "name": "第18站 Bronzeville 35th", "s": "wgf" },
+      { "n": 19, "km": 39.1, "km_text": "Mile 24.3", "name": "第19站 Michigan Ave 26th", "s": "wg" },
+      { "n": 20, "km": 40.9, "km_text": "Mile 25.4", "name": "第20站 Motor Row（18th St）", "s": "wg" }
+    ]
+  },
+  "gels": [
+    { "km": 9.8, "label": "#1", "aid": 4, "note": "第 4 站林肯公園配水吞第一包膠（自備）" },
+    { "km": 20.0, "label": "#2", "aid": 9, "note": "Mile 12.4 官方 Maurten 膠站（Gel 100 / Caf 100）" },
+    { "km": 29.1, "label": "#3", "aid": 14, "note": "Mile 18.1 官方第二座 Maurten 膠站（進 Pilsen 前）" },
+    { "km": 35.1, "label": "#4", "aid": 17, "note": "唐人街後第 17 站最後一包膠／香蕉" }
+  ],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      { "from": 0, "to": 3, "x": 1.03, "why": "Grant Park 起跑人潮多＋鋼橋" },
+      { "from": 41.5, "to": 42.195, "x": 1.03, "why": "Mount Roosevelt 最後短斜坡" }
+    ],
+    "fatigue": { "from_km": 29, "x": 0.05 },
+    "cut_buffer_min": { "first_n": 2, "early": 4, "later": 6 },
+    "tight_hint": "芝加哥極度平坦快速！總時限自末波起 6 小時 30 分（約 15:00/mi），只要注意頭 3 公里摩天樓 GPS 失準別慌張亂加速。"
+  },
+  "finish": { "radius_m": 100, "min_frac": 0.98 },
+  "text": {
+    "pre_start": "極平坦三葉草單一大迴圈！分 3 波起跑（7:30／8:00／8:35）。Grant Park 前 3 公里大樓與地下道會干擾 GPS，請看 1 英里實體牌並按「我過起跑線了」。",
+    "plan_note": "芝加哥時間（CDT, UTC-5）。芝加哥全場共有完整 20 座補給站（每一站都是先開特力、再給水）。",
+    "cut_title_note": "6 小時 30 分（末波約 8:40 過線 → 15:10 截止）",
+    "cut_note": "官方依最後一波起跑後 6 小時 30 分（約 9:19/km 步速）管理賽道解封；跟不上會請上收容車或人行道。",
+    "prep_warn": "最大新手地雷：起跑前 3K 高樓＋Lower Wacker 地下道讓 GPS 手錶顯示「快 30 秒」或「慢 1 分鐘」，千萬別信手錶瞬時配速而暴衝！",
+    "aid_note": "20 座官方水站順序全部統一：醫護站 → 流動廁所 → Gatorade Endurance（檸檬萊姆）→ 水（道路兩側皆有）。Mile 12.4（第9站）與 Mile 18.1（第14站）發 Maurten 膠；後半 20–23 英里有香蕉；部分站前設 Culligan 濾水補充點。",
+    "gel_pre": ["起跑前", "Grant Park 進 Corral 前 15 分吃一包"],
+    "gel_note": "芝加哥每一站前後都有 Gatorade 與水，想喝水記得跑過前段的黃色飲料桌，到後段的白色水桌再拿水。",
+    "map_note": "36–39K Michigan Ave 南北對向並排行走，地圖已往右側偏移方便辨識。",
+    "phases": [
+      ["0–8.6K", "下穿道抗干擾＋北進林肯公園", "前 3K 不看手錶瞬時配速，到 LaSalle 與公園自然穩定"],
+      ["8.6–21.1K", "林肯公園折返到半程", "氣氛輕鬆綠蔭多，Mile 12.4 領官方 Maurten 膠"],
+      ["21.1–34.4K", "西區到 Pilsen 與唐人街", "25K 後穩步推進，進皮爾森區聽音樂、34K 見唐人街"],
+      ["34.4–42.2K", "Bronzeville 折返＋小山坡衝終點", "37.5K 折返直指天際線，41.7K 翻過小坡衝進 Grant Park！"]
+    ],
+    "tips_title": "芝加哥特有的提醒",
+    "tips": [
+      "**下穿道與市中心（0–3K、21K）GPS 必飄**：賽前在手錶開手動計圈（Manual Lap）配合英里牌最準；本 App 會在開闊區自動拉回正確公里數。",
+      "芝加哥「風城」清晨起跑常 7–12°C，穿可拋棄舊衣；但接近中午氣溫偶爾飆到 18–22°C＋無遮蔽大太陽，水站不要跳過。",
+      "賽道上共有 **18–20 座金屬鐵網格大橋**（芝加哥河鋼橋），表面通常會鋪地毯防滑，若沒鋪到的接縫處留意腳步、下雨更要小心。",
+      "過終點領完獎牌與海尼根無酒精／啤酒（依年滿年齡）後，親友會合點設定在 Grant Park 指定的字母看板區最不易失聯。",
+      "芝加哥允許戴耳機（建議骨傳導或保留環境音），賽道與鐵路交會處及鋼橋多，保持警覺。"
+    ]
+  },
+  "schedule": {
+    "rule": "每年 10 月第 2 個週日（哥倫布日前一週日）；抽籤通常在前一年 10 月中至月底開放約 3 週、12 月上旬公布",
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-10-10",
+        "race_est": false,
+        "entry": "2027 屆抽籤 2026/10/8–10/29（已截止），2026/12/8 公布抽籤結果；尚可走慈善募款",
+        "entry_short": "抽籤 12/8 公布結果",
+        "entry_est": false,
+        "open": "2026-10-08",
+        "close": "2026-10-29",
+        "src": [
+          ["Bank of America Chicago Marathon 官方", "https://www.chicagomarathon.com/"]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-10-08",
+        "race_est": true,
+        "entry": "預計 2027/10 中旬至 11 月初開放抽籤，12 月上旬公布",
+        "entry_short": "約 2027/10 中抽籤",
+        "entry_est": true,
+        "basis": "哥倫布日前一個週日＋2027 屆報名時程"
+      },
+      {
+        "year": 2029,
+        "race": "2029-10-07",
+        "race_est": true,
+        "entry": "預計 2028/10 中旬至 11 月初開放抽籤（同上）",
+        "entry_short": "約 2028/10 中抽籤",
+        "entry_est": true,
+        "basis": "哥倫布日前一個週日＋往年抽籤時程"
+      }
+    ],
+    "note": "六／七大馬中抽籤中籤率相對較高（僅次於或接近柏林）、且路線極平坦、時間標準達標者還可直接取得保證名額。"
+  },
+  "sources": [
+    { "item": "2027 賽期與抽籤", "src": "chicagomarathon.com 官方（2027/10/10 第 49 屆、抽籤 2026/10/8–10/29、12/8 放榜）", "trust": "高" },
+    { "item": "路線與海拔", "src": "2026 Bank of America Chicago Marathon GPX（1260 點含海拔，42.193 km，誤差 <0.05 km）", "trust": "高" },
+    { "item": "20 座補給與膠站", "src": "Chicago Marathon 官方 Mile 1.6–25.4 共 20 站、Mile 12.4/18.1 Maurten 膠站", "trust": "高" }
+  ]
+}

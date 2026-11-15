@@ -1,0 +1,182 @@
+{
+  "format": 1,
+  "id": "boston-marathon",
+  "name": "波士頓馬拉松 2027（全馬）",
+  "short": "波士頓 42K",
+  "kind": "race",
+  "start_name": "Hopkinton 鎮中心",
+  "finish_name": "Boylston St（Copley 廣場）",
+  "time": {
+    "tz": "America/New_York",
+    "tz_label": "美東時間",
+    "tz_short": "美東",
+    "gun": "2027-04-19T10:00:00-04:00",
+    "limit_min": 450
+  },
+  "distance_m": 42195,
+  "route": {
+    "source": "Boston Marathon 官方 GPX（williamsorg4/BostonMarathonTimeModel，673 點含海拔，縮放成 42.195 km）",
+    "out_and_back": false
+  },
+  "checkin": "報到 4/16–4/18（賽前週五至週日）\nBoston Convention / 博覽會（以官網為準）",
+  "params": {
+    "target": {
+      "default": 270,
+      "options": [
+        { "v": 210 },
+        { "v": 240 },
+        { "v": 270 },
+        { "v": 300 },
+        { "v": 330 },
+        { "v": 360 }
+      ]
+    },
+    "delay": {
+      "default": 33,
+      "options": [
+        { "v": 5, "label": "第 1 波 10:00" },
+        { "v": 20, "label": "第 2 波 10:15" },
+        { "v": 33, "label": "第 3 波 10:28" },
+        { "v": 46, "label": "第 4 波 10:41" },
+        { "v": 66, "label": "第 5 波 11:01" },
+        { "v": 86, "label": "第 6 波 11:21" }
+      ],
+      "note": "B.A.A. 採 6 波分組起跑（依達標成績分波）。過線延遲請依號碼布波次調整。"
+    }
+  },
+  "landmarks": [
+    { "n": "起", "name": "Hopkinton 起跑線", "km": 0, "note": "下坡開局！前 6 公里一路往下，別被下坡帶快傷股四頭肌。" },
+    { "n": "1", "name": "Framingham（10.6K）", "km": 10.56, "note": "進入較寬的市鎮大道，穩住目標配速。" },
+    { "n": "2", "name": "Natick（16.4K）", "km": 16.36, "note": "接近 10 英里，補水吃膠、確認雙腿還沒用力過猛。" },
+    { "n": "3", "name": "Wellesley 尖叫隧道", "km": 19.99, "note": "衛斯理女子學院震耳欲聾的加油聲！享受氣氛，別在這裡暴衝。" },
+    { "n": "掃1", "name": "半程點（Wellesley）", "km": 21.1, "cut": true, "note": "過半程！末波 13:44/mi 道路重開基準線約 14:21 經過。" },
+    { "n": "4", "name": "Newton Lower Falls 橋下坡", "km": 25.42, "note": "過 Route 16 橋後隨即開始上坡進入牛頓丘陵。" },
+    { "n": "5", "name": "Newton 消防局右轉", "km": 27.15, "note": "第 17 英里經典右轉進入 Commonwealth Ave，四段丘陵正式開始。" },
+    { "n": "掃2", "name": "Heartbreak Hill 心碎坡頂", "km": 33.39, "cut": true, "note": "第 20–21 英里全場最高點（牛頓第四坡）！縮小步幅撐過頂點。" },
+    { "n": "6", "name": "Boston College（34.3K）", "km": 34.26, "note": "過坡後開始下坡滑回波士頓市區，但大腿已疲勞，小心別踩太重。" },
+    { "n": "7", "name": "Coolidge Corner（38.2K）", "km": 38.19, "note": "Brookline 熱鬧街區，剩不到 4 公里，穩定推向市中心。" },
+    { "n": "8", "name": "Kenmore Square・CITGO 標誌", "km": 40.43, "note": "看到紅白 CITGO 招牌就知道剩 1 英里！" },
+    { "n": "終", "name": "Boylston St（Copley 終點）", "km": 42.195, "note": "Right on Hereford, Left on Boylston！17:30 終點計時關閉。" }
+  ],
+  "sections": [
+    { "a": 0, "b": 10.56, "from": "Hopkinton", "to": "Framingham", "terr": "淨下坡（海拔 143 m 降至 50 m）", "act": "刻意壓慢前 5K，保護股四頭肌不提前耗損" },
+    { "a": 10.56, "b": 21.1, "from": "Framingham", "to": "Wellesley 半程", "terr": "微起伏平路，經過衛斯理尖叫隧道", "act": "維持平穩呼吸與心率，準備迎接牛頓坡" },
+    { "a": 21.1, "b": 27.15, "from": "Wellesley", "to": "Newton 消防局", "terr": "25K 陡下過橋後轉入牛頓山腳", "act": "過 Route 16 後收心，準備上坡前先補膠" },
+    { "a": 27.15, "b": 34.26, "from": "Newton 消防局", "to": "Boston College", "terr": "牛頓四連坡（第 17–21 英里，頂點 Heartbreak Hill 72 m）", "act": "改看體感與步頻、不盯配速；過頂點慢慢放開" },
+    { "a": 34.26, "b": 40.43, "from": "Boston College", "to": "Kenmore Square", "terr": "一路下坡接市區平坦大道", "act": "用柔和步幅滑行，避免抽筋" },
+    { "a": 40.43, "b": 42.195, "from": "Kenmore Square", "to": "Boylston 終點", "terr": "穿過地下道小升坡後接直線終點", "act": "轉進 Boylston St，享受最後 600 公尺歡呼" }
+  ],
+  "cutoffs": [
+    { "km": 21.1, "name": "道路重開參考（半程）", "min": 261 },
+    { "km": 33.39, "name": "道路重開參考（心碎坡頂）", "min": 366 },
+    { "km": 42.195, "name": "終點 Copley 17:30 計時關閉", "min": 450 }
+  ],
+  "aid": {
+    "labels": { "w": "水", "g": "運動飲料", "e": "膠" },
+    "say": { "w": "水", "wg": "水和開特力", "wge": "水、開特力和 Maurten 能量膠" },
+    "legend": [["w", "Poland Spring 水"], ["g", "Gatorade Endurance"], ["e", "Maurten 膠（官方站）"]],
+    "stations": [
+      { "n": 1, "km": 3.2, "km_text": "Mile 2", "name": "Hopkinton 東緣", "s": "wg" },
+      { "n": 2, "km": 6.4, "km_text": "Mile 4", "name": "Ashland", "s": "wg" },
+      { "n": 3, "km": 9.7, "km_text": "Mile 6", "name": "Framingham 外圍", "s": "wg" },
+      { "n": 4, "km": 12.9, "km_text": "Mile 8", "name": "Framingham", "s": "wg" },
+      { "n": 5, "km": 16.1, "km_text": "Mile 10", "name": "Natick 西側", "s": "wg" },
+      { "n": 6, "km": 19.3, "km_text": "Mile 12", "name": "Wellesley 前（膠站）", "s": "wge" },
+      { "n": 7, "km": 22.5, "km_text": "Mile 14", "name": "Wellesley 學院後", "s": "wg" },
+      { "n": 8, "km": 25.7, "km_text": "Mile 16", "name": "Newton Lower Falls", "s": "wg" },
+      { "n": 9, "km": 27.4, "km_text": "Mile 17", "name": "Newton 消防局（膠站）", "s": "wge" },
+      { "n": 10, "km": 30.6, "km_text": "Mile 19", "name": "Newton Centre 坡道", "s": "wg" },
+      { "n": 11, "km": 33.8, "km_text": "Mile 21", "name": "心碎坡頂過後", "s": "wg" },
+      { "n": 12, "km": 34.6, "km_text": "Mile 21.5", "name": "Boston College 後（膠站）", "s": "wge" },
+      { "n": 13, "km": 37.0, "km_text": "Mile 23", "name": "Cleveland Circle", "s": "wg" },
+      { "n": 14, "km": 40.2, "km_text": "Mile 25", "name": "Kenmore Square", "s": "wg" }
+    ]
+  },
+  "gels": [
+    { "km": 9.7, "label": "#1", "aid": 3, "note": "第 6 英里，進入牛頓前預補能量" },
+    { "km": 19.3, "label": "#2", "aid": 6, "note": "第 12 英里官方 Maurten 站，進尖叫隧道前" },
+    { "km": 27.4, "label": "#3", "aid": 9, "note": "第 17 英里官方 Maurten 站，牛頓丘陵開爬前最關鍵" },
+    { "km": 34.6, "label": "#4", "aid": 12, "note": "第 21.5 英里官方 Maurten 站，剛下心碎坡最後衝刺補給" }
+  ],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      { "from": 0, "to": 5, "x": 1.02, "why": "起跑下坡人多且保留肌力" },
+      { "from": 27, "to": 33.5, "x": 1.03, "why": "牛頓四連坡（含心碎坡）" }
+    ],
+    "fatigue": { "from_km": 28, "x": 0.06 },
+    "cut_buffer_min": { "first_n": 2, "early": 4, "later": 6 },
+    "tight_hint": "若你在後段波次起跑，請以官方 13:44/mi（約 8:32/km）道路重開速度為底線，避免 17:30 終點關門前超時。"
+  },
+  "finish": { "radius_m": 100, "min_frac": 0.98 },
+  "text": {
+    "pre_start": "點到點賽道！Athletes' Village（運動員村）在起點搭接駁車前往，分 6 波起跑，過線按「我過起跑線了」。",
+    "plan_note": "波士頓時間（EDT）。前 16 公里淨下坡＋27–33K 牛頓連坡會自動反映在配速模型中。",
+    "cut_title_note": "17:30 終點計時關閉（淨約 6 小時）",
+    "cut_note": "波士頓會隨最後一波起跑後按約 13:44/mi 逐步開放道路；超過時限會請跑者靠右側人行道或搭掃把車，17:30 關閉終點計時。",
+    "prep_warn": "最大陷阱不是心碎坡，而是前 10 公里下坡衝太快把大腿用完，結果在 33K 心碎坡抽筋。",
+    "aid_note": "Mile 2–25 每英里左右皆有 Poland Spring 水與 Gatorade Endurance；此表列出主要 2 英里／官方膠站節點。第 12、17、21.5 英里為官方 Maurten 膠站。",
+    "gel_pre": ["起跑前", "在 Hopkinton 運動員村出發前 15 分吃一包"],
+    "gel_note": "路側水站通常左右交錯設站（先右側後左側），人多時跑左側第二桌比較不擠。",
+    "map_note": "Hopkinton → Boston 點對點一路向東；紅色線段代表牛頓丘陵上坡，藍色代表下坡。",
+    "phases": [
+      ["0–10.6K", "Hopkinton 下坡收斂", "前 5K 刻意慢於目標 5–10 秒，把大腿留到後半"],
+      ["10.6–25.4K", "平緩市鎮與尖叫隧道", "享受 Wellesley 加油聲但保持定速"],
+      ["25.4–34.3K", "牛頓丘陵與心碎坡", "第 17–21 英里改看心率與短步頻，不硬追配速"],
+      ["34.3–42.2K", "下坡滑進 Boylston 終點", "看到 CITGO 看板剩 1 英里，最後直路大口呼吸進終點"]
+    ],
+    "tips_title": "波士頓特有的提醒",
+    "tips": [
+      "**一定要從市區 Boston Common 搭大會黃色接駁校車**到 Hopkinton（車程約 1 小時），不要自行找親友送到起點周邊。",
+      "起點運動員村草地早晚溫差大（常 5–15°C），4 月新英格蘭天氣極難捉摸，熱浪、強風、暴雨都有前例，準備可丟棄保暖外衣與雨衣。",
+      "依規則起點寄物僅能在 Boston Common 先寄好再搭車，終點在 Boylston 領取。",
+      "B.A.A. 官方不鼓勵戴密閉式耳機（需聽見引導與救護車），建議使用骨傳導或外放提醒。",
+      "終點後步行領物與搭地鐵回市區路途較長，先穿暖再走動。"
+    ]
+  },
+  "schedule": {
+    "rule": "每年 4 月第 3 個週一（愛國者日 Patriots' Day）；達標報名通常在前一年 9 月中旬開放一週",
+    "weekday": 0,
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-04-19",
+        "race_est": false,
+        "entry": "BQ 達標報名 2026/9/14–9/18（實際截標線需比達標線快 5:17）；慈善／國際旅遊名額於秋冬另開放",
+        "entry_short": "BQ 已截止 2026/9/18",
+        "entry_est": false,
+        "open": "2026-09-14",
+        "close": "2026-09-18",
+        "src": [
+          ["B.A.A. 2027 報名公告", "https://www.baa.org/races/boston-marathon/enter/registration"],
+          ["B.A.A. 2027 Cutoff 公告（5:17）", "https://www.baa.org/"]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-04-17",
+        "race_est": true,
+        "entry": "預估 2027/9 中旬開放 BQ 達標報名一週（達標窗口含 2026/9–2027/9）",
+        "entry_short": "約 2027/9 中旬 BQ 報名",
+        "entry_est": true,
+        "basis": "4 月第 3 個週一（Patriots' Day）＋往年 9 月第 2–3 週報名慣例"
+      },
+      {
+        "year": 2029,
+        "race": "2029-04-16",
+        "race_est": true,
+        "entry": "預估 2028/9 中旬開放 BQ 達標報名一週（同上）",
+        "entry_short": "約 2028/9 中旬 BQ 報名",
+        "entry_est": true,
+        "basis": "4 月第 3 個週一（Patriots' Day）＋往年 9 月報名慣例"
+      }
+    ],
+    "note": "七大馬中唯一以成績達標（BQ）為主要門檻、且在「週一」舉辦的比賽。未達標可走官方慈善募款或台灣合作旅行社名額。"
+  },
+  "sources": [
+    { "item": "日期與 6 波起跑", "src": "B.A.A. 官方公告（baa.org）：2027/4/19（Patriots' Day），6 波 10:00–11:21", "trust": "高" },
+    { "item": "路線與海拔", "src": "Boston Marathon 2023 GPX（673 點含海拔），起終點與各城鎮距離比對誤差 <0.2 km", "trust": "高" },
+    { "item": "補給與膠站", "src": "B.A.A. 官方賽事說明：Mile 2–25 供水與 Gatorade，Mile 12/17/21.5 供 Maurten 膠", "trust": "高" }
+  ]
+}

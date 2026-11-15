@@ -156,10 +156,11 @@ def check_schedule(rid, r):
     for it in items:
         y = it.get('year')
         rd = iso_date(it.get('race', ''))
+        exp_wd = it.get('weekday', sc.get('weekday', 6))
         if not rd or rd.year != y:
             err(rid, f'schedule {y}：race 要是 {y} 年的 YYYY-MM-DD')
-        elif rd.weekday() != 6:
-            err(rid, f'schedule {y}：比賽日 {rd} 不是週日（真的是的話改這條檢查）')
+        elif rd.weekday() != exp_wd:
+            err(rid, f'schedule {y}：比賽日 {rd} 星期不符（預期 weekday={exp_wd}）')
         for k in ('race_est', 'entry_est'):
             if not isinstance(it.get(k), bool):
                 err(rid, f'schedule {y}：{k} 要是 true（預估）或 false（官方）')
