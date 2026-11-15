@@ -7,8 +7,8 @@ android {
         applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
         minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
         targetSdk 34
-        versionCode 7
-        versionName '0.7'   // 手機版節拍器「直接打拍」與 170–190 捷徑同一行顯示
+        versionCode 8
+        versionName '0.8'   // 訓練紀錄：匯入 Garmin／Strava CSV、首頁訓練總覽、月跑量日曆、近 28 天趨勢
     }
     signingConfigs {
         release {

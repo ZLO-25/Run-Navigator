@@ -111,6 +111,56 @@ const { chromium } = require('playwright');
     await p.screenshot({ path: path.join(out, 'metro.png'), fullPage: true });
     await ctx.close();
   }
+  // 訓練紀錄：匯入 Garmin（英文、中文）與 Strava 的 CSV → 筆數、去重複、分類、月曆、28 天趨勢，且 300 px 不超框
+  {
+    const fx = n => path.join(root, 'tools/fixtures', n);
+    for (const width of [300, 390]) {
+      const { p, ctx, errs } = await open('log&selftest', width);
+      await p.waitForTimeout(150);
+      (await overflow(p)).forEach(x => errs.push('空白狀態 ' + x));
+      await p.setInputFiles('#logFile', [fx('garmin-activities.csv'), fx('garmin-activities-zh.csv'), fx('strava-activities.csv')]);
+      await p.waitForTimeout(300);
+      const msg = await p.textContent('#logMsg');
+      if (!msg.includes('新增 68 筆')) errs.push('第一次匯入應新增 68 筆（Garmin 62＋中文 3＋Strava 3）：' + msg);
+      if (!msg.includes('Strava') || !msg.includes('Garmin')) errs.push('沒有辨識出 Garmin／Strava 格式：' + msg);
+      await p.setInputFiles('#logFile', [fx('strava-activities.csv')]);
+      await p.waitForTimeout(200);
+      if (!(await p.textContent('#logMsg')).includes('新增 0 筆')) errs.push('同一份 CSV 再匯一次應該不重複新增');
+      const kinds = await p.evaluate(() => {
+        const L = TL.load(), by = t => L.find(a => a.title === t) || {};
+        return { race: by('高雄富邦半馬 比賽').kind, tempo: by('節奏跑 3x2K').kind, iv: by('Intervals 6x800').kind, tm: by('跑步機 輕鬆跑').tm,
+          ride: by('Morning Ride').sport, hike: by('合歡北峰').sport, gain: by('大坑 5 號步道').gain, cad: by('Evening Run').cad, nan: JSON.stringify(L).includes('NaN') };
+      });
+      if (kinds.race !== 'race') errs.push('標題有「比賽」應判為比賽');
+      if (kinds.tempo !== 'quality' || kinds.iv !== 'quality') errs.push('節奏跑、Intervals 應判為品質課');
+      if (kinds.tm !== 1) errs.push('跑步機沒被標出');
+      if (kinds.ride !== 'ride' || kinds.hike !== 'hike') errs.push('單車／健行沒分出來');
+      if (kinds.gain !== 1050) errs.push('中文 Garmin「總爬升 1,050」應讀成 1050');
+      if (kinds.cad !== 176) errs.push('Strava 單腳步頻 88 應換算成 176');
+      if (kinds.nan) errs.push('紀錄裡有 NaN');
+      if ((await p.locator('#calBody .tl-chip').count()) < 5) errs.push('月曆沒有畫出跑量色塊');
+      if (!(await p.isVisible('#logTrend'))) errs.push('沒有近 28 天趨勢表');
+      if ((await p.locator('#logList .tl-row').count()) !== 15) errs.push('紀錄列表第一頁應顯示 15 筆');
+      await p.click('[data-lf="race"]');
+      if ((await p.locator('#logList .tl-row').count()) !== 1) errs.push('比賽篩選應只剩 1 筆');
+      await p.click('[data-lf="all"]');
+      await p.click('#bCalPrev'); await p.click('#bCalPrev');
+      (await overflow(p)).forEach(x => errs.push(x));
+      await p.click('#bCalNext'); await p.click('#bCalNext');
+      const bad = await p.evaluate(() => /NaN|undefined/.test(document.getElementById('pgLog').innerText));
+      if (bad) errs.push('紀錄頁出現 NaN／undefined');
+      (await overflow(p)).forEach(x => errs.push(x));
+      if (width === 390) await p.screenshot({ path: path.join(out, 'log.png'), fullPage: true });
+      if (errs.length) { fails++; console.log(`❌ 訓練紀錄（${width} px）：` + errs.join('；')); } else console.log(`✅ 訓練紀錄（${width} px）：Garmin／Strava 匯入、去重複、分類、月曆、趨勢通過`);
+      await ctx.close();
+    }
+    const { p, ctx, errs } = await open('home&selftest', 300);
+    await p.waitForTimeout(150);
+    if (!(await p.isVisible('#homeTL'))) errs.push('首頁沒有訓練總覽卡');
+    if (!(await p.isVisible('#bHomeLog'))) errs.push('沒有紀錄時首頁應出現「匯入紀錄」按鈕');
+    if (errs.length) { fails++; console.log('❌ 首頁訓練總覽：' + errs.join('；')); } else console.log('✅ 首頁訓練總覽：空白狀態引導匯入');
+    await ctx.close();
+  }
   for (const r of races) {
     // 窄螢幕：示範跑全程，每 0.2 秒量一次，最後每個分頁再量一次
     {
