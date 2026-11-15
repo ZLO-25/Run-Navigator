@@ -14,8 +14,9 @@ final class Course {
     double finR = 100, finFrac = 0.98;       // 完賽判定：終點幾公尺內、已跑幾成距離
     Route R;
 
-    int target = 330, delay = 15;
+    int target = 330, target2 = 0, delay = 15;
     double[] plan = new double[0];           // 每個路線點的計畫累積分鐘（從過起跑線起算）
+    double[] plan2 = null;                   // 保底計畫累積分鐘（未設定或無效時為 null）
     double[] secA, secB; String[] secFrom, secTo, secTerr, secAct;
     String[] lmN, lmName; double[] lmKm; boolean[] lmCut;
     double[] cutKm, cutMin; String[] cutName;
@@ -35,7 +36,7 @@ final class Course {
             c.finR = o.optDouble("finR", 100); c.finFrac = o.optDouble("finFrac", 0.98);
             JSONObject r = o.getJSONObject("route");
             c.R = new Route(arr(r.getJSONArray("lat")), arr(r.getJSONArray("lon")), arr(r.getJSONArray("elev")), r.getDouble("total"), r.getDouble("lat0"), r.getDouble("lon0"));
-            c.target = o.optInt("target", 330); c.delay = o.optInt("delay", 0);
+            c.target = o.optInt("target", 330); c.target2 = o.optInt("target2", 0); c.delay = o.optInt("delay", 0);
             c.plan = arr(o.getJSONArray("plan"));
             JSONArray s = o.getJSONArray("sec"); int n = s.length();
             c.secA = new double[n]; c.secB = new double[n]; c.secFrom = new String[n]; c.secTo = new String[n]; c.secTerr = new String[n]; c.secAct = new String[n];
@@ -53,6 +54,9 @@ final class Course {
             c.gelK = new double[n]; c.gelT = new String[n]; c.gelAt = new int[n];
             for (int i = 0; i < n; i++) { JSONObject e = g.getJSONObject(i); c.gelK[i] = e.getDouble("k"); c.gelT[i] = e.getString("t"); c.gelAt[i] = e.getInt("at"); }
             c.ok = c.plan.length == c.R.N && c.secA.length > 0 && c.gun > 0;
+            JSONArray p2 = o.optJSONArray("plan2");
+            if (p2 != null && c.R != null && p2.length() == c.R.N && c.target2 > c.target) c.plan2 = arr(p2);
+            else { c.plan2 = null; c.target2 = 0; }
         } catch (Exception e) { c.ok = false; }
         return c;
     }
@@ -70,6 +74,29 @@ final class Course {
     }
     double paceBetween(double a, double b) { return (planMin(b) - planMin(a)) / Math.max(0.01, b - a); }
     double planPace(double km) { return paceBetween(Math.max(0, km - 0.25), Math.min(totalKm(), km + 0.25)); }
+
+    // ---- 保底與目標區間 ----
+    boolean hasRange() { return ok && plan2 != null && target2 > target; }
+    double plan2Min(double km) { return hasRange() ? R.interp(plan2, km * 1000) : planMin(km); }
+    double plan2Total() { return hasRange() ? plan2[R.N - 1] : planTotal(); }
+    double plan2Km(double min) {
+        if (!hasRange()) return planKm(min);
+        if (min <= 0) return 0; if (min >= plan2Total()) return R.TOTAL / 1000;
+        int lo = 0, hi = R.N - 1; while (hi - lo > 1) { int m = (lo + hi) >>> 1; if (plan2[m] < min) lo = m; else hi = m; }
+        return (lo + (min - plan2[lo]) / (plan2[hi] - plan2[lo])) * R.STEP / 1000;
+    }
+    static final class Zone { final String z; final int sec; Zone(String z, int sec) { this.z = z; this.sec = sec; } }
+    Zone zone(double km, double elMin) {
+        double a = planMin(km);
+        if (!hasRange()) {
+            int d = (int) Math.round((a - elMin) * 60);
+            return new Zone(d >= 0 ? "ahead" : "behind", Math.abs(d));
+        }
+        double b = plan2Min(km);
+        if (elMin <= a) return new Zone("ahead", (int) Math.round((a - elMin) * 60));
+        if (elMin <= b) return new Zone("in", 0);
+        return new Zone("behind", (int) Math.round((elMin - b) * 60));
+    }
 
     // ---- 區段、關門 ----
     int secIndex(double km) { if (secA == null) return -1; for (int i = 0; i < secB.length; i++) if (km < secB[i]) return i; return secB.length - 1; }

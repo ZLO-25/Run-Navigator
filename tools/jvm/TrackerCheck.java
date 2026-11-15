@@ -3,6 +3,8 @@ package zl.runnav.app;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * 發版保護（Java 端）：用畫面算出來的計畫（setCourse 的 JSON），把每個賽事包「假裝跑一遍」。
@@ -18,9 +20,34 @@ public class TrackerCheck {
         int fails = 0;
         // 每場跑 6 種情境：慢／照計畫／快 × GPS 誤差 8 m／15 m（雜訊用固定種子，每次結果一樣）
         double[][] cases = {{1, 8, 42}, {1.25, 8, 7}, {0.8, 8, 11}, {1, 15, 3}, {1.25, 15, 5}, {0.8, 15, 9}};
-        for (String f : args) { String js = Files.readString(Path.of(f)); for (double[] c : cases) fails += check(js, c[0], c[1], (long) c[2]); }
+        for (String f : args) { String js = Files.readString(Path.of(f)); fails += checkZones(js); for (double[] c : cases) fails += check(js, c[0], c[1], (long) c[2]); }
         if (fails > 0) { System.out.println("❌ Java 對位檢查失敗 " + fails + " 項"); System.exit(1); }
         System.out.println("✅ Java 對位檢查全部通過");
+    }
+
+    static int checkZones(String js) {
+        try {
+            JSONObject o0 = new JSONObject(js);
+            o0.remove("plan2"); o0.remove("target2");
+            Course cNo = Course.parse(o0.toString());
+            if (!cNo.ok || cNo.hasRange()) { System.out.println("[" + cNo.id + "] ❌ 拿掉 plan2 後應仍為 ok 且無區間"); return 1; }
+            JSONObject o1 = new JSONObject(js);
+            if (!o1.has("plan2")) {
+                int tgt = o1.optInt("target", 330);
+                o1.put("target2", tgt + 5);
+                JSONArray p1 = o1.getJSONArray("plan"), p2 = new JSONArray();
+                for (int i = 0; i < p1.length(); i++) p2.put(Math.round(p1.getDouble(i) * 1.05 * 100.0) / 100.0);
+                o1.put("plan2", p2);
+            }
+            Course cR = Course.parse(o1.toString());
+            if (!cR.ok || !cR.hasRange()) { System.out.println("[" + cR.id + "] ❌ 有 plan2 應有目標區間"); return 1; }
+            double km = Math.min(10.0, cR.totalKm() * 0.5), a = cR.planMin(km), b = cR.plan2Min(km);
+            String z1 = cR.zone(km, a - 1.0).z, z2 = cR.zone(km, (a + b) / 2.0).z, z3 = cR.zone(km, b + 1.0).z;
+            if (!"ahead".equals(z1) || !"in".equals(z2) || !"behind".equals(z3)) {
+                System.out.println("[" + cR.id + "] ❌ zone() 判定失敗: " + z1 + "/" + z2 + "/" + z3); return 1;
+            }
+            return 0;
+        } catch (Exception e) { System.out.println("❌ checkZones 例外: " + e); return 1; }
     }
 
     static double[] lonlat(Route R, double s) {

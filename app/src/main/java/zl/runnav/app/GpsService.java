@@ -241,10 +241,20 @@ public class GpsService extends Service implements LocationListener {
     }
     String vsPlan(double diffSec) { return Math.abs(diffSec) < 5 ? "跟計畫一樣" : (diffSec >= 0 ? "比計畫快" : "比計畫慢") + sayMS(diffSec); }
     String kmSay(int k, double el) {
-        String t = k + "公里，" + vsPlan(C.planMin(curS() / 1000) * 60 - el * 60) + "。";
+        double km = curS() / 1000;
+        String t;
+        if (C.hasRange()) {
+            Course.Zone z = C.zone(km, el);
+            if ("in".equals(z.z)) t = k + "公里，在目標區間內。";
+            else if ("ahead".equals(z.z)) t = k + "公里，" + vsPlan(z.sec) + (km < 3 && z.sec > 60 ? "，開頭偏快，放慢一點" : "") + "。";
+            else t = k + "公里，比保底慢" + sayMS(z.sec) + "。";
+        } else {
+            t = k + "公里，" + vsPlan(C.planMin(km) * 60 - el * 60) + "。";
+        }
         int nc = C.nextCut(k); double gm = gunMin();
         if (nc >= 0 && gm >= 0) {
-            double mar = C.cutMin[nc] - (gm + C.planMin(C.cutKm[nc]) - C.planMin(k));
+            double planDur = C.hasRange() ? (C.plan2Min(C.cutKm[nc]) - C.plan2Min(k)) : (C.planMin(C.cutKm[nc]) - C.planMin(k));
+            double mar = C.cutMin[nc] - (gm + planDur);
             if (mar < 15 || k % 5 == 0) t += C.cutName[nc] + "關門餘裕" + Math.max(0, (int) Math.floor(mar)) + "分鐘。";
         }
         return t;
@@ -264,7 +274,16 @@ public class GpsService extends Service implements LocationListener {
         double km = curS() / 1000, el = elapsedMin(); int si = C.secIndex(km);
         String to = Course.shortName(C.secTo[si]);
         long planB = baseStart() + (long) (C.planMin(C.secB[si]) * 60000), dl = C.gun + (long) (C.deadlineMin(C.secB[si]) * 60000);
-        return "你在" + String.format(Locale.ROOT, "%.1f", km) + "公里，往" + to + "。" + vsPlan(C.planMin(km) * 60 - el * 60) + "。到" + to + "計畫" + C.sayClock(planB) + "，底線" + C.sayClock(dl) + "。" + C.secAct[si];
+        String diffTxt;
+        if (C.hasRange()) {
+            Course.Zone z = C.zone(km, el);
+            if ("in".equals(z.z)) diffTxt = "在目標區間內";
+            else if ("ahead".equals(z.z)) diffTxt = vsPlan(z.sec);
+            else diffTxt = "比保底慢" + sayMS(z.sec);
+        } else {
+            diffTxt = vsPlan(C.planMin(km) * 60 - el * 60);
+        }
+        return "你在" + String.format(Locale.ROOT, "%.1f", km) + "公里，往" + to + "。" + diffTxt + "。到" + to + "計畫" + C.sayClock(planB) + "，底線" + C.sayClock(dl) + "。" + C.secAct[si];
     }
 
     // ---------- 提醒（同一事件只提醒一次） ----------
@@ -276,7 +295,8 @@ public class GpsService extends Service implements LocationListener {
             int nc = C.nextCut(km);
             if (nc >= 0 && nc < C.cutKm.length - 1 && gm >= 0 && elapsedMin() >= 0) {
                 double left = C.cutMin[nc] - gm, dist = C.cutKm[nc] - km;
-                double marPlan = left - (C.planMin(C.cutKm[nc]) - C.planMin(km));   // 照計畫配速跑過去還剩幾分
+                double needMin = C.hasRange() ? (C.plan2Min(C.cutKm[nc]) - C.plan2Min(km)) : (C.planMin(C.cutKm[nc]) - C.planMin(km));
+                double marPlan = left - needMin;   // 照計畫（有保底則用保底）跑過去還剩幾分
                 if (left > 0 && dist > 0.3 && marPlan < 2) { key = "cut" + nc; say = "關門吃緊，" + C.cutName[nc] + "還有" + (int) left + "分鐘，請加快"; pat = new long[]{0, 400, 200, 400}; }
             }
             if (key.isEmpty()) for (int i = 0; i < C.gelK.length; i++) {
@@ -351,8 +371,15 @@ public class GpsService extends Service implements LocationListener {
         long planB = baseStart() + (long) (C.planMin(C.secB[si]) * 60000), dlB = C.gun + (long) (C.deadlineMin(C.secB[si]) * 60000);
         long nowMs = System.currentTimeMillis();
         if (emin >= 0) {
-            double d = C.planMin(km) - emin;
-            title = String.format(Locale.ROOT, "%.1fK", km) + "｜" + (d >= 0 ? "快 " : "慢 ") + mmss((int) Math.round(Math.abs(d) * 60));
+            String zStr;
+            if (C.hasRange()) {
+                Course.Zone z = C.zone(km, emin);
+                zStr = "in".equals(z.z) ? "區間內" : ("ahead".equals(z.z) ? "快 " : "慢於保底 ") + mmss(z.sec);
+            } else {
+                double d = C.planMin(km) - emin;
+                zStr = (d >= 0 ? "快 " : "慢 ") + mmss((int) Math.round(Math.abs(d) * 60));
+            }
+            title = String.format(Locale.ROOT, "%.1fK", km) + "｜" + zStr;
             int nc = C.nextCut(km);
             if (nc >= 0 && gm >= 0) {
                 double ps = T.paceSec(nowMs, lastFix), pace = ps > 0 ? ps / 60 : C.planPace(km);

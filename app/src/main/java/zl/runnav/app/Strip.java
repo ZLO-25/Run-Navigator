@@ -67,7 +67,7 @@ final class Strip {
             } else edge(cv, p, ck < k0, BAD, "關門線" + (ck < k0 ? "後方 " : "前方 ") + trim1(Math.abs(ck - sM / 1000)) + "K", yCut + 8, W, padL, padR);
             yPlan = big ? 60 : 22;
         }
-        // 計畫的你
+        // 計畫的你（理想實心▲）與保底（空心▽）
         if (elMin >= 0) {
             double pk = c.planKm(elMin);
             if (pk >= k0 && pk <= k1) {
@@ -75,6 +75,16 @@ final class Strip {
                 p.setColor(PLAN); Path t = new Path(); t.moveTo(x, y - 6); t.lineTo(x - 14, y - 30); t.lineTo(x + 14, y - 30); t.close(); cv.drawPath(t, p);
             } else if (!big || gm <= 0 || Math.abs(pk - c.cutLineKm(gm)) > 0.01) {
                 if (big) edge(cv, p, pk < k0, PLAN, "計畫" + (pk < k0 ? "後方 " : "前方 ") + trim1(Math.abs(pk - sM / 1000)) + "K", yPlan + 8, W, padL, padR);
+            }
+            if (c.hasRange()) {
+                double pk2 = c.plan2Km(elMin);
+                if (pk2 >= k0 && pk2 <= k1) {
+                    float x2 = (float) X.applyAsDouble(pk2), y2 = big ? (float) yAt(c, pk2 * 1000, k0, k1, top, base) : base;
+                    Paint st = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    st.setColor(PLAN); st.setStyle(Paint.Style.STROKE); st.setStrokeWidth(big ? 4f : 3f);
+                    Path t2 = new Path(); t2.moveTo(x2, y2 - 6); t2.lineTo(x2 - 12, y2 - 28); t2.lineTo(x2 + 12, y2 - 28); t2.close();
+                    cv.drawPath(t2, st);
+                }
             }
         }
         // 你

@@ -215,6 +215,7 @@ public class MainActivity extends Activity {
                     .put("raceBpm", r.getInt("raceBpm", 0)).put("regCat", r.getString("regCat", ""))
                     .put("start", r.getLong("start", 0)).put("splits", new JSONObject(r.getString("splits", "{}")));
                 if (r.contains("target")) o.put("target", r.getInt("target", 0));
+                if (r.contains("target2")) o.put("target2", r.getInt("target2", 0));
                 if (r.contains("delay")) o.put("delay", r.getInt("delay", 0));
                 String f = r.getString("finished", ""); if (!f.isEmpty()) o.put("finished", new JSONObject(f));
                 String cy = r.getString("cycle", ""); if (!cy.isEmpty()) o.put("cycle", new JSONObject(cy));
@@ -226,7 +227,7 @@ public class MainActivity extends Activity {
             SharedPreferences.Editor e = SHARED.contains(k) ? sp.edit() : race(id).edit();
             if (v == null || v.equals("null")) e.remove(k);
             else switch (k) {
-                case "target": case "delay": case "mbpm": case "macc": case "mdur": case "raceBpm": e.putInt(k, Integer.parseInt(v)); break;
+                case "target": case "target2": case "delay": case "mbpm": case "macc": case "mdur": case "raceBpm": e.putInt(k, Integer.parseInt(v)); break;
                 case "start": e.putLong(k, Long.parseLong(v)); break;
                 default: if (BOOLS.contains(k)) e.putBoolean(k, "1".equals(v)); else e.putString(k, v);
             }
