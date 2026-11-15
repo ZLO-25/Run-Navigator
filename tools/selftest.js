@@ -257,6 +257,71 @@ const { chromium } = require('playwright');
     if (prepErrs.length) { fails++; console.log('❌ ① 備賽週期計畫：\n   - ' + prepErrs.join('\n   - ')); }
     else console.log('✅ ① 備賽週期計畫：純計算、性質檢查與 300 px 畫面驗收全過');
   }
+  // ③ PB 與目標建議：純計算、difficulty、收割＋畫面（300 px 與 390 px）
+  {
+    const pbErrs = [];
+    const r1 = globalThis.PREP.riegel(210, 28.8, 42.195, 1.06), r2 = globalThis.PREP.riegel(210, 28.8, 42.195, 1.12);
+    if (Math.abs(r1 - 314.8) > 0.2 || Math.abs(r2 - 322.1) > 0.2) pbErrs.push(`riegel 算出 ${r1.toFixed(2)} / ${r2.toFixed(2)}`);
+    const expDiff = { 'tokyo-marathon': 1.002, 'nyc-marathon-2027': 1.011, 'kyoto-2027': 1.013, 'sunmoonlake-29k-2026': 1.042, 'yangmingshan-42k-2026': 1.073, 'yangmingshan-21k-2026': 1.081 };
+    for (const r of races) {
+      const d = globalThis.PREP.difficulty(r);
+      if (Math.abs(d - expDiff[r.id]) > 0.002) pbErrs.push(`${r.id} difficulty=${d.toFixed(4)} != ${expDiff[r.id]}`);
+    }
+    const s1 = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 28800, t: 12600, date: '2026-11-01', f: 1.042 }], d2: 42.195, f2: 1.013, limit: 360, delay: 15, today: '2026-11-15' });
+    if (!s1.ok || s1.ideal !== 315 || s1.floor !== 325 || s1.capped !== false) pbErrs.push('範例1不符：' + JSON.stringify(s1));
+    const s2 = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 28800, t: 13500, date: '2026-11-01', f: 1.042 }], d2: 42.195, f2: 1.013, limit: 360, delay: 15, today: '2026-11-15' });
+    if (!s2.ok || s2.ideal !== 340 || s2.floor !== 350 || s2.maxSafe !== 335 || s2.capped !== true) pbErrs.push('範例2不符：' + JSON.stringify(s2));
+    const sShortD2 = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 42195, t: 19800, date: '2026-11-01', f: 1.013 }], d2: 21.0975, f2: 1.081, limit: 240, delay: 5, today: '2026-11-15' });
+    if (!sShortD2.ok || !sShortD2.sameOrShorter || Number.isNaN(sShortD2.ideal)) pbErrs.push('D2<=D1 邊界錯誤');
+    const sOld = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 21097.5, t: 8400, date: '2024-01', f: 1.0 }], d2: 42.195, f2: 1.013, limit: 360, delay: 15, today: '2026-11-15' });
+    if (!sOld.ok || !sOld.old || Number.isNaN(sOld.ideal)) pbErrs.push('舊 PB 邊界錯誤');
+    const sTooShort = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 3000, t: 900, date: '2026-11-01', f: 1.0 }], d2: 42.195, f2: 1.013, limit: 360, delay: 15, today: '2026-11-15' });
+    if (sTooShort.ok || !sTooShort.tooShort) pbErrs.push('D1<5 邊界錯誤');
+    const sGap = globalThis.PREP.suggest({ pbs: [{ k: 'a', d: 5000, t: 1800, date: '2026-11-01', f: 1.0 }], d2: 42.195, f2: 1.013, limit: 360, delay: 15, today: '2026-11-15' });
+    if (!sGap.ok || !sGap.wideGap || Number.isNaN(sGap.ideal)) pbErrs.push('D2/D1>4.5 邊界錯誤');
+    const smlR = races.find(r => r.id === 'sunmoonlake-29k-2026'), kyoR = races.find(r => r.id === 'kyoto-2027');
+    const hv = globalThis.PREP.harvestPbs([], [smlR, kyoR], r => r.id === smlR.id ? { t: 12600, c: Date.parse('2026-11-01T10:05:00+08:00') } : { t: 19800, c: Date.parse('2027-02-21T14:30:00+09:00'), demo: true });
+    if (hv.pbs.length !== 1 || hv.pbs[0].rid !== 'sunmoonlake-29k-2026' || hv.pbs[0].t !== 12600) pbErrs.push('收割邏輯錯誤：' + JSON.stringify(hv));
+    const hvDel = globalThis.PREP.harvestPbs([{ k: hv.pbs[0].k, del: 1 }], [smlR], () => ({ t: 12600, c: Date.parse('2026-11-01T10:05:00+08:00') }));
+    if (hvDel.pbs.length !== 1 || !hvDel.pbs[0].del) pbErrs.push('刪除標記後不應重複收割');
+
+    for (const w of [300, 390]) {
+      const { p, ctx, errs } = await open('race=kyoto-2027&selftest&today=2026-11-15&pb=28800,12600,1.042', w);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      const sug = await p.textContent('#pbSuggest');
+      if (!sug.includes('5:15–5:25')) pbErrs.push(`${w}px 未顯示 5:15–5:25：${sug}`);
+      (await overflow(p)).forEach(x => pbErrs.push(`PB建議(${w}) ${x}`));
+      await p.click('#bPbWhy'); await p.waitForTimeout(80);
+      (await overflow(p)).forEach(x => pbErrs.push(`PB算式展開(${w}) ${x}`));
+      if (!(await p.textContent('#pbSuggest')).includes('坡度修正')) pbErrs.push(`${w}px 算式展開缺少坡度修正`);
+      await p.click('#bPbApply'); await p.waitForTimeout(80);
+      const tv = await p.inputValue('#target');
+      if (tv !== '315') pbErrs.push(`${w}px 套用後 #target=${tv} != 315`);
+      if (!(await p.textContent('#pgPlan')).includes('5:15')) pbErrs.push(`${w}px 計畫頁未更新為 5:15`);
+      if (/NaN|undefined/.test(await p.textContent('#pgPrep'))) pbErrs.push(`${w}px 準備頁出現 NaN`);
+      (await overflow(p)).forEach(x => pbErrs.push(`PB套用後(${w}) ${x}`));
+      if (w === 300) {
+        await p.click('#tRace'); await p.waitForTimeout(50);
+        await p.click('#bMore'); await p.waitForTimeout(80);
+        await p.click('#bPbAddOpen'); await p.waitForTimeout(80);
+        (await overflow(p)).forEach(x => pbErrs.push(`PB手動新增(${w}) ${x}`));
+      }
+      errs.forEach(x => pbErrs.push(x));
+      await ctx.close();
+    }
+    {
+      const { p, ctx } = await open('race=kyoto-2027&selftest&today=2026-11-15&pb=28800,13500,1.042', 300);
+      await p.waitForFunction(() => window.__selftest, null, { timeout: 120000 });
+      await p.click('#tPrep'); await p.waitForTimeout(100);
+      const sug = await p.textContent('#pbSuggest');
+      if (!sug.includes('套用 5:35') || !sug.includes('5:40–5:50')) pbErrs.push('撞關門黃色提醒不符：' + sug);
+      (await overflow(p)).forEach(x => pbErrs.push(`PB撞關門(300) ${x}`));
+      await ctx.close();
+    }
+    if (pbErrs.length) { fails++; console.log('❌ ③ PB 與目標建議：\n   - ' + pbErrs.join('\n   - ')); }
+    else console.log('✅ ③ PB 與目標建議：純計算、difficulty、收割與 300 px 畫面驗收全過');
+  }
   await browser.close();
   if (fails) { console.log(`\n${fails} 項沒過，不發佈。`); process.exit(1); }
   console.log('\n全部賽事包示範跑完，沒有錯誤。');

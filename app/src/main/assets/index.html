@@ -253,6 +253,18 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 .cyc-tbl{font-size:13px;font-variant-numeric:tabular-nums}
 .cyc-tbl th,.cyc-tbl td{padding:4px 3px;white-space:nowrap}
 .cyc-mini{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;min-height:48px}
+/* ---------- PB 與目標建議（③） ---------- */
+.pb-box{background:var(--btn);border-radius:10px;padding:9px 10px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.pb-box.warn{border:1.5px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.pb-line1{font-weight:700;line-height:1.35}
+.pb-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pb-why{font-size:14px;color:var(--sub);line-height:1.45;border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:3px}
+.pb-card{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.pb-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;background:var(--btn);border-radius:10px;font-size:14px}
+.pb-row .pb-del{min-height:36px;min-width:36px;padding:4px 8px;flex:none}
+.pb-hms{display:inline-flex;align-items:center;gap:4px}
+.pb-hms input{font:inherit;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;width:3.1em;min-height:42px;padding:6px 4px;text-align:center;font-variant-numeric:tabular-nums}
+#pbDistKm{font:inherit;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;width:5.5em;min-height:42px;padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:no-preference){#alert.show{animation:pop .25s ease-out}}
 @keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
 </style>
@@ -350,6 +362,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <div class="kv"><label for="regCat">報名組別</label><select id="regCat"></select></div>
    <div class="note" id="regCatNote" hidden></div>
    <div class="kv"><label for="target">目標完賽時間</label><select id="target"></select></div>
+   <div id="pbSuggest"></div>
    <div class="kv"><label for="delay">預估過起跑線延遲</label><select id="delay"></select></div>
    <div class="kv"><label for="raceBpm">跑步節拍</label><select id="raceBpm"></select></div>
    <div class="note" id="delayNote"></div>
@@ -567,6 +580,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
         <h2 style="margin:0">個人偏好（所有賽事共用）</h2>
         <div class="kv"><span>跑者名稱</span><input type="text" id="name" maxlength="20" placeholder="選填，顯示在紀錄" style="width:55%"></div>
         <div class="note">目標時間、起跑延遲是每場各自的設定，在「準備」頁。</div>
+        <div id="pbCard" class="ctl pb-card"></div>
         <div class="kv"><span>震動提醒（補給、吃膠、關門）</span><button class="small" id="bVib">開</button></div>
         <div class="kv"><span>語音提醒（口袋裡也聽得到）</span><button class="small" id="bTts">開</button></div>
         <div class="kv"><span>每 1K 語音報告</span><button class="small" id="bKmv">開</button></div>
@@ -621,7 +635,7 @@ const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');      // 賽事�
 const Q = new URLSearchParams(location.hash.slice(1));
 const SELFTEST = Q.has('selftest'), SAID = [];
 /* 儲存：個人偏好全 App 共用；其他（目標、延遲、起跑時間、分段、完賽、比賽步頻）每場賽事各存一格 */
-const SHARED = new Set(['name', 'vib', 'tts', 'kmv', 'stopv', 'keepOn', 'theme', 'win', 'mbpm', 'macc', 'msnd', 'mvib', 'mdur']);
+const SHARED = new Set(['name', 'vib', 'tts', 'kmv', 'stopv', 'keepOn', 'theme', 'win', 'mbpm', 'macc', 'msnd', 'mvib', 'mdur', 'pbs']);
 function lget(k) { try { return localStorage.getItem('rn_' + k); } catch (e) { return null; } }
 function lset(k, v) { try { if (v == null) localStorage.removeItem('rn_' + k); else localStorage.setItem('rn_' + k, v); } catch (e) { } }
 function gset(id, k, v) {
@@ -633,12 +647,28 @@ function gset(id, k, v) {
 function racePrefs(id) {
   if (NATIVE) { try { return JSON.parse(Android.getPrefs(id)); } catch (e) { return {}; } }
   const j = k => { try { return JSON.parse(lget(id + '.' + k)); } catch (e) { return null; } };
+  const jp = k => { try { const v = JSON.parse(lget(k)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
   const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
   const sn = (k, d) => { const v = lget(k); return v == null ? d : Number(v); };
   const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
-  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '', cycle: j('cycle'),
+  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '', cycle: j('cycle'), pbs: jp('pbs'),
     name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '',
     mbpm: sn('mbpm', 180), macc: sn('macc', 2), msnd: lget('msnd') || 'wood', mvib: b('mvib', false), mdur: sn('mdur', 0) };
+}
+function getPbs() {
+  const p = racePrefs(((window.RACES && window.RACES[0]) || {}).id || '_');
+  return Array.isArray(p.pbs) ? p.pbs : [];
+}
+function savePbs(arr) {
+  if (SELFTEST) return;
+  gset('_', 'pbs', JSON.stringify(arr || []));
+}
+function harvestAllPbs() {
+  const cur = getPbs();
+  if (!window.PREP || !window.RACES) return cur;
+  const res = PREP.harvestPbs(cur, window.RACES, r => racePrefs(r.id).finished);
+  if (res.changed) savePbs(res.pbs);
+  return res.pbs;
 }
 function activeRace() { try { return NATIVE ? Android.activeRace() : ''; } catch (e) { return ''; } }
 function goRace(id, page) { Metro.stop(); location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
@@ -862,6 +892,7 @@ window.R = null;
 window.onBack = () => { if (window.R || Q.has('metro')) { goRace(null); return true; } return false; };
 
 function renderHome() {
+  if (!SELFTEST) harvestAllPbs();
   const P0 = racePrefs((window.RACES[0] || {}).id || '_');
   if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
   Metro.load(P0);
@@ -1184,14 +1215,22 @@ function planPace(km) { return paceBetween(Math.max(0, km - 0.25), Math.min(TOTA
  */
 function rget(k) { return lget(RID + '.' + k); }
 function rset(k, v) { lset(RID + '.' + k, v); }
+const RACE_DIFF = window.PREP ? PREP.difficulty(R) : 1.0;
 const NP = racePrefs(RID);
+if (!SELFTEST) NP.pbs = harvestAllPbs();
 const S = {
   target: NP.target || R.params.target.default, delay: NP.delay != null ? NP.delay : R.params.delay.default,
   name: NP.name || '', vib: NP.vib !== false, tts: NP.tts !== false, kmv: NP.kmv !== false, stopv: NP.stopv !== false, keepOn: !!NP.keepOn,
   theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {},
   mbpm: NP.mbpm || 180, macc: NP.macc || 2, msnd: NP.msnd || 'wood', mvib: !!NP.mvib, raceBpm: NP.raceBpm || 0,
-  cycle: NP.cycle || null
+  cycle: NP.cycle || null, pbs: Array.isArray(NP.pbs) ? NP.pbs : []
 };
+if (SELFTEST && Q.has('pb')) {
+  const pp = (Q.get('pb') || '').split(',').map(Number);
+  if (pp[0] > 0 && pp[1] > 0) {
+    S.pbs = [{ k: 'st1', src: 'race', rid: 'sunmoonlake-29k-2026', name: '日月潭 29K', d: pp[0], t: pp[1], date: todayStr(), f: pp[2] > 0 ? pp[2] : 1.0 }];
+  }
+}
 if (SELFTEST && Q.has('cycle') && window.PREP) {
   const parts = (Q.get('cycle') || '').split(',');
   const wk0 = +parts[0], long0 = +parts[1];
@@ -1783,10 +1822,21 @@ $('bFix').onclick = () => { $('fixPanel').hidden = !$('fixPanel').hidden; };
 $('bGun2').onclick = () => setStartTo(null);
 document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { const s0 = effStart(Date.now()); if (s0 != null) setStartTo(s0 + Number(b.dataset.adj)); });
 $('bGun').onclick = () => { setStartTo(null); schedule(); };
+let pbWhyOpen = false, pbPrevTarget = null, pbFormOpen = false, lastPbSugKey = '';
+function syncTargetOptions(pbMin) {
+  const opts = R.params.target.options.map(o => ({ v: o.v, label: o.label || fmtHM(o.v) }));
+  if (S.target != null && !opts.some(o => o.v === S.target)) {
+    opts.push({ v: S.target, label: fmtHM(S.target) + (pbMin === S.target ? '（PB 建議）' : '（自訂）') });
+  }
+  opts.sort((a, b) => a.v - b.v);
+  fillOpts($('target'), opts, v => fmtHM(v));
+  $('target').value = String(S.target);
+}
 function replan() { buildPlan(S.target, S.delay); pushCourse(); $('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab').textContent = S.delay; renderPlan(); renderPrep(); lastDrawS = -1e9; schedule(); }
-fillOpts($('target'), R.params.target.options, v => fmtHM(v)); fillOpts($('delay'), R.params.delay.options, v => v + ' 分');
+syncTargetOptions(window.PREP ? (PREP.suggest({ pbs: S.pbs, d2: TOTAL_KM, f2: RACE_DIFF, limit: LIMIT, delay: S.delay, today: todayStr() }).applyTarget || null) : null);
+fillOpts($('delay'), R.params.delay.options, v => v + ' 分');
 $('target').value = String(S.target); $('delay').value = String(S.delay);
-$('target').onchange = e => { S.target = Number(e.target.value); pset('target', S.target); replan(); };
+$('target').onchange = e => { pbPrevTarget = null; S.target = Number(e.target.value); pset('target', S.target); replan(); };
 $('delay').onchange = e => { S.delay = Number(e.target.value); pset('delay', S.delay); replan(); };
 $('name').value = S.name; $('name').onchange = e => { S.name = e.target.value.trim(); pset('name', S.name); };
 /* 比賽節拍器（準備頁預先設定、跑步中隨時開關與微調步頻） */
@@ -2021,6 +2071,146 @@ function renderCycle() {
   twoTap($('bCycReset'), '再按一次：確定重設', () => { S.cycle = null; cycleTblOpen = false; cycleLowOpen = false; pset('cycle', null); renderCycle(); });
   if ($('bCycCollapse')) $('bCycCollapse').onclick = () => { cycleLowOpen = false; renderCycle(); };
 }
+function renderPbSuggest() {
+  const el = $('pbSuggest');
+  if (!el || !window.PREP) return;
+  const today = todayStr();
+  const key = today + '|' + S.target + '|' + S.delay + '|' + pbWhyOpen + '|' + pbPrevTarget + '|' + JSON.stringify(S.pbs);
+  if (key === lastPbSugKey) return;
+  lastPbSugKey = key;
+  const res = PREP.suggest({ pbs: S.pbs, d2: TOTAL_KM, f2: RACE_DIFF, limit: LIMIT, delay: S.delay, today });
+  if (!res || !res.ok) {
+    const msg = res && res.tooShort ? '現有成績短於 5K，無法換算這場目標' : '輸入一筆成績，幫你估這場的目標';
+    el.innerHTML = `<div class="pb-box"><div class="pb-line1">💡 ${msg}</div><div class="pb-acts"><button type="button" class="small" id="bPbGoInput">輸入成績</button></div></div>`;
+    $('bPbGoInput').onclick = () => {
+      pbFormOpen = true;
+      showPage('pgMore');
+      $('dMore').open = true;
+      renderPbCard();
+      setTimeout(() => { const c = $('pbCard'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+    };
+    return;
+  }
+  const fmtK = km => Number(km.toFixed(1)) + 'K';
+  const flags = [];
+  if (res.old) flags.push('成績較舊，僅供參考');
+  if (res.wideGap) flags.push('距離差太多，估得不準');
+  const flagsHtml = flags.length ? `<div class="note" style="color:var(--warn)">⚠ ${esc(flags.join('・'))}</div>` : '';
+  const ratio = res.f2 / res.f1;
+  const slopeLine = Math.abs(ratio - 1) < 0.005
+    ? `② 坡度修正：這條路線與${esc(res.pb.name)}難度相近`
+    : ratio < 1
+      ? `② 坡度修正：${esc(res.pb.name)}比這場陡 → 再快約 ${Math.round((1 - ratio) * 100)}%`
+      : `② 坡度修正：這場比${esc(res.pb.name)}陡 → 再慢約 ${Math.round((ratio - 1) * 100)}%`;
+  const whyHtml = pbWhyOpen ? `<div class="pb-why">` +
+    `<div>① ${esc(res.pb.name)} ${fmtK(res.d1)} ${fmtHMS(res.pb.t)} → 換算成 ${fmtK(res.d2)}：${fmtHM(res.baseRiegel)}${res.sameOrShorter ? '' : '（距離越長，配速會掉一點）'}</div>` +
+    `<div>${slopeLine}</div>` +
+    `<div>③ ${res.novice ? '第一次跑這個距離 → 保守加 3%' : res.sameOrShorter ? '你已跑過這個以上距離 → 不額外加保守係數' : '已累積接近此距離經驗 → 不額外加保守係數'}</div>` +
+    `</div>` : '';
+  const applied = pbPrevTarget != null && S.target === res.applyTarget;
+  const actHtml = applied
+    ? `<span class="note" style="color:var(--ok);font-weight:700">已套用 ${fmtHM(S.target)}</span><button type="button" class="small" id="bPbUndo">復原</button>`
+    : `<button type="button" class="small" id="bPbApply">${res.capped ? '套用 ' + fmtHM(res.applyTarget) : '套用'}</button>`;
+  if (res.capped) {
+    el.innerHTML = `<div class="pb-box warn">` +
+      `<div class="pb-line1">⚠ 依你的 PB 換算約 ${fmtHM(res.ideal)}–${fmtHM(res.floor)}，但這場加上起跑延遲 ${S.delay} 分，最慢只能 ${fmtHM(res.maxSafe)}。</div>` +
+      `<div class="note">完賽有壓力：確認起跑分區能不能往前，備賽期把長跑練足。</div>` +
+      `${flagsHtml}<div class="pb-acts">${actHtml}<button type="button" class="small" id="bPbWhy">${pbWhyOpen ? '收合算式 ▴' : '怎麼算的 ▾'}</button></div>${whyHtml}</div>`;
+  } else {
+    el.innerHTML = `<div class="pb-box">` +
+      `<div class="pb-line1">💡 依你的 PB 建議 ${fmtHM(res.ideal)}–${fmtHM(res.floor)}</div>` +
+      `<div class="note">${esc(res.pb.name)} ${fmtK(res.d1)} ${fmtHMS(res.pb.t)} 換算</div>` +
+      `${flagsHtml}<div class="pb-acts">${actHtml}<button type="button" class="small" id="bPbWhy">${pbWhyOpen ? '收合算式 ▴' : '怎麼算的 ▾'}</button></div>${whyHtml}</div>`;
+  }
+  if ($('bPbApply')) $('bPbApply').onclick = () => {
+    if (pbPrevTarget == null) pbPrevTarget = S.target;
+    S.target = res.applyTarget;
+    pset('target', S.target);
+    syncTargetOptions(res.applyTarget);
+    replan();
+  };
+  if ($('bPbUndo')) $('bPbUndo').onclick = () => {
+    if (pbPrevTarget != null) {
+      S.target = pbPrevTarget;
+      pbPrevTarget = null;
+      pset('target', S.target);
+      syncTargetOptions(res.applyTarget);
+      replan();
+    }
+  };
+  $('bPbWhy').onclick = () => { pbWhyOpen = !pbWhyOpen; renderPbSuggest(); };
+}
+function renderPbCard() {
+  const card = $('pbCard');
+  if (!card) return;
+  const active = (S.pbs || []).filter(p => p && !p.del && p.d > 0 && p.t > 0)
+    .slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const fmtYm = d => { const m = /^(\d{4})-(\d{1,2})/.exec(String(d || '')); return m ? m[1] + '/' + Number(m[2]) : (d || ''); };
+  const rowsHTML = active.length
+    ? active.map(p => `<div class="pb-row"><div><b>${Number((p.d / 1000).toFixed(1))}K</b> <b>${fmtHMS(p.t)}</b> <span class="note">${esc(p.name)} ${esc(fmtYm(p.date))}</span></div><button type="button" class="small pb-del" data-pbk="${esc(p.k)}" aria-label="刪除這筆成績">✕</button></div>`).join('')
+    : '<div class="note">還沒有紀錄，完賽會自動收進來，或先手動輸一筆。</div>';
+  let formHTML = '';
+  if (pbFormOpen) {
+    const todayYm = todayStr().slice(0, 7);
+    let y = Number(todayYm.slice(0, 4)), mo = Number(todayYm.slice(5, 7));
+    const ymOpts = [];
+    for (let i = 0; i < 60; i++) {
+      const val = y + '-' + p2(mo);
+      ymOpts.push(`<option value="${val}">${y}/${mo}</option>`);
+      mo--; if (mo < 1) { mo = 12; y--; }
+    }
+    formHTML = `<div class="ctl" id="pbForm" style="background:var(--btn);border-radius:10px;padding:10px">` +
+      `<div class="kv"><label for="pbDistSel">距離</label><select id="pbDistSel"><option value="5000">5K</option><option value="10000">10K</option><option value="21097.5" selected>半馬 21.1K</option><option value="42195">全馬 42.2K</option><option value="custom">自訂 km</option></select></div>` +
+      `<div class="kv" id="pbDistCustomRow" hidden><label for="pbDistKm">自訂公里</label><input id="pbDistKm" type="number" step="0.1" min="0.5" max="300" inputmode="decimal" placeholder="28.8"></div>` +
+      `<div class="kv"><span>時間</span><div class="pb-hms"><input id="pbH" type="text" inputmode="numeric" maxlength="2" value="2" aria-label="小時"><span>:</span><input id="pbM" type="text" inputmode="numeric" maxlength="2" value="25" aria-label="分"><span>:</span><input id="pbS" type="text" inputmode="numeric" maxlength="2" value="00" aria-label="秒"></div></div>` +
+      `<div class="kv"><label for="pbDate">日期</label><select id="pbDate">${ymOpts.join('')}</select></div>` +
+      `<div class="kv"><label for="pbRoad">路況</label><select id="pbRoad"><option value="1.00">平路（1.00）</option><option value="1.03">有起伏（1.03）</option><option value="1.08">山路（1.08）</option></select></div>` +
+      `<div id="pbErr" class="note" style="color:var(--bad)" hidden></div>` +
+      `<div class="grid2"><button type="button" class="small" id="bPbSave">儲存</button><button type="button" class="small" id="bPbCancel">取消</button></div>` +
+      `</div>`;
+  }
+  card.innerHTML = `<b>我的最佳成績（所有賽事共用）</b>${rowsHTML}` +
+    (pbFormOpen ? formHTML : '<button type="button" class="small wide" id="bPbAddOpen">＋ 手動新增</button>');
+  card.querySelectorAll('.pb-del').forEach(b => b.onclick = () => {
+    const k = b.dataset.pbk;
+    const item = (S.pbs || []).find(p => p && p.k === k);
+    if (!item) return;
+    if (item.src === 'race') S.pbs = S.pbs.map(p => p && p.k === k ? { k: p.k, del: 1 } : p);
+    else S.pbs = S.pbs.filter(p => p && p.k !== k);
+    savePbs(S.pbs);
+    pbPrevTarget = null;
+    syncTargetOptions(PREP.suggest({ pbs: S.pbs, d2: TOTAL_KM, f2: RACE_DIFF, limit: LIMIT, delay: S.delay, today: todayStr() }).applyTarget || null);
+    renderPbCard();
+    renderPbSuggest();
+  });
+  if ($('bPbAddOpen')) $('bPbAddOpen').onclick = () => { pbFormOpen = true; renderPbCard(); };
+  if (pbFormOpen) {
+    $('pbDistSel').onchange = e => { $('pbDistCustomRow').hidden = e.target.value !== 'custom'; };
+    $('bPbCancel').onclick = () => { pbFormOpen = false; renderPbCard(); };
+    $('bPbSave').onclick = () => {
+      const selV = $('pbDistSel').value;
+      const dKm = selV === 'custom' ? Number($('pbDistKm').value) : Number(selV) / 1000;
+      const h = parseInt($('pbH').value || '0', 10), m = parseInt($('pbM').value || '0', 10), s = parseInt($('pbS').value || '0', 10);
+      const err = $('pbErr');
+      if (!(dKm > 0 && dKm <= 500)) { err.textContent = '請輸入正確的距離（km）'; err.hidden = false; return; }
+      if (!(h >= 0 && h <= 99 && m >= 0 && m < 60 && s >= 0 && s < 60 && (h * 3600 + m * 60 + s) > 0)) {
+        err.textContent = '請輸入正確的時間（時:分:秒）'; err.hidden = false; return;
+      }
+      const entry = {
+        k: 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        src: 'manual', name: '手動', d: Math.round(dKm * 1000),
+        t: h * 3600 + m * 60 + s, date: $('pbDate').value, f: Number($('pbRoad').value)
+      };
+      S.pbs = (S.pbs || []).concat([entry]);
+      savePbs(S.pbs);
+      pbFormOpen = false;
+      pbPrevTarget = null;
+      syncTargetOptions(PREP.suggest({ pbs: S.pbs, d2: TOTAL_KM, f2: RACE_DIFF, limit: LIMIT, delay: S.delay, today: todayStr() }).applyTarget || null);
+      renderPbCard();
+      renderPbSuggest();
+    };
+  }
+}
 function renderPrep() {
   const now = Date.now(), d = GUN - now, end = GUN + LIMIT * 60000;
   $('cdLab').textContent = d > 0 ? '距離鳴槍' : now < end ? '比賽進行中' : '已鳴槍';
@@ -2035,6 +2225,7 @@ function renderPrep() {
   if (FIN && !FIN.demo) { fb.hidden = false; fb.innerHTML = '這場已完賽' + (FIN.t != null ? '（淨時間 <b>' + fmtHMS(FIN.t) + '</b>）' : '') + '。再按「開始定位」會清掉完賽狀態。 <button class="small" id="bSeeFin">看成績</button>'; $('bSeeFin').onclick = () => { renderFinish(); showPage('pgFinish'); }; }
   else fb.hidden = true;
   $('bPrepGo').textContent = mode === 'gps' ? '定位中：回到賽道畫面' : NATIVE ? '開始定位（比賽）' : '開始 GPS 定位（網頁版僅供測試）';
+  renderPbSuggest();
   renderCycle();
 }
 function prepGo() {
@@ -2155,7 +2346,7 @@ function selfTest() {
   window.__selftest = { id: RID, ok: errs.length === 0, errs, said: SAID.length, sample: SAID.slice(0, 6), finT: FIN && FIN.t, planTotal: PLAN_TOTAL, course: coursePayload() };
 }
 
-readTheme(); renderSplits(); setWin(WIN); renderPrep();
+readTheme(); renderSplits(); renderPbCard(); setWin(WIN); renderPrep();
 $('topbar').hidden = false; document.querySelector('nav.tabs').hidden = false;
 showPage(Q.get('page') === 'review' ? (FIN ? 'pgFinish' : 'pgMore') : mode === 'gps' ? 'pgRace' : 'pgPrep');
 if (Q.get('page') === 'review' && FIN) renderFinish();
