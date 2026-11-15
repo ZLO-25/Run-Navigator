@@ -7,8 +7,8 @@ android {
         applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
         minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
         targetSdk 34
-        versionCode 12
-        versionName '0.12'   // ② 目標時間區間（理想／保底、makePlan 重構、通知列與語音區間）
+        versionCode 13
+        versionName '0.13'   // 小維護：京都排程改指 Run-Navigator＋京都／東京／紐約最後查核日 2026-11-15
     }
     signingConfigs {
         release {

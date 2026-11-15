@@ -184,6 +184,7 @@ PR #6 另有獨立的 "store"（網頁 rn_tlog、rn_tgoal）：訓練紀錄與�
 | v0.10 | 10 | 11/15 | ① 備賽週期計畫：`prep.js` 純計算＋準備頁課表卡（四階段進度條、月目標、完整週表） | PR #9 |
 | v0.11 | 11 | 11/15 | ③ PB 與目標建議：`PREP.difficulty/riegel/suggest/harvestPbs`、準備頁一鍵套用＋算式展開、`pgMore` PB 管理 | PR #10 |
 | v0.12 | 12 | 11/15 | ② 目標時間區間：`makePlan()` 純函式＋理想／保底雙線、語音／瞄一眼／計畫表／Strip ▽ 標記與 `Course.zone()` | PR #11 |
+| v0.13 | 13 | 11/15 | 小維護：京都每週排程改為監看 `Run-Navigator`（GitHub Actions）；更新京都／東京／紐約最後查核日為 `2026-11-15` | PR #12 |
 
 接下來的三件事建議用 v0.9、v0.10、v0.11（versionCode 9、10、11），把 0.8 留給 PR #6。`versionCode` 在 `main` 上必須一直變大；哪個 PR 比較晚合併，就由它在合併前改成比 `main` 大的號碼。
 
@@ -935,7 +936,7 @@ maxSafe ＝ 5:35 → 理想和保底都比安全上限慢
 | 地形與策略 | 2024–2026 多篇跑者心得交叉比對 | 中高 |
 | 起跑損失 | 實測：A 區約 40–50 秒、D 區 4 分、H 區約 10.5 分、最後區約 18 分 | 中高 |
 
-**排程「京都馬拉松 2027 官方指南更新」**：2027 年 1–2 月每週一 9:42（台灣時間）執行，第一次 2027/1/4，自動核准。官方公布且資料不同時，更新關門、水站等並推送、重編 APK，推播前後對照表。這個排程當初的更新對象是舊的 `Kyoto-Run` repo（改 `index.html` 裡的 `CUT`、`AID`）；Run-Navigator 上線後，要改成更新本 repo 的 `app/src/main/assets/races/kyoto-2027/race.json`，改完跑 `python3 tools/build_races.py` 重新產生 `races.js`。**排程是否已經改指向新 repo，文件上沒有紀錄，請在 2027/1/4 之前跟使用者確認。**
+**排程「京都馬拉松 2027 官方指南更新」**：2027 年 1–2 月每週一 9:42（台灣時間）執行，第一次 2027/1/4。本 repo 已加入 `.github/workflows/kyoto-guide-watch.yml` 與 `tools/check_kyoto_guide.py`（cron `42 1 * 1,2 1` = UTC 01:42 / 台灣 09:42），定期檢查京都馬拉松官網是否有 2027 參加案內／PDF／關門／給水公告，並提示更新本 repo 的 `app/src/main/assets/races/kyoto-2027/race.json` 再執行 `python3 tools/build_races.py` 重新產生 `races.js`（不再指向舊 `Kyoto-Run` repo 的 `index.html` `CUT`/`AID`）。若使用者帳號另有舊的外部 Claude 排程任務指向 `Kyoto-Run`，可一併停用或改指 `ZLO-25/Run-Navigator`。
 
 主要來源：[官方活動資訊](https://kyoto-marathon.com/en/info/)、[WaTabi 2027 整理](https://watabi.org/articles/kyoto-marathon-2027)、[2025 參加案內](https://kyoto-marathon.com/common/img/contents/info/documents/program.pdf)、[2026 配速員公告](https://kyoto-marathon.com/news/202601288403/)、[2024 給食給水紀錄](https://sinnosuke22.hatenablog.com/entry/2024/02/28/113653)、[2025 參賽心得](https://saitodaily.com/kyoto-marathon-2025/)。
 
