@@ -92,7 +92,8 @@ def draw(rid):
         j = min(n - 1, i + 1)
         ax.annotate('', xy=(ox[j], oy[j]), xytext=(ox[i], oy[i]),
                     arrowprops=dict(arrowstyle='-|>', color='#222', lw=1.1, mutation_scale=12), zorder=3)
-    for k in range(5, int(tot) + 1, 5):
+    km_step = 1 if tot <= 7 else 2 if tot <= 16 else 5
+    for k in range(km_step, int(tot) + 1, km_step):
         x, y = at(k)
         ax.text(x, y, f'{k}K', fontsize=8.5, fontweight='bold', color='#333', ha='left', va='bottom', zorder=6,
                 bbox=dict(boxstyle='round,pad=0.12', fc='#ffffffcc', ec='none'))
@@ -144,21 +145,23 @@ def draw(rid):
     placed.append((lx - 0.15 * sc, ly_top - leg_h - 0.15 * sc, lx + leg_w, ly_top + 0.25 * sc))
 
     # Reserve scale bar + north arrow area avoiding route, legend, and landmark dots
+    bar_km = 0.5 if tot <= 7 else 1.0
+    bar_lbl = '500 m' if bar_km < 1 else '1 km'
     cands = [
-        (max(xs) - 1.2 * sc, ymin),
+        (max(xs) - bar_km - 0.2 * sc, ymin),
         (xmin + 0.2 * sc, ymin),
-        (xmin + 0.5 * (max(xs) - xmin), ymin),
-        (max(xs) - 1.2 * sc, ymin + h * 0.45),
+        (xmin + 0.5 * (max(xs) - xmin) - bar_km * 0.5, ymin),
+        (max(xs) - bar_km - 0.2 * sc, ymin + h * 0.45),
     ]
     bx_s, by_s = min(
         cands,
         key=lambda c: (
-            sum(1 for i in range(n) if c[0] - 0.4 * sc < xs[i] < c[0] + 1.4 * sc and c[1] - 0.6 * sc < ys[i] < c[1] + 2.7 * sc)
-            + 30 * sum(1 for px, py in lm_pts if c[0] - 0.5 * sc < px < c[0] + 1.5 * sc and c[1] - 0.6 * sc < py < c[1] + 2.7 * sc)
-            + 80 * (not (c[0] + 1.4 * sc < lx or c[0] > lx + leg_w or c[1] + 2.7 * sc < ly_top - leg_h or c[1] - 0.6 * sc > ly_top))
+            sum(1 for i in range(n) if c[0] - 0.4 * sc < xs[i] < c[0] + bar_km + 0.4 * sc and c[1] - 0.6 * sc < ys[i] < c[1] + 2.7 * sc)
+            + 30 * sum(1 for px, py in lm_pts if c[0] - 0.5 * sc < px < c[0] + bar_km + 0.5 * sc and c[1] - 0.6 * sc < py < c[1] + 2.7 * sc)
+            + 80 * (not (c[0] + bar_km + 0.4 * sc < lx or c[0] > lx + leg_w or c[1] + 2.7 * sc < ly_top - leg_h or c[1] - 0.6 * sc > ly_top))
         )
     )
-    placed.append((bx_s - 0.25 * sc, by_s - 0.45 * sc, bx_s + 1.45 * sc, by_s + 2.65 * sc))
+    placed.append((bx_s - 0.25 * sc, by_s - 0.45 * sc, bx_s + bar_km + 0.45 * sc, by_s + 2.65 * sc))
 
     def text_w(text, fs):
         units = sum(1.1 if ord(ch) > 127 else 0.62 for ch in text)
@@ -207,9 +210,9 @@ def draw(rid):
                 color='#c93a30' if cut else '#101312', zorder=9,
                 bbox=dict(boxstyle='round,pad=0.18', fc='#ffffffdd', ec='none'))
 
-    ax.plot([bx_s, bx_s + 1.0], [by_s - 0.3 * sc, by_s - 0.3 * sc], color='#101312', lw=3)
-    ax.text(bx_s + 0.5, by_s - 0.25 * sc, '1 km', ha='center', va='bottom', fontsize=10)
-    ax.annotate('N', xy=(bx_s + 1.0, by_s + 2.4 * sc), xytext=(bx_s + 1.0, by_s + 1.2 * sc), ha='center',
+    ax.plot([bx_s, bx_s + bar_km], [by_s - 0.3 * sc, by_s - 0.3 * sc], color='#101312', lw=3)
+    ax.text(bx_s + bar_km * 0.5, by_s - 0.25 * sc, bar_lbl, ha='center', va='bottom', fontsize=10)
+    ax.annotate('N', xy=(bx_s + bar_km, by_s + 2.4 * sc), xytext=(bx_s + bar_km, by_s + 1.2 * sc), ha='center',
                 fontsize=13, fontweight='bold', arrowprops=dict(arrowstyle='-|>', lw=2, color='#101312'))
 
     leg = [('#e8604c', '上坡 4–7%'), ('#f2a3a2', '緩上 2–4%'), ('#6b7378', '平路'), ('#9ec5f4', '緩下'), ('#3987e5', '下坡'), ('#1c6fbf', f'水站（{len(stations)} 處）')]

@@ -1,0 +1,267 @@
+{
+  "format": 1,
+  "id": "boston-5k",
+  "name": "波士頓 B.A.A. 5K 2027",
+  "short": "Boston 5K",
+  "kind": "race",
+  "start_name": "Boston Common (Charles St)",
+  "finish_name": "Boylston St 終點線",
+  "time": {
+    "tz": "America/New_York",
+    "tz_label": "波士頓時間",
+    "tz_short": "波士頓",
+    "gun": "2027-04-17T08:00:00-04:00",
+    "limit_min": 90
+  },
+  "distance_m": 5000,
+  "route": {
+    "source": "B.A.A. 5K 官方街道路線（Charles St → Commonwealth Ave 折返 → Hereford → Boylston Finish）＋ SRTM 30m DEM",
+    "out_and_back": true
+  },
+  "checkin": "賽前週六 08:00 鳴槍（Boston Common 起跑・Boylston St 馬拉松終點衝線）",
+  "params": {
+    "target": {
+      "default": 30,
+      "options": [
+        {
+          "v": 20
+        },
+        {
+          "v": 25
+        },
+        {
+          "v": 30
+        },
+        {
+          "v": 35
+        },
+        {
+          "v": 45
+        },
+        {
+          "v": 60
+        }
+      ]
+    },
+    "delay": {
+      "default": 0,
+      "options": [
+        {
+          "v": 0
+        },
+        {
+          "v": 5
+        },
+        {
+          "v": 10
+        },
+        {
+          "v": 15
+        }
+      ],
+      "note": "08:00 起分區發放，賽道於 09:30 清空開放交通。"
+    }
+  },
+  "landmarks": [
+    {
+      "n": "起",
+      "name": "Charles St（Boston Common）",
+      "km": 0,
+      "note": "轉 Boylston → Arlington St → 左轉上林蔭 Commonwealth Ave！"
+    },
+    {
+      "n": "1",
+      "name": "Commonwealth Ave 去程（1.5K）",
+      "km": 1.5,
+      "note": "極平坦林蔭大道，配速很順。"
+    },
+    {
+      "n": "折",
+      "name": "Charlesgate W 折返（2.6K）",
+      "km": 2.6,
+      "note": "U-turn 轉回 Commonwealth Ave 回程進 Back Bay！"
+    },
+    {
+      "n": "2",
+      "name": "Hereford St 右轉進終點大道",
+      "km": 4.2,
+      "note": "最後 800 m：右轉 Hereford 再左轉上 Boylston St！"
+    },
+    {
+      "n": "終",
+      "name": "Boylston St 馬拉松官方終點線",
+      "km": 5.0,
+      "cut": true,
+      "note": "親腳踏過正版波士頓馬拉松藍黃終點線！09:30 關門。"
+    }
+  ],
+  "sections": [
+    {
+      "a": 0,
+      "b": 1.5,
+      "from": "Charles St",
+      "to": "Comm Ave 去程",
+      "terr": "極平市區林蔭路",
+      "act": "順出起跑人群即定速"
+    },
+    {
+      "a": 1.5,
+      "b": 2.6,
+      "from": "Comm Ave",
+      "to": "Charlesgate W 折返",
+      "terr": "平坦（海拔僅 3–6 m）",
+      "act": "準備 180 度折返不踩線"
+    },
+    {
+      "a": 2.6,
+      "b": 4.2,
+      "from": "折返點",
+      "to": "Hereford St",
+      "terr": "平坦加速段",
+      "act": "逐步提速準備轉彎"
+    },
+    {
+      "a": 4.2,
+      "b": 5.0,
+      "from": "Hereford St",
+      "to": "Boylston 終點線",
+      "terr": "經典右轉 Hereford 左轉 Boylston 最後直路",
+      "act": "盡情衝過正宗藍黃終點線"
+    }
+  ],
+  "cutoffs": [
+    {
+      "km": 5.0,
+      "name": "終點 09:30（限時 90 分）",
+      "min": 90
+    }
+  ],
+  "aid": {
+    "labels": {
+      "w": "水"
+    },
+    "say": {
+      "w": "水"
+    },
+    "legend": [
+      [
+        "w",
+        "水站"
+      ]
+    ],
+    "stations": [
+      {
+        "n": 1,
+        "km": 2.5,
+        "name": "Comm Ave 中點補水（估）",
+        "s": "w",
+        "est": true
+      }
+    ]
+  },
+  "gels": [],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      {
+        "from": 0,
+        "to": 0.4,
+        "x": 1.03,
+        "why": "起跑人擠"
+      }
+    ],
+    "fatigue": {
+      "from_km": 3.5,
+      "x": 0.02
+    },
+    "tight_hint": ""
+  },
+  "finish": {
+    "radius_m": 80,
+    "min_frac": 0.95
+  },
+  "text": {
+    "pre_start": "波馬週末週六暖身重頭戲！跑過 Commonwealth Ave 並在週一大賽同一條 Boylston 藍黃終點線衝線！",
+    "plan_note": "極平坦 3–6 m 市區快速賽道（全馬在 Hopkinton 郊區山丘點對點，兩者路線與海拔完全不同）。",
+    "cut_title_note": "09:30 結束清場",
+    "cut_note": "5K 最晚於 09:30 結束收場開放 Back Bay 街道。",
+    "prep_warn": "如果下週一還要跑 42.2K，這場記得當開心體驗與熱身別衝過頭！",
+    "aid_note": "5K 賽後終點區供應充沛補水與點心。",
+    "gel_pre": [
+      "起跑前",
+      "輕食即可，不必補膠"
+    ],
+    "gel_note": "4 月初早 8 點波士頓常只有 5–10°C，起跑區記得穿可拋棄外套。",
+    "map_note": "繞行 Back Bay 林蔭大道折返進正宗馬拉松終點直線。",
+    "phases": [
+      [
+        "0–2.6K",
+        "Common → Comm Ave 折返",
+        "沿紅磚建築與櫻花街道穩定推進"
+      ],
+      [
+        "2.6–5.0K",
+        "回轉進 Boylston 終點線",
+        "轉進 Hereford → 踏過經典藍黃終點"
+      ]
+    ],
+    "tips_title": "B.A.A. 5K 提醒",
+    "tips": [
+      "B.A.A. 5K 在波馬前的週六舉行，能搶先踏過週一全馬的藍黃終點線並領專屬 B.A.A. 5K 獎牌。",
+      "賽道海拔幾乎是純平地，跟全馬波浪形山丘完全不一樣。"
+    ]
+  },
+  "schedule": {
+    "rule": "每年 4 月波士頓馬拉松前一個週六（愛國者日週末）",
+    "weekday": 5,
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-04-17",
+        "race_est": false,
+        "entry": "BQ 達標報名 2026/9/14–9/18（實際截標線需比達標線快 5:17）；慈善／國際旅遊名額於秋冬另開放",
+        "entry_short": "BQ 已截止 2026/9/18",
+        "entry_est": false,
+        "open": "2026-09-14",
+        "close": "2026-09-18",
+        "src": [
+          [
+            "B.A.A. 2027 報名公告",
+            "https://www.baa.org/races/boston-marathon/enter/registration"
+          ],
+          [
+            "B.A.A. 2027 Cutoff 公告（5:17）",
+            "https://www.baa.org/"
+          ]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-04-15",
+        "race_est": true,
+        "entry": "預估 2027/9 中旬開放 BQ 達標報名一週（達標窗口含 2026/9–2027/9）",
+        "entry_short": "約 2027/9 中旬 BQ 報名",
+        "entry_est": true,
+        "basis": "4 月第 3 個週一（Patriots' Day）＋往年 9 月第 2–3 週報名慣例"
+      },
+      {
+        "year": 2029,
+        "race": "2029-04-14",
+        "race_est": true,
+        "entry": "預估 2028/9 中旬開放 BQ 達標報名一週（同上）",
+        "entry_short": "約 2028/9 中旬 BQ 報名",
+        "entry_est": true,
+        "basis": "4 月第 3 個週一（Patriots' Day）＋往年 9 月報名慣例"
+      }
+    ],
+    "note": "七大馬中唯一以成績達標（BQ）為主要門檻、且在「週一」舉辦的比賽。未達標可走官方慈善募款或台灣合作旅行社名額。"
+  },
+  "sources": [
+    {
+      "item": "B.A.A. 5K 路線與限時",
+      "src": "B.A.A. 官方路線（Charles St→Arlington→Comm Ave→Charlesgate W折返→Hereford→Boylston終點；08:00起跑・09:30關閉）",
+      "trust": "高"
+    }
+  ]
+}
