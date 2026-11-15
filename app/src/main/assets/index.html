@@ -265,6 +265,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
 .pb-hms{display:inline-flex;align-items:center;gap:4px}
 .pb-hms input{font:inherit;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;width:3.1em;min-height:42px;padding:6px 4px;text-align:center;font-variant-numeric:tabular-nums}
 #pbDistKm{font:inherit;color:var(--fg);background:var(--btn);border:1px solid var(--line);border-radius:10px;width:5.5em;min-height:42px;padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
+.tgt-rng{font-size:clamp(13px,4.2vw,18px);white-space:nowrap}
 @media (prefers-reduced-motion:no-preference){#alert.show{animation:pop .25s ease-out}}
 @keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
 </style>
@@ -361,7 +362,9 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <div class="kv"><b>這一場的參數</b><span class="note" id="isoNote"></span></div>
    <div class="kv"><label for="regCat">報名組別</label><select id="regCat"></select></div>
    <div class="note" id="regCatNote" hidden></div>
-   <div class="kv"><label for="target">目標完賽時間</label><select id="target"></select></div>
+   <div class="kv"><label for="target">目標（理想）</label><select id="target"></select></div>
+   <div class="kv"><label for="target2">保底</label><select id="target2"></select></div>
+   <div class="note" id="target2Note" hidden></div>
    <div id="pbSuggest"></div>
    <div class="kv"><label for="delay">預估過起跑線延遲</label><select id="delay"></select></div>
    <div class="kv"><label for="raceBpm">跑步節拍</label><select id="raceBpm"></select></div>
@@ -384,7 +387,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
  <div class="page" id="pgFinish" hidden>
   <div class="fhead"><span class="flag">🏁</span><div><div class="ftitle" id="finTitle">完賽！</div><div class="note" id="finSub"></div></div></div>
   <section class="card"><div class="lab">淨時間（過起跑線起算）</div><div class="fbig" id="finNet">—</div>
-   <div class="tgt3"><div><div class="t">vs 計畫</div><div class="v" id="finVs">—</div></div><div><div class="t">平均配速</div><div class="v" id="finPace">—</div></div><div><div class="t">鳴槍時間</div><div class="v" id="finGun">—</div></div></div>
+   <div class="tgt3"><div><div class="t">vs 計畫</div><div class="v" id="finVs">—</div><div class="note" id="finZone" style="margin-top:2px"></div></div><div><div class="t">平均配速</div><div class="v" id="finPace">—</div></div><div><div class="t">鳴槍時間</div><div class="v" id="finGun">—</div></div></div>
   </section>
   <section class="card"><b>怎麼判定的</b><div class="note" id="finHow" style="margin-top:4px"></div></section>
   <section class="card"><b>各關門餘裕</b><div class="cuttiles four" id="finCuts"></div></section>
@@ -429,7 +432,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <section class="card glance">
     <div class="row">
       <div><div class="lab">目前里程</div><div class="km"><span id="km">0.0</span><small>K</small></div></div>
-      <div><div class="lab" style="text-align:right">對照計畫</div><div class="dbig" id="dbig">—</div><div class="dsub" id="dsub">—</div></div>
+      <div><div class="lab" id="dLab" style="text-align:right">對照計畫</div><div class="dbig" id="dbig">—</div><div class="dsub" id="dsub">—</div></div>
     </div>
   </section>
 
@@ -452,7 +455,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
   <section class="card">
     <canvas id="cvSec" aria-label="本區段：你、計畫、關門線的位置"></canvas>
     <canvas id="cvAll" aria-label="全程進度"></canvas>
-    <div class="legend" id="legend"><span><i style="color:var(--fg)">●</i> 你</span><span><i style="color:var(--plan)">▲</i> 計畫的你</span><span class="cutTile"><i style="color:var(--bad)">┆</i> 關門線（剛好踩線的人）</span><span><i style="color:var(--aid)">💧</i> 水站</span></div>
+    <div class="legend" id="legend"><span><i style="color:var(--fg)">●</i> 你</span><span><i style="color:var(--plan)">▲</i> 計畫的你</span><span id="legFloor" hidden><i style="color:var(--plan)">▽</i> 保底</span><span class="cutTile"><i style="color:var(--bad)">┆</i> 關門線（剛好踩線的人）</span><span><i style="color:var(--aid)">💧</i> 水站</span></div>
   </section>
 
   <!-- ③ 下一個地標、補給站、能量膠 -->
@@ -651,7 +654,7 @@ function racePrefs(id) {
   const n = k => { const v = lget(id + '.' + k); return v == null ? undefined : Number(v); };
   const sn = (k, d) => { const v = lget(k); return v == null ? d : Number(v); };
   const b = (k, d) => { const v = lget(k); return v == null ? d : v !== '0'; };
-  return { target: n('target'), delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '', cycle: j('cycle'), pbs: jp('pbs'),
+  return { target: n('target'), target2: n('target2') || 0, delay: n('delay'), start: n('start') || 0, splits: j('splits') || {}, finished: j('finished'), raceBpm: n('raceBpm') || 0, regCat: lget(id + '.regCat') || '', cycle: j('cycle'), pbs: jp('pbs'),
     name: lget('name') || '', vib: b('vib', true), tts: b('tts', true), kmv: b('kmv', true), stopv: b('stopv', true), keepOn: false, theme: lget('theme') || '', win: lget('win') || '',
     mbpm: sn('mbpm', 180), macc: sn('macc', 2), msnd: lget('msnd') || 'wood', mvib: b('mvib', false), mdur: sn('mdur', 0) };
 }
@@ -952,6 +955,7 @@ function renderHome() {
       const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
       const ncut = pf.sel.route ? r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length : 0;
       const tgt = pf.sel.route ? (p.target || r.params.target.default) : pf.sel.def_target;
+      const tgt2 = pf.sel.route && p.target2 > tgt ? p.target2 : 0;
       const paceSec = Math.round(tgt * 60 / pf.km), paceStr = Math.floor(paceSec / 60) + ':' + p2(paceSec % 60);
       const limMin = pf.limitMin, limStr = (limMin % 60 ? hm(limMin) : (limMin / 60) + '小時');
       const catsHTML = pf.cats.length > 1
@@ -959,7 +963,7 @@ function renderHome() {
         : '';
       const specHTML = `<div class="rspec">` +
         `<div><div class="t">總爬升</div><div class="v">+${pf.gain}m</div><div class="s">${pf.terr}</div></div>` +
-        `<div><div class="t">目標時間</div><div class="v">${hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
+        `<div><div class="t">目標時間</div><div class="v">${tgt2 ? `<span class="tgt-rng">${hm(tgt)}–${hm(tgt2)}</span>` : hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
         `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${pf.sel.route ? (ncut ? ncut + ' 個中途關' : '無中途關門') : '依組別計時'}</div></div>` +
         `</div>`;
       const moreBtn = `<button type="button" class="rmore${isOpen ? ' on' : ''}" data-more="${esc(r.id)}" aria-expanded="${isOpen}">${isOpen ? 'more ▴' : 'more ▾'}</button>`;
@@ -1156,6 +1160,7 @@ function secAt(km) { return SEC.find(s => km < s.b) || SEC[SEC.length - 1]; }
 
 /* ---------- 配速計畫：坡度 × 擁擠 × 後段疲勞，再依關門自動前移 ---------- */
 let PC = new Float64Array(N), PLAN_TOTAL = 330, PLAN_ADJ = [], PLAN_BAD = '';
+let PC2 = null, PLAN2_TOTAL = 0, PLAN2_BAD = '';
 function weight(i) {
   const s = (i + 0.5) * STEP, km = s / 1000, g = Math.max(-8, Math.min(12, (E(Math.min(TOTAL, s + STEP / 2)) - E(Math.max(0, s - STEP / 2))) / STEP * 100));
   let w = g > 0 ? 1 + 0.04 * g : 1 + 0.014 * g;          // 上坡每 1% 慢 4%，下坡每 1% 快 1.4%
@@ -1166,46 +1171,68 @@ function weight(i) {
 const W0 = Array.from({ length: N - 1 }, (_, i) => weight(i));
 /* 關門保護：依序檢查每個關門，計畫太晚就只把「上一關門 → 這一關門」那段調快，
    省下的時間平均加回後面（總時間不變）。前三關留 4 分、之後留 6 分。 */
-function buildPlan(target, delay) {
-  if (PLANCFG.model === 'rows') return buildPlanRows(target, delay);
-  const w = W0.slice();
-  const cum = () => { const c = new Float64Array(N); for (let i = 0; i < N - 1; i++) c[i + 1] = c[i] + w[i]; return c; };
-  let c = cum(); const k0 = target / c[N - 1]; for (let i = 0; i < w.length; i++) w[i] *= k0;
-  PLAN_ADJ = []; PLAN_BAD = '';
-  if (target + delay > LIMIT - 6) PLAN_BAD = '目標 ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。計畫照原樣排、不做關門保護，紅字餘裕就是風險，建議把目標調快。';
-  else {
-    let iPrev = 0;
-    CUT.forEach((ct, k) => {
-      if (ct.km >= TOTAL / 1000) return;
-      c = cum();
-      const iC = Math.round(ct.km * 1000 / STEP), allow = ct.min - delay - (k < CB.first_n ? CB.early : CB.later), late = c[iC] - allow;
-      if (late > 0.05) {
-        const seg = c[iC] - c[iPrev], rest = target - c[iC], f = Math.max(0.7, (seg - late) / seg), saved = seg * (1 - f), g = (rest + saved) / rest;
-        for (let i = iPrev; i < iC; i++) w[i] *= f; for (let i = iC; i < w.length; i++) w[i] *= g;
-        PLAN_ADJ.push(ct.name);
-      }
-      iPrev = iC;
-    });
+function makePlan(target, delay, label) {
+  const adj = [];
+  let bad = '', pc;
+  if (PLANCFG.model === 'rows') {
+    const rows = PLANCFG.rows, base = rows.reduce((s, r) => s + (r[1] - r[0]) * r[2], 0), sc = target / base;
+    const at = km => { let t = 0; for (const r of rows) { if (km <= r[1]) return t + (Math.max(km, r[0]) - r[0]) * r[2] * sc; t += (r[1] - r[0]) * r[2] * sc; } return t; };
+    if (target + delay > LIMIT - 6) bad = (label || '目標') + ' ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。';
+    pc = new Float64Array(N); for (let i = 0; i < N; i++) pc[i] = at(i * STEP / 1000);
+  } else {
+    const w = W0.slice();
+    const cum = () => { const c = new Float64Array(N); for (let i = 0; i < N - 1; i++) c[i + 1] = c[i] + w[i]; return c; };
+    let c = cum(); const k0 = target / c[N - 1]; for (let i = 0; i < w.length; i++) w[i] *= k0;
+    if (target + delay > LIMIT - 6) bad = (label || '目標') + ' ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。計畫照原樣排、不做關門保護，紅字餘裕就是風險，建議把目標調快。';
+    else {
+      let iPrev = 0;
+      CUT.forEach((ct, k) => {
+        if (ct.km >= TOTAL / 1000) return;
+        c = cum();
+        const iC = Math.round(ct.km * 1000 / STEP), allow = ct.min - delay - (k < CB.first_n ? CB.early : CB.later), late = c[iC] - allow;
+        if (late > 0.05) {
+          const seg = c[iC] - c[iPrev], rest = target - c[iC], f = Math.max(0.7, (seg - late) / seg), saved = seg * (1 - f), g = (rest + saved) / rest;
+          for (let i = iPrev; i < iC; i++) w[i] *= f; for (let i = iC; i < w.length; i++) w[i] *= g;
+          adj.push(ct.name);
+        }
+        iPrev = iC;
+      });
+    }
+    pc = cum();
   }
-  PC = cum(); PLAN_TOTAL = PC[N - 1];
-  checkTight(delay);
+  const tight = CUT.filter(ct => pc[Math.round(Math.min(TOTAL, ct.km * 1000) / STEP)] + delay > ct.min - 2).map(ct => ct.name);
+  if (tight.length && !bad) {
+    bad = label
+      ? ('保底 ' + fmtHM(target) + ' 在「' + tight.join('、') + '」只剩不到 2 分鐘，請把保底調快。')
+      : ('照這個目標和起跑延遲，「' + tight.join('、') + '」的餘裕不到 2 分鐘。' + (PLANCFG.tight_hint || ''));
+  }
+  return { pc, total: pc[N - 1], adj, bad };
 }
-/* 日月潭這類「手調配速」的賽事：每段一個基準配速，等比例縮放到目標時間（沿用舊 App 的算法） */
-function buildPlanRows(target, delay) {
-  const rows = PLANCFG.rows, base = rows.reduce((s, r) => s + (r[1] - r[0]) * r[2], 0), sc = target / base;
-  const at = km => { let t = 0; for (const r of rows) { if (km <= r[1]) return t + (Math.max(km, r[0]) - r[0]) * r[2] * sc; t += (r[1] - r[0]) * r[2] * sc; } return t; };
-  PLAN_ADJ = []; PLAN_BAD = '';
-  if (target + delay > LIMIT - 6) PLAN_BAD = '目標 ' + fmtHM(target) + '＋起跑延遲 ' + delay + ' 分＝鳴槍後 ' + fmtHM(target + delay) + '，太接近 ' + fmtHM(LIMIT) + ' 關門。';
-  PC = new Float64Array(N); for (let i = 0; i < N; i++) PC[i] = at(i * STEP / 1000);
-  PLAN_TOTAL = PC[N - 1];
-  checkTight(delay);
+function buildPlans() {
+  const r1 = makePlan(S.target, S.delay, '');
+  PC = r1.pc; PLAN_TOTAL = r1.total; PLAN_ADJ = r1.adj; PLAN_BAD = r1.bad;
+  if (S.target2 > S.target) {
+    const r2 = makePlan(S.target2, S.delay, '保底');
+    for (let i = 0; i < N; i++) if (r2.pc[i] < PC[i]) r2.pc[i] = PC[i];
+    PC2 = r2.pc; PLAN2_TOTAL = PC2[N - 1]; PLAN2_BAD = r2.bad;
+  } else {
+    PC2 = null; PLAN2_TOTAL = 0; PLAN2_BAD = '';
+  }
 }
-function checkTight(delay) {
-  const tight = CUT.filter(ct => PC[Math.round(Math.min(TOTAL, ct.km * 1000) / STEP)] + delay > ct.min - 2).map(ct => ct.name);
-  if (tight.length && !PLAN_BAD) PLAN_BAD = '照這個目標和起跑延遲，「' + tight.join('、') + '」的餘裕不到 2 分鐘。' + (PLANCFG.tight_hint || '');
-}
+const hasRange = () => !!(PC2 && S.target2 > S.target);
 function planMin(km) { return interp(PC, km * 1000); }
 function planKm(min) { if (min <= 0) return 0; if (min >= PLAN_TOTAL) return TOTAL / 1000; let lo = 0, hi = N - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (PC[m] < min) lo = m; else hi = m; } return (lo + (min - PC[lo]) / (PC[hi] - PC[lo])) * STEP / 1000; }
+function plan2Min(km) { return hasRange() ? interp(PC2, km * 1000) : planMin(km); }
+function plan2Km(min) { if (!hasRange()) return planKm(min); if (min <= 0) return 0; if (min >= PLAN2_TOTAL) return TOTAL / 1000; let lo = 0, hi = N - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (PC2[m] < min) lo = m; else hi = m; } return (lo + (min - PC2[lo]) / (PC2[hi] - PC2[lo])) * STEP / 1000; }
+function zoneAt(km, elMin) {
+  const a = planMin(km);
+  if (!hasRange()) { const dS = Math.round((a - elMin) * 60); return { z: dS >= 0 ? 'ahead' : 'behind', sec: Math.abs(dS), signedSec: dS }; }
+  const b = plan2Min(km);
+  if (elMin <= a) { const s = Math.round((a - elMin) * 60); return { z: 'ahead', sec: s, signedSec: s }; }
+  if (elMin <= b) return { z: 'in', sec: 0, signedSec: 0 };
+  const s = Math.round((elMin - b) * 60);
+  return { z: 'behind', sec: s, signedSec: -s };
+}
 function paceBetween(a, b) { return (planMin(b) - planMin(a)) / Math.max(0.01, b - a); }
 function planPace(km) { return paceBetween(Math.max(0, km - 0.25), Math.min(TOTAL_KM, km + 0.25)); }
 
@@ -1219,12 +1246,13 @@ const RACE_DIFF = window.PREP ? PREP.difficulty(R) : 1.0;
 const NP = racePrefs(RID);
 if (!SELFTEST) NP.pbs = harvestAllPbs();
 const S = {
-  target: NP.target || R.params.target.default, delay: NP.delay != null ? NP.delay : R.params.delay.default,
+  target: NP.target || R.params.target.default, target2: NP.target2 || 0, delay: NP.delay != null ? NP.delay : R.params.delay.default,
   name: NP.name || '', vib: NP.vib !== false, tts: NP.tts !== false, kmv: NP.kmv !== false, stopv: NP.stopv !== false, keepOn: !!NP.keepOn,
   theme: NP.theme || '', win: NP.win || '', splits: NP.splits || {},
   mbpm: NP.mbpm || 180, macc: NP.macc || 2, msnd: NP.msnd || 'wood', mvib: !!NP.mvib, raceBpm: NP.raceBpm || 0,
   cycle: NP.cycle || null, pbs: Array.isArray(NP.pbs) ? NP.pbs : []
 };
+if (SELFTEST && Q.has('t2')) S.target2 = Math.max(0, Math.round(Number(Q.get('t2')) || 0));
 if (SELFTEST && Q.has('pb')) {
   const pp = (Q.get('pb') || '').split(',').map(Number);
   if (pp[0] > 0 && pp[1] > 0) {
@@ -1252,10 +1280,10 @@ function pset(k, v) {
   if (NATIVE) Android.setPref(RID, k, v == null ? 'null' : String(v));
   else if (SHARED.has(k)) lset(k, v == null ? null : String(v)); else rset(k, v == null ? null : String(v));
 }
-buildPlan(S.target, S.delay);
+buildPlans();
 /* 把這一場的路線、計畫交給背景服務（APK），語音、通知列、完賽判定用同一份 */
 function coursePayload() {
-  return {
+  const o = {
     v: 2, id: RID, name: R.name, short: R.short, tzShort: R.time.tz_short, gun: GUN, tzOff: Math.round(TZ / 60000), limit: LIMIT,
     finR: R.finish.radius_m, finFrac: R.finish.min_frac,
     route: { lat: D.lat, lon: D.lon, elev: D.elev, total: TOTAL, lat0: LAT0, lon0: LON0 },
@@ -1263,6 +1291,8 @@ function coursePayload() {
     sec: SEC, lm: LM.map(l => ({ n: l.n, name: l.name, km: l.km, cut: !!l.cut })), cut: CUT,
     aid: AID.map(a => ({ n: a.n, km: a.km, name: a.name, say: aidSay(a) })), gel: GELS.map(g => ({ k: g.k, t: g.t, at: g.at }))
   };
+  if (hasRange()) { o.target2 = S.target2; o.plan2 = Array.from(PC2, v => Math.round(v * 100) / 100); }
+  return o;
 }
 function pushCourse() { if (!NATIVE || !Android.setCourse || SELFTEST) return; Android.setCourse(JSON.stringify(coursePayload())); }
 pushCourse();
@@ -1418,15 +1448,31 @@ function vsCut(km, gm) {
 }
 /* 每 1K：快慢；每 5K 或關門餘裕 < 15 分時加報「照計畫配速到下一關門還剩幾分」 */
 function kmSay(k, el, gm, curKm) {
-  let t = k + '公里，' + vsDiff(el, curKm) + '。';
+  let t;
+  if (hasRange()) {
+    const z = zoneAt(curKm, el / 60);
+    if (z.z === 'in') t = k + '公里，在目標區間內。';
+    else if (z.z === 'ahead') t = k + '公里，' + vsSec(z.sec) + (curKm < 3 && z.sec > 60 ? '，開頭偏快，放慢一點' : '') + '。';
+    else t = k + '公里，比保底慢' + sayMS(z.sec) + '。';
+  } else {
+    t = k + '公里，' + vsDiff(el, curKm) + '。';
+  }
   const nc = CUT.find(c => c.km > k + 0.02);
-  if (nc && gm != null) { const mar = nc.min - (gm + planMin(nc.km) - planMin(k)); if (mar < 15 || k % 5 === 0) t += nc.name + '關門餘裕' + Math.max(0, Math.floor(mar)) + '分鐘。'; }
+  if (nc && gm != null) {
+    const planDur = hasRange() ? (plan2Min(nc.km) - plan2Min(k)) : (planMin(nc.km) - planMin(k));
+    const mar = nc.min - (gm + planDur);
+    if (mar < 15 || k % 5 === 0) t += nc.name + '關門餘裕' + Math.max(0, Math.floor(mar)) + '分鐘。';
+  }
   return t;
 }
 function stopSay(sM, el, gm) {
-  const km = sM / 1000, sc = secAt(km), bMs = baseStart();
-  const dl = GUN + deadlineMin(sc.b) * 60000;
-  return '你在' + km.toFixed(1) + '公里，往' + sc.to.replace(/（.*?）/g, '') + '。' + vsDiff(el, km) + '。到' + sc.to.replace(/（.*?）/g, '') + '計畫' + sayClock(bMs + planMin(sc.b) * 60000) + '，底線' + sayClock(dl) + '。' + sc.act;
+  const km = sM / 1000, sc = secAt(km), bMs = baseStart(), dl = GUN + deadlineMin(sc.b) * 60000;
+  let diffTxt;
+  if (hasRange()) {
+    const z = zoneAt(km, el / 60);
+    diffTxt = z.z === 'in' ? '在目標區間內' : z.z === 'ahead' ? vsSec(z.sec) : '比保底慢' + sayMS(z.sec);
+  } else diffTxt = vsDiff(el, km);
+  return '你在' + km.toFixed(1) + '公里，往' + sc.to.replace(/（.*?）/g, '') + '。' + diffTxt + '。到' + sc.to.replace(/（.*?）/g, '') + '計畫' + sayClock(bMs + planMin(sc.b) * 60000) + '，底線' + sayClock(dl) + '。' + sc.act;
 }
 let vKm = -1, vSec = -1, vStopAt = 0, vStopped = false, vMoveRef = null;
 function voiceReset() { vKm = -1; vSec = -1; vStopped = false; vMoveRef = null; }
@@ -1597,11 +1643,19 @@ function drawSec(sM, el, gm, have) {
     if (ck >= k0 && ck <= k1) { const x = X(ck); c.strokeStyle = TH.bad; c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(x, top - 4); c.lineTo(x, base); c.stroke(); c.setLineDash([]); c.fillStyle = TH.bad; c.font = '700 12px system-ui,sans-serif'; c.textAlign = x > w - 60 ? 'right' : 'left'; c.textBaseline = 'middle'; c.fillText('關門線', x + (x > w - 60 ? -4 : 4), top - 10); }
     else edge(ck, TH.bad, '關門線 ' + (ck < k0 ? '後方 ' + (sM / 1000 - ck).toFixed(1) + 'K' : '前方 ' + (ck - sM / 1000).toFixed(1) + 'K'), top - 10);
   }
-  // 計畫的你
+  // 計畫的你（理想實心▲）與保底（空心▽）
   if (el != null && el >= 0) {
     const pk = planKm(el / 60);
     if (pk >= k0 && pk <= k1) { const x = X(pk), y = Y(E3(pk * 1000)); c.fillStyle = TH.plan; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x - 8, y - 18); c.lineTo(x + 8, y - 18); c.closePath(); c.fill(); c.strokeStyle = TH.plan; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x, base); c.stroke(); }
     else edge(pk, TH.plan, '計畫 ' + (pk < k0 ? '後方 ' : '前方 ') + Math.abs(pk - sM / 1000).toFixed(1) + 'K', top + 12);
+    if (hasRange()) {
+      const pk2 = plan2Km(el / 60);
+      if (pk2 >= k0 && pk2 <= k1) {
+        const x2 = X(pk2), y2 = Y(E3(pk2 * 1000));
+        c.strokeStyle = TH.plan; c.lineWidth = 2; c.beginPath(); c.moveTo(x2, y2 - 4); c.lineTo(x2 - 7, y2 - 17); c.lineTo(x2 + 7, y2 - 17); c.closePath(); c.stroke();
+        c.lineWidth = 1.2; c.beginPath(); c.moveTo(x2, y2 - 4); c.lineTo(x2, base); c.stroke();
+      }
+    }
   }
   // 你
   const x = X(sM / 1000), y = Y(E3(sM));
@@ -1704,15 +1758,23 @@ function render() {
   /* ① 瞄一眼 */
   $('km').textContent = km.toFixed(1);
   const pace = curPace(now, km), planAt = planMin(km);
-  const db = $('dbig'), ds = $('dsub');
+  const db = $('dbig'), ds = $('dsub'), dl = $('dLab');
   if (running) {
-    const d = planAt - el / 60;
-    const dS = Math.round(d * 60);   // 秒；四捨五入後是 0 就是準時（避免「慢 0:00」）
-    db.textContent = dS === 0 ? '準時' : (dS > 0 ? '快 ' : '慢 ') + fmtDelta(dS); setCls(db, dS >= 0 ? 'pos' : dS > -300 ? 'mid' : 'neg');
+    const z = zoneAt(km, el / 60);
+    if (hasRange()) {
+      dl.textContent = z.z === 'behind' ? '慢於保底' : '對照目標';
+      if (z.z === 'in') { db.textContent = '區間內'; setCls(db, 'pos'); }
+      else if (z.z === 'ahead') { db.textContent = z.sec === 0 ? '準時' : '快 ' + fmtDelta(z.sec); setCls(db, 'pos'); }
+      else { db.textContent = fmtDelta(z.sec); setCls(db, 'mid'); }
+    } else {
+      dl.textContent = '對照計畫';
+      const dS = z.signedSec;   // 秒；四捨五入後是 0 就是準時（避免「慢 0:00」）
+      db.textContent = dS === 0 ? '準時' : (dS > 0 ? '快 ' : '慢 ') + fmtDelta(dS); setCls(db, dS >= 0 ? 'pos' : dS > -300 ? 'mid' : 'neg');
+    }
     const nc = CUT.find(c => c.km * 1000 > sM + 20);
     if (nc && gm != null) { const p = pace > 0 ? pace : planPace(km), arr = gm + (nc.km - km) * p, mar = nc.min - arr; ds.innerHTML = '關門餘裕 <b class="' + (mar < 8 ? 'neg' : mar < 20 ? 'mid' : 'pos') + '">' + (mar >= 0 ? Math.floor(mar) + ' 分' : '不足') + '</b>'; }
     else ds.textContent = '已過所有關門';
-  } else { db.textContent = '—'; setCls(db, ''); ds.textContent = el != null && el < 0 ? '尚未起跑' : '比賽日 ' + clk(GUN) + ' 自動計時'; }
+  } else { dl.textContent = hasRange() ? '對照目標' : '對照計畫'; db.textContent = '—'; setCls(db, ''); ds.textContent = el != null && el < 0 ? '尚未起跑' : '比賽日 ' + clk(GUN) + ' 自動計時'; }
 
   /* ② 區段 */
   const sc = secAt(km), si = SEC.indexOf(sc), g = G(sM);
@@ -1822,7 +1884,7 @@ $('bFix').onclick = () => { $('fixPanel').hidden = !$('fixPanel').hidden; };
 $('bGun2').onclick = () => setStartTo(null);
 document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => { const s0 = effStart(Date.now()); if (s0 != null) setStartTo(s0 + Number(b.dataset.adj)); });
 $('bGun').onclick = () => { setStartTo(null); schedule(); };
-let pbWhyOpen = false, pbPrevTarget = null, pbFormOpen = false, lastPbSugKey = '';
+let pbWhyOpen = false, pbPrevTarget = null, pbPrevTarget2 = null, pbFormOpen = false, lastPbSugKey = '';
 function syncTargetOptions(pbMin) {
   const opts = R.params.target.options.map(o => ({ v: o.v, label: o.label || fmtHM(o.v) }));
   if (S.target != null && !opts.some(o => o.v === S.target)) {
@@ -1832,11 +1894,54 @@ function syncTargetOptions(pbMin) {
   fillOpts($('target'), opts, v => fmtHM(v));
   $('target').value = String(S.target);
 }
-function replan() { buildPlan(S.target, S.delay); pushCourse(); $('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab').textContent = S.delay; renderPlan(); renderPrep(); lastDrawS = -1e9; schedule(); }
+function syncTarget2Options(fromChange) {
+  const maxSafe = LIMIT - 6 - S.delay;
+  const startMin = Math.ceil((S.target + 5) / 5) * 5;
+  const opts = [{ v: 0, label: '不設定' }];
+  for (let m = startMin, cnt = 0; m <= maxSafe && cnt < 8; m += 5, cnt++) {
+    opts.push({ v: m, label: fmtHM(m) });
+  }
+  const noteEl = $('target2Note');
+  let note = '';
+  if (opts.length === 1) {
+    if (S.target2 > 0) { S.target2 = 0; pset('target2', 0); }
+    note = '這場的時限放不下保底（加上起跑延遲 ' + S.delay + ' 分，最慢 ' + fmtHM(Math.max(0, maxSafe)) + '）';
+  } else {
+    const maxOpt = opts[opts.length - 1].v;
+    if (S.target2 > 0 && S.target2 <= S.target) {
+      S.target2 = 0; pset('target2', 0);
+      note = '理想目標已調慢，保底已清除（需比理想慢 5 分以上）';
+    } else if (S.target2 > maxOpt) {
+      if (S.target2 > maxSafe) {
+        S.target2 = maxOpt; pset('target2', S.target2);
+        note = '這場加上起跑延遲 ' + S.delay + ' 分，最慢只能 ' + fmtHM(maxOpt) + '（已自動調為 ' + fmtHM(maxOpt) + '）';
+      } else {
+        opts.push({ v: S.target2, label: fmtHM(S.target2) });
+      }
+    } else if (maxOpt + 5 > maxSafe && (opts.length <= 2 || S.target2 === maxOpt)) {
+      note = '這場加上起跑延遲 ' + S.delay + ' 分，最慢只能 ' + fmtHM(maxOpt);
+    }
+  }
+  fillOpts($('target2'), opts, v => v === 0 ? '不設定' : fmtHM(v));
+  $('target2').value = String(S.target2 || 0);
+  if (note) { noteEl.textContent = note; noteEl.hidden = false; } else if (!fromChange) noteEl.hidden = true;
+}
+function replan() {
+  syncTarget2Options(false);
+  buildPlans();
+  pushCourse();
+  $('tgtLab').textContent = fmtHM(S.target);
+  $('tgtLab2').textContent = hasRange() ? fmtHM(S.target) + '–' + fmtHM(S.target2) : fmtHM(S.target);
+  $('dlyLab').textContent = S.delay;
+  $('legFloor').hidden = !hasRange();
+  renderPlan(); renderPrep(); lastDrawS = -1e9; schedule();
+}
 syncTargetOptions(window.PREP ? (PREP.suggest({ pbs: S.pbs, d2: TOTAL_KM, f2: RACE_DIFF, limit: LIMIT, delay: S.delay, today: todayStr() }).applyTarget || null) : null);
+syncTarget2Options(false);
 fillOpts($('delay'), R.params.delay.options, v => v + ' 分');
 $('target').value = String(S.target); $('delay').value = String(S.delay);
-$('target').onchange = e => { pbPrevTarget = null; S.target = Number(e.target.value); pset('target', S.target); replan(); };
+$('target').onchange = e => { pbPrevTarget = pbPrevTarget2 = null; S.target = Number(e.target.value); pset('target', S.target); replan(); };
+$('target2').onchange = e => { pbPrevTarget = pbPrevTarget2 = null; S.target2 = Number(e.target.value) || 0; pset('target2', S.target2); replan(); };
 $('delay').onchange = e => { S.delay = Number(e.target.value); pset('delay', S.delay); replan(); };
 $('name').value = S.name; $('name').onchange = e => { S.name = e.target.value.trim(); pset('name', S.name); };
 /* 比賽節拍器（準備頁預先設定、跑步中隨時開關與微調步頻） */
@@ -1914,11 +2019,13 @@ $('bMore').onclick = () => showPage('pgMore');
 /* ---------- 計畫頁 ---------- */
 function renderPlan() {
   const pw = $('planWarn'); pw.innerHTML = '';
-  if (PLAN_BAD) pw.innerHTML += '<div class="warnbox bad">⚠ ' + PLAN_BAD + '</div>';
-  if (PLAN_ADJ.length) pw.innerHTML += '<div class="warnbox">為了在「' + PLAN_ADJ.join('、') + '」關門前留 4–6 分鐘餘裕，計畫已自動把那幾段調快、後段放慢（總時間不變）。</div>';
+  if (PLAN_BAD) pw.innerHTML += '<div class="warnbox bad">⚠ ' + esc(PLAN_BAD) + '</div>';
+  if (PLAN2_BAD) pw.innerHTML += '<div class="warnbox bad">⚠ ' + esc(PLAN2_BAD) + '</div>';
+  if (PLAN_ADJ.length) pw.innerHTML += '<div class="warnbox">為了在「' + esc(PLAN_ADJ.join('、')) + '」關門前留 4–6 分鐘餘裕，計畫已自動把那幾段調快、後段放慢（總時間不變）。</div>';
   const tb = $('planTbl').tBodies[0]; tb.textContent = '';
-  SEC.forEach((s, i) => { const tr = document.createElement('tr'); tr.dataset.i = i; const cb = cutAt(s.b); tr.innerHTML = `<td><b>${s.a}–${s.b}K</b> ${esc(s.from)} → ${esc(s.to)}<br><span class="note">${esc(s.terr)}<br>👉 ${esc(s.act)}</span></td><td>${fmtMS(paceBetween(s.a, s.b) * 60)}</td><td>${planClock(planMin(s.b))}</td><td class="neg">${clk(GUN + deadlineMin(s.b) * 60000)}${cb ? '<br><span class="note">關門</span>' : ''}</td>`; tb.appendChild(tr); });
-  $('cutTbl').tBodies[0].innerHTML = CUT.map(c => { const arr = (baseStart() - GUN) / 60000 + planMin(c.km), m = c.min - arr; return `<tr><td>${esc(c.name)}</td><td>${c.km}</td><td class="neg">${c.clock}</td><td>${planClock(planMin(c.km))}</td><td class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分</td></tr>`; }).join('');
+  const rng = hasRange();
+  SEC.forEach((s, i) => { const tr = document.createElement('tr'); tr.dataset.i = i; const cb = cutAt(s.b); const pCell = planClock(planMin(s.b)) + (rng ? '<br><span class="note">保底 ' + planClock(plan2Min(s.b)) + '</span>' : ''); tr.innerHTML = `<td><b>${s.a}–${s.b}K</b> ${esc(s.from)} → ${esc(s.to)}<br><span class="note">${esc(s.terr)}<br>👉 ${esc(s.act)}</span></td><td>${fmtMS(paceBetween(s.a, s.b) * 60)}</td><td>${pCell}</td><td class="neg">${clk(GUN + deadlineMin(s.b) * 60000)}${cb ? '<br><span class="note">關門</span>' : ''}</td>`; tb.appendChild(tr); });
+  $('cutTbl').tBodies[0].innerHTML = CUT.map(c => { const arr = (baseStart() - GUN) / 60000 + planMin(c.km), m = c.min - arr, m2 = rng ? c.min - ((baseStart() - GUN) / 60000 + plan2Min(c.km)) : null; return `<tr><td>${esc(c.name)}</td><td>${c.km}</td><td class="neg">${c.clock}</td><td>${planClock(planMin(c.km))}</td><td class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分${m2 != null ? '<br><span class="note ' + (m2 < 8 ? 'neg' : m2 < 20 ? 'mid' : 'pos') + '">保底 ' + Math.floor(m2) + ' 分</span>' : ''}</td></tr>`; }).join('');
   $('aidTbl').tBodies[0].innerHTML = AID.map(a => `<tr data-n="${a.n}"><td class="num">${a.n}</td><td>${a.est ? '約' : ''}${a.km}</td><td><b>${esc(a.name)}</b>${a.km_text ? '（' + esc(a.km_text) + '）' : ''}<br>${aidTags(a)}${a.food ? ' <span class="note">' + esc(a.food) + '</span>' : ''}</td><td>${planClock(planMin(a.km))}</td></tr>`).join('');
   $('gelList').innerHTML = (R.text.gel_pre ? [R.text.gel_pre] : []).concat(GELS.map(g => [g.t + ' ' + g.k + 'K', g.note || g.at + ' 號水站'])).map(x => `<li><b>${esc(x[0])}</b>　${esc(x[1])}</li>`).join('');
 }
@@ -1926,7 +2033,9 @@ function highlightPlan(km) {
   const i = SEC.indexOf(secAt(km)); $('planTbl').querySelectorAll('tbody tr').forEach(tr => tr.classList.toggle('cur', Number(tr.dataset.i) === i));
   const na = AID.find(a => a.km > km - 0.06); $('aidTbl').querySelectorAll('tbody tr').forEach(tr => { const a = AID.find(x => x.n === Number(tr.dataset.n)); tr.classList.toggle('cur', a === na); tr.classList.toggle('past', a.km <= km - 0.06); });
 }
-$('tgtLab').textContent = $('tgtLab2').textContent = fmtHM(S.target); $('dlyLab').textContent = S.delay; renderStatic(); renderPlan();
+$('tgtLab').textContent = fmtHM(S.target);
+$('tgtLab2').textContent = hasRange() ? fmtHM(S.target) + '–' + fmtHM(S.target2) : fmtHM(S.target);
+$('dlyLab').textContent = S.delay; $('legFloor').hidden = !hasRange(); renderStatic(); renderPlan();
 
 /* ---------- 地圖：兩指縮放、單指拖曳 ---------- */
 (function () {
@@ -2123,17 +2232,21 @@ function renderPbSuggest() {
       `${flagsHtml}<div class="pb-acts">${actHtml}<button type="button" class="small" id="bPbWhy">${pbWhyOpen ? '收合算式 ▴' : '怎麼算的 ▾'}</button></div>${whyHtml}</div>`;
   }
   if ($('bPbApply')) $('bPbApply').onclick = () => {
-    if (pbPrevTarget == null) pbPrevTarget = S.target;
+    if (pbPrevTarget == null) { pbPrevTarget = S.target; pbPrevTarget2 = S.target2; }
     S.target = res.applyTarget;
+    S.target2 = res.applyFloor || 0;
     pset('target', S.target);
+    pset('target2', S.target2);
     syncTargetOptions(res.applyTarget);
     replan();
   };
   if ($('bPbUndo')) $('bPbUndo').onclick = () => {
     if (pbPrevTarget != null) {
       S.target = pbPrevTarget;
-      pbPrevTarget = null;
+      S.target2 = pbPrevTarget2 || 0;
+      pbPrevTarget = pbPrevTarget2 = null;
       pset('target', S.target);
+      pset('target2', S.target2);
       syncTargetOptions(res.applyTarget);
       replan();
     }
@@ -2219,8 +2332,10 @@ function renderPrep() {
   if (PLAN_BAD) w = '<div class="warnbox bad">⚠ ' + esc(PLAN_BAD) + '</div>';
   else if (PLAN_ADJ.length) w = '<div class="warnbox">' + (R.text.prep_warn ? '<b style="color:var(--warn)">' + esc(R.text.prep_warn) + '</b><br>' : '') + '計畫已自動把「' + esc(PLAN_ADJ.join('、')) + '」之前的區段排快' + (CB.first_n ? '，前 ' + CB.first_n + ' 關各留 ' + CB.early + ' 分鐘、之後留 ' + CB.later + ' 分鐘' : '') + '（總時間不變）。</div>';
   else if (R.text.prep_warn) w = '<div class="warnbox">' + esc(R.text.prep_warn) + '</div>';
+  if (PLAN2_BAD) w += '<div class="warnbox bad">⚠ ' + esc(PLAN2_BAD) + '</div>';
   $('prepWarn').innerHTML = w;
-  $('cutTiles').innerHTML = CUT.filter(c => c.km < TOTAL_KM - 0.01).slice(0, 3).map((c, i) => { const m = c.min - ((baseStart() - GUN) / 60000 + planMin(c.km)); return `<div><div class="t">第${i + 1}關 ${c.km}K</div><div class="v cutv">${c.clock}</div><div class="t">計畫餘裕 <span class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分</span></div></div>`; }).join('');
+  const rng = hasRange();
+  $('cutTiles').innerHTML = CUT.filter(c => c.km < TOTAL_KM - 0.01).slice(0, 3).map((c, i) => { const m = c.min - ((baseStart() - GUN) / 60000 + planMin(c.km)), m2 = rng ? c.min - ((baseStart() - GUN) / 60000 + plan2Min(c.km)) : null; return `<div><div class="t">第${i + 1}關 ${c.km}K</div><div class="v cutv">${c.clock}</div><div class="t">計畫餘裕 <span class="${m < 8 ? 'neg' : m < 20 ? 'mid' : 'pos'}">${Math.floor(m)} 分</span></div>${m2 != null ? `<div class="t">保底 <span class="${m2 < 8 ? 'neg' : m2 < 20 ? 'mid' : 'pos'}">${Math.floor(m2)} 分</span></div>` : ''}</div>`; }).join('');
   const fb = $('finBox');
   if (FIN && !FIN.demo) { fb.hidden = false; fb.innerHTML = '這場已完賽' + (FIN.t != null ? '（淨時間 <b>' + fmtHMS(FIN.t) + '</b>）' : '') + '。再按「開始定位」會清掉完賽狀態。 <button class="small" id="bSeeFin">看成績</button>'; $('bSeeFin').onclick = () => { renderFinish(); showPage('pgFinish'); }; }
   else fb.hidden = true;
@@ -2286,8 +2401,14 @@ function renderFinish() {
   const gunAt = (clockMs, tSec) => !FIN.demo && raceWindow(clockMs) ? (clockMs - GUN) / 60000 : tSec / 60 + S.delay;
   if (t != null) {
     const d = PLAN_TOTAL * 60 - t; $('finVs').textContent = (d >= 0 ? '快 ' : '慢 ') + fmtDelta(d); setCls($('finVs'), d >= 0 ? 'pos' : 'neg');
+    if (hasRange()) {
+      const z = zoneAt(TOTAL_KM, t / 60);
+      $('finZone').textContent = z.z === 'ahead' ? '達成理想' : z.z === 'in' ? '在目標區間內' : '慢於保底 ' + fmtDelta(z.sec);
+      setCls($('finZone'), z.z === 'behind' ? 'mid' : 'pos');
+      $('finZone').hidden = false;
+    } else { $('finZone').textContent = ''; $('finZone').hidden = true; }
     $('finPace').textContent = fmtMS(t / TOTAL_KM); $('finGun').textContent = fmtHMS(gunAt(FIN.c, t) * 60);
-  } else for (const id of ['finVs', 'finPace', 'finGun']) $(id).textContent = '—';
+  } else { $('finZone').textContent = ''; $('finZone').hidden = true; for (const id of ['finVs', 'finPace', 'finGun']) $(id).textContent = '—'; }
   const pct = Math.min(100, Math.round(FIN.s / TOTAL * 100));
   $('finHow').textContent = (FIN.how === 'auto' ? clk(FIN.c) + ' 進入終點 ' + FIN.d + ' m 內、已跑 ' + pct + '% 距離 → 自動完賽。' : clk(FIN.c) + ' 你按了「我完賽了」（當時在 ' + (FIN.s / 1000).toFixed(1) + 'K）。') +
     (FIN.demo ? '這是示範模式，成績不會存起來。' : '定位、語音、偏離提醒都已停止，在旁邊休息也不會再跳「不在賽道上」。');
@@ -2334,6 +2455,11 @@ function selfTest() {
     for (const a of AID) if (!SAID.some(t => t.startsWith('前方水站' + a.n + '號') || t.startsWith(a.n + '號水站，站內走路吃'))) errs.push('水站 ' + a.n + ' 沒有提醒');
     if (Math.abs(PLAN_TOTAL - S.target) > 3) errs.push('計畫總時間 ' + fmtHM(PLAN_TOTAL) + ' 跟目標 ' + fmtHM(S.target) + ' 差太多');
     for (let i = 1; i < N; i++) if (!(PC[i] >= PC[i - 1])) { errs.push('配速計畫不是遞增（第 ' + i + ' 點）'); break; }
+    if (hasRange()) {
+      if (Math.abs(PLAN2_TOTAL - S.target2) > 3) errs.push('保底總時間 ' + fmtHM(PLAN2_TOTAL) + ' 跟保底 ' + fmtHM(S.target2) + ' 差太多');
+      for (let i = 1; i < N; i++) if (!(PC2[i] >= PC2[i - 1])) { errs.push('保底計畫不是遞增（第 ' + i + ' 點）'); break; }
+      for (let i = 0; i < N; i++) if (PC2[i] + 1e-9 < PC[i]) { errs.push('保底計畫早於理想（第 ' + i + ' 點）'); break; }
+    }
     for (const t of SAID) {
       if (/NaN|undefined|null/.test(t)) errs.push('語音內容有錯：' + t);
       if (/比計畫[快慢]0秒/.test(t)) errs.push('語音不應出現 0 秒：' + t);
@@ -2343,7 +2469,12 @@ function selfTest() {
     if (/—/.test($('finCuts').textContent)) errs.push('完賽頁有關門餘裕算不出來');
   } catch (e) { errs.push('執行錯誤：' + (e && e.stack || e)); }
   Date.now = realNow;
-  window.__selftest = { id: RID, ok: errs.length === 0, errs, said: SAID.length, sample: SAID.slice(0, 6), finT: FIN && FIN.t, planTotal: PLAN_TOTAL, course: coursePayload() };
+  const zPts = [Math.min(5, TOTAL_KM * 0.2), TOTAL_KM / 2, Math.min(35, TOTAL_KM * 0.85)];
+  const zones = hasRange() ? zPts.map(k => {
+    const a = planMin(k), b = plan2Min(k);
+    return { km: k, ahead: zoneAt(k, a - 2).z, in: zoneAt(k, (a + b) / 2).z, behind: zoneAt(k, b + 2).z };
+  }) : null;
+  window.__selftest = { id: RID, ok: errs.length === 0, errs, said: SAID.length, sample: SAID.slice(0, 6), finT: FIN && FIN.t, planTotal: PLAN_TOTAL, planTotal2: hasRange() ? PLAN2_TOTAL : null, zones, course: coursePayload() };
 }
 
 readTheme(); renderSplits(); renderPbCard(); setWin(WIN); renderPrep();

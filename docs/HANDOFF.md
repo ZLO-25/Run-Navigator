@@ -183,6 +183,7 @@ PR #6 另有獨立的 "store"（網頁 rn_tlog、rn_tgoal）：訓練紀錄與�
 | v0.9 | 9 | 11/15 | 修 3 個已知 bug：報名組別持久化、RACE_CATS 對齊 race.json、語音差距 <5 秒說「跟計畫一樣」 | PR #8 |
 | v0.10 | 10 | 11/15 | ① 備賽週期計畫：`prep.js` 純計算＋準備頁課表卡（四階段進度條、月目標、完整週表） | PR #9 |
 | v0.11 | 11 | 11/15 | ③ PB 與目標建議：`PREP.difficulty/riegel/suggest/harvestPbs`、準備頁一鍵套用＋算式展開、`pgMore` PB 管理 | PR #10 |
+| v0.12 | 12 | 11/15 | ② 目標時間區間：`makePlan()` 純函式＋理想／保底雙線、語音／瞄一眼／計畫表／Strip ▽ 標記與 `Course.zone()` | PR #11 |
 
 接下來的三件事建議用 v0.9、v0.10、v0.11（versionCode 9、10、11），把 0.8 留給 PR #6。`versionCode` 在 `main` 上必須一直變大；哪個 PR 比較晚合併，就由它在合併前改成比 `main` 大的號碼。
 

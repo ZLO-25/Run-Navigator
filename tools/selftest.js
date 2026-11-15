@@ -164,6 +164,9 @@ const { chromium } = require('playwright');
     const res = await p.evaluate(() => window.__selftest || null);
     if (res) {
       errs.push(...res.errs);
+      if ('plan2' in res.course || 'target2' in res.course) {
+        errs.push('未設定保底時 course payload 不應含 plan2 / target2');
+      }
       fs.writeFileSync(path.join(out, 'course-' + r.id + '.json'), JSON.stringify(res.course));
     }
     await p.screenshot({ path: path.join(out, 'finish-' + r.id + '.png'), fullPage: true });
@@ -321,6 +324,106 @@ const { chromium } = require('playwright');
     }
     if (pbErrs.length) { fails++; console.log('❌ ③ PB 與目標建議：\n   - ' + pbErrs.join('\n   - ')); }
     else console.log('✅ ③ PB 與目標建議：純計算、difficulty、收割與 300 px 畫面驗收全過');
+  }
+  // ② 目標時間區間：純計算（plan2 / zone）、保底選項與 300 px 畫面驗收
+  {
+    const zErrs = [];
+    for (const rid of ['kyoto-2027', 'tokyo-marathon']) {
+      for (const w of [300, 390]) {
+        const { p, ctx, errs } = await open(`race=${rid}&selftest&t2=335`, w);
+        await p.waitForFunction(() => window.__selftest, null, { timeout: 25000 });
+        const res = await p.evaluate(() => window.__selftest);
+        zErrs.push(...errs, ...res.errs);
+        if (res.course.target2 !== 335) zErrs.push(`${rid}@${w}: target2 應為 335，實為 ${res.course.target2}`);
+        const p1 = res.course.plan, p2 = res.course.plan2;
+        if (!Array.isArray(p2) || p2.length !== p1.length) {
+          zErrs.push(`${rid}@${w}: plan2 長度不符`);
+        } else {
+          for (let i = 0; i < p1.length; i++) {
+            if (!Number.isFinite(p2[i]) || p2[i] < p1[i] - 1e-9) {
+              zErrs.push(`${rid}@${w}: plan2[${i}] (${p2[i]}) < plan[${i}] (${p1[i]})`);
+              break;
+            }
+            if (i > 0 && p2[i] < p2[i - 1] - 1e-9) {
+              zErrs.push(`${rid}@${w}: plan2[${i}] 不單調`);
+              break;
+            }
+          }
+        }
+        if (!res.zones || res.zones.length !== 3 || !res.zones.every(z => z.ahead === 'ahead' && z.in === 'in' && z.behind === 'behind')) {
+          zErrs.push(`${rid}@${w}: zones 判定錯誤 ${JSON.stringify(res.zones)}`);
+        }
+        const finTxt = await p.textContent('#pgFinish');
+        if (!finTxt || finTxt.includes('NaN') || finTxt.includes('undefined')) {
+          zErrs.push(`${rid}@${w}: #pgFinish 含 NaN/undefined`);
+        }
+        if (w === 300) {
+          (await overflow(p)).forEach(x => zErrs.push(`${rid} finish: ` + x));
+          for (const tab of ['#tPrep', '#tPlan', '#tMap']) {
+            await p.click(tab);
+            await p.waitForTimeout(120);
+            (await overflow(p)).forEach(x => zErrs.push(`${rid} ${tab}: ` + x));
+          }
+        }
+        await ctx.close();
+      }
+    }
+    // 準備頁 #target2 選項與時限鎖定檢查
+    {
+      const { p, ctx, errs } = await open('race=kyoto-2027', 300);
+      await p.waitForTimeout(250);
+      await p.click('#tPrep');
+      await p.waitForTimeout(100);
+      zErrs.push(...errs);
+      const opts15 = await p.$$eval('#target2 option', els => els.map(e => e.value));
+      if (JSON.stringify(opts15) !== JSON.stringify(['0', '335'])) {
+        zErrs.push('京都 delay=15, target=330 的 #target2 選項應為 [0,335]，實為 ' + JSON.stringify(opts15));
+      }
+      await p.selectOption('#target2', '335');
+      await p.waitForTimeout(120);
+      (await overflow(p)).forEach(x => zErrs.push('京都 target2=335 準備頁: ' + x));
+      await p.selectOption('#delay', '20');
+      await p.waitForTimeout(120);
+      if ((await p.inputValue('#target2')) !== '0') zErrs.push('京都 delay 改 20 後應清空保底');
+      if (!(await p.textContent('#target2Note')).includes('這場的時限放不下保底')) {
+        zErrs.push('京都無保底空間時應顯示提示');
+      }
+      (await overflow(p)).forEach(x => zErrs.push('京都無保底準備頁: ' + x));
+      await ctx.close();
+    }
+    {
+      const { p, ctx, errs } = await open('race=tokyo-marathon', 300);
+      await p.waitForTimeout(250);
+      await p.click('#tPrep');
+      await p.waitForTimeout(100);
+      zErrs.push(...errs);
+      const opts = await p.$$eval('#target2 option', els => els.map(e => e.value));
+      const exp = ['0', '335', '340', '345', '350', '355', '360', '365', '370'];
+      if (JSON.stringify(opts) !== JSON.stringify(exp)) {
+        zErrs.push('東京 delay=20, target=330 的 #target2 選項不符：' + JSON.stringify(opts));
+      }
+      await ctx.close();
+    }
+    // 首頁顯示區間（5:30–5:35）與 300 px 防爆版檢查
+    {
+      const { p, ctx, errs } = await open('home', 300);
+      await p.waitForTimeout(200);
+      await p.evaluate(() => {
+        localStorage.setItem('rn_kyoto-2027.target', '330');
+        localStorage.setItem('rn_kyoto-2027.target2', '335');
+      });
+      await p.reload();
+      await p.waitForTimeout(200);
+      await p.click('[data-more="kyoto-2027"]');
+      await p.waitForTimeout(100);
+      zErrs.push(...errs);
+      const homeCard = await p.textContent('[data-go="kyoto-2027"]');
+      if (!homeCard.includes('5:30–5:35')) zErrs.push('首頁應顯示區間 5:30–5:35，實為：' + homeCard);
+      (await overflow(p)).forEach(x => zErrs.push('首頁目標區間: ' + x));
+      await ctx.close();
+    }
+    if (zErrs.length) { fails++; console.log('❌ ② 目標時間區間：\n   - ' + zErrs.join('\n   - ')); }
+    else console.log('✅ ② 目標時間區間：plan2/zone 計算、保底選項與 300 px 畫面驗收全過');
   }
   await browser.close();
   if (fails) { console.log(`\n${fails} 項沒過，不發佈。`); process.exit(1); }
