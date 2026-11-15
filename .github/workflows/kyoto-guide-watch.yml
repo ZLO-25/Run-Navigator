@@ -1,0 +1,57 @@
+name: Kyoto 2027 Guide Watch
+
+on:
+  schedule:
+    # 2027 年 1–2 月每週一 09:42 台灣時間（UTC 01:42），首次 2027-01-04
+    - cron: '42 1 * 1,2 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-kyoto-guide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Kyoto Marathon 2027 official guide against Run-Navigator
+        run: |
+          python3 tools/check_kyoto_guide.py --json-out build/kyoto-check.json | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Notify via Issue when 2027 official guide signals appear
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          p = Path("build/kyoto-check.json")
+          if not p.exists():
+              raise SystemExit(0)
+          rep = json.loads(p.read_text(encoding="utf-8"))
+          if not rep.get("has_guide_signal"):
+              print("No new 2027 guide signal; skipping issue creation.")
+              raise SystemExit(0)
+          title = f"京都馬拉松 2027 官方指南週檢通知（{rep['checked_at_utc'][:10]}）"
+          body = "\n".join([
+              "定期排程偵測到京都馬拉松官網可能已更新 2027 相關指南／連結，請對照並更新：",
+              "",
+              f"- 目標賽事包：`{rep['target_file']}`（目前 `schedule.checked`：`{rep['current_schedule_checked']}`）",
+              "- 更新步驟：`app/src/main/assets/races/kyoto-2027/race.json` → `python3 tools/build_races.py` → `node tools/selftest.js`",
+              "",
+              "### 偵測項目",
+              *[f"- {s}" for s in rep.get("signals_2027", [])],
+          ])
+          existing = subprocess.run(
+              ["gh", "issue", "list", "--state", "open", "--search", "京都馬拉松 2027 官方指南週檢通知", "--json", "number"],
+              capture_output=True, text=True, check=False
+          )
+          if existing.returncode == 0 and existing.stdout.strip() not in ("", "[]"):
+              print("Open notification issue already exists; skipping duplicate.")
+              raise SystemExit(0)
+          subprocess.run(["gh", "issue", "create", "--title", title, "--body", body], check=False)
+          PY
