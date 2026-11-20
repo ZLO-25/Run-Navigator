@@ -77,8 +77,8 @@
     },
     {
       "n": "折",
-      "name": "Charlesgate W 折返（2.6K）",
-      "km": 2.6,
+      "name": "Kenmore／Charlesgate W 折返（3.0K）",
+      "km": 3.0,
       "note": "U-turn 轉回 Commonwealth Ave 回程進 Back Bay！"
     },
     {
@@ -106,14 +106,14 @@
     },
     {
       "a": 1.5,
-      "b": 2.6,
+      "b": 3.0,
       "from": "Comm Ave",
-      "to": "Charlesgate W 折返",
+      "to": "Kenmore 折返",
       "terr": "平坦（海拔僅 3–6 m）",
       "act": "準備 180 度折返不踩線"
     },
     {
-      "a": 2.6,
+      "a": 3.0,
       "b": 4.2,
       "from": "折返點",
       "to": "Hereford St",
