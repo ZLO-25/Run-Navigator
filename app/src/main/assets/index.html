@@ -293,7 +293,7 @@ button.linkish{background:transparent;border:none;color:var(--sub);font-size:15p
    <button data-rf="tw">🇹🇼 台灣</button>
    <button data-rf="intl">🌏 海外</button>
    <button data-rf="42k">全馬 42K</button>
-   <button data-rf="short">半馬・29K</button>
+   <button data-rf="short">半馬・短距離</button>
   </div>
   <div id="raceList" class="ctl"></div>
   <div class="hsec"><span>更多工具</span></div>
@@ -813,102 +813,136 @@ const ITEM_ICONS = {
   freerun: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M6 24c4 0 6-6 9-10l3 3c2 2 5 3 10 3.5 1.5.2 2.5 1.3 2.5 2.5 0 1.2-1 2-2.5 2H7.5C6.4 25 5.5 24.5 6 24Z" stroke="#5ab8ff" stroke-width="2.1" stroke-linejoin="round"/><circle cx="26" cy="10" r="2.2" fill="#3ddc97"/><path d="M22.5 10a3.5 3.5 0 0 1 7 0" stroke="#3ddc97" stroke-width="1.7" stroke-linecap="round" opacity=".75"/></svg>',
   import: '<svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 27c3-6 7-6 10-1s7 5 11-4" stroke="#c9a7ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/><path d="M25 8a4.5 4.5 0 0 1 4.5 4.5c0 3.2-4.5 7.5-4.5 7.5s-4.5-4.3-4.5-7.5A4.5 4.5 0 0 1 25 8Z" stroke="#c9a7ff" stroke-width="2"/><circle cx="25" cy="12.5" r="1.5" fill="#c9a7ff"/></svg>'
 };
-const RACE_CATS = {
-  'sunmoonlake-29k-2026': [
-    { id: '29k', label: '29K 環湖', full: '29K 超半馬環湖組', km: 28.8, limit_min: 270, def_target: 255, cat: 'short', route: true, gun_txt: '06:35', note: '環湖一圈（向山・文武廟・玄奘寺・頭社三坡）' },
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 390, def_target: 330, cat: '42k', route: false, gun_txt: '06:35', note: '環湖一圈＋水社／九龍口折返（導航路線與水站以 29K 環湖為主）' },
-    { id: '6k', label: '6K 健走', full: '6K 活力健走組', km: 6, limit_min: 150, def_target: 60, cat: 'short', route: false, gun_txt: '06:35', note: '向山周邊體驗組，限時 2 小時 30 分（導航路線以 29K 環湖為主）' }
-  ],
-  'yangmingshan-21k-2026': [
-    { id: '21k', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
-    { id: '42k', label: '42.2K 全馬 ↗', full: '42.195K 全程馬拉松組（切到全馬賽道）', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, link: 'yangmingshan-42k-2026', gun_txt: '06:00', note: '點選切換至陽明山全馬專屬賽道' },
-    { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
-  ],
-  'yangmingshan-42k-2026': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松組', km: 42.195, limit_min: 360, def_target: 345, cat: '42k', route: true, gun_txt: '06:00', note: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
-    { id: '21k', label: '21.1K 半馬 ↗', full: '21.0975K 半程馬拉松組（切到半馬賽道）', km: 21.0975, limit_min: 240, def_target: 195, cat: 'short', route: true, link: 'yangmingshan-21k-2026', gun_txt: '06:00', note: '點選切換至陽明山半馬專屬賽道' },
-    { id: '5k', label: '5K 路跑', full: '5K 路跑組', km: 5, limit_min: 120, def_target: 40, cat: 'short', route: false, gun_txt: '06:30', note: '06:30 鳴槍，中山樓・菁山路折返，限時 2 小時' }
-  ],
-  'kyoto-2027': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 360, def_target: 330, cat: '42k', route: true, gun_txt: '09:00', note: '西京極 → 平安神宮（全馬完整賽道）' },
-    { id: 'pair1', label: '接力1棒 27.6K', full: '雙人接力第 1 棒（27.6K）', km: 27.6, limit_min: 245, def_target: 195, cat: 'short', route: false, gun_txt: '09:00', note: '西京極 → 京都府立植物園交接（沿全馬前 27.6K 賽道）' },
-    { id: 'pair2', label: '接力2棒 14.6K', full: '雙人接力第 2 棒（14.6K）', km: 14.6, limit_min: 360, def_target: 105, cat: 'short', route: false, gun_txt: '09:00', note: '京都府立植物園 → 平安神宮（沿全馬後段賽道）' },
-    { id: 'wheel', label: '輪椅 6.1K', full: '輪椅競技組（6.1K）', km: 6.1, limit_min: 60, def_target: 25, cat: 'short', route: false, gun_txt: '08:55', note: '西京極出發，08:55 鳴槍，限時 60 分鐘' }
-  ],
-  'tokyo-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 420, def_target: 330, cat: '42k', route: true, gun_txt: '09:10', note: '含一般／輪椅／雙人組；2027 第20屆起原 10.7K 組已併入 42.195K' }
-  ],
-  'nyc-marathon-2027': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 770, def_target: 330, cat: '42k', route: true, gun_txt: '09:10', note: '主賽日唯一正式距離組別（26.2 mi，史坦頓島 → 中央公園）' },
-    { id: '5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六）', km: 5, limit_min: 90, def_target: 30, cat: 'short', route: false, gun_txt: '08:30', note: '週六 UN 總部 → 中央公園暖身賽（主賽日賽道以 42.2K 為主）' }
-  ],
-  'boston-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松（點對點）', km: 42.195, limit_min: 450, def_target: 270, cat: '42k', route: true, gun_txt: '10:00', note: '愛國者日週一經典點對點賽道（Hopkinton → Boston Boylston St，Wave 1 10:00 / Wave 4 11:15）' },
-    { id: '5k', label: '週六 5K', full: 'B.A.A. 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '08:00', note: '週六 Boston Common → Boylston St 終點暖身賽（主賽日賽道以 42.2K 為主）' }
-  ],
-  'london-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 600, def_target: 330, cat: '42k', route: true, gun_txt: '09:30', note: 'Blackheath 分色起跑（含 2027 特別版週日延長 8 小時步速收尾；週六為青少年 Mini Marathon）' }
-  ],
-  'sydney-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 540, def_target: 330, cat: '42k', route: true, gun_txt: '06:30', note: '世界第七大馬（2025 升格）：Miller St → 港灣大橋 → 雪梨歌劇院前院' },
-    { id: '10k', label: '10K', full: 'TCS Sydney Marathon 10K', km: 10, limit_min: 110, def_target: 60, cat: 'short', route: false, gun_txt: '06:45', note: '港灣大橋體驗短程組（此賽道指南以 42.2K 全馬為主）' }
-  ],
-  'berlin-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 465, def_target: 300, cat: '42k', route: true, gun_txt: '09:15', note: '世界紀錄溫床高速環線（Straße des 17. Juni 起跑 → 布蘭登堡門衝線，淨計時 6h15）' },
-    { id: '5k', label: '週六 5K', full: 'GENERALI 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '10:00', note: '賽前週六最後 5 公里預演進布蘭登堡門（此賽道指南以 42.2K 為主）' }
-  ],
-  'chicago-marathon': [
-    { id: '42k', label: '42.2K 全馬', full: '42.195K 全程馬拉松', km: 42.195, limit_min: 460, def_target: 300, cat: '42k', route: true, gun_txt: '07:30', note: 'Grant Park 同點起終極平坦環線（穿梭芝加哥 29 區・限時 6h30，末波 08:40 → 15:10）' },
-    { id: '5k', label: '週六 5K', full: 'Abbott Chicago 5K（賽前週六）', km: 5, limit_min: 75, def_target: 30, cat: 'short', route: false, gun_txt: '07:30', note: '賽前週六 Grant Park → 市中心環線暖身賽（此賽道指南以 42.2K 為主）' }
-  ]
-};
-function getRaceCats(r) {
-  return RACE_CATS[r.id] || [{ id: 'main', label: Math.round(r.distance_m / 100) / 10 + 'K', full: r.name, km: r.distance_m / 1000, limit_min: r.time.limit_min, def_target: r.params.target.default, cat: r.distance_m >= 40000 ? '42k' : 'short', route: true, gun_txt: '', note: '' }];
+const EVENT_GROUPS = [
+  { gid: 'kyoto', title: '京都馬拉松 2027', cats: [
+    { rid: 'kyoto-2027', label: '42.2K 全馬', full: '42.195K 全程馬拉松（西京極 → 平安神宮）', cat: '42k', note: '09:00 鳴槍・6 小時關門・嵐山與きぬかけの路完整全馬賽道' },
+    { rid: 'kyoto-pair1-2027', label: '接力1棒 27.6K', full: '雙人接力第 1 棒 27.6K（西京極 → 府立植物園）', cat: 'short', note: '09:00 鳴槍・第1–5關門（26.8K 12:48）・含嵐山與今宮上坡段' },
+    { rid: 'kyoto-pair2-2027', label: '接力2棒 14.6K', full: '雙人接力第 2 棒 14.6K（府立植物園 → 平安神宮）', cat: 'short', note: '植物園接棒（設定接棒等待時間）・與第6–8關與 15:00 總關門同步' },
+    { rid: 'kyoto-wheel-2027', label: '輪椅 6.1K', full: '輪椅競技組 6.1K（西京極 → 嵐山清滝道三条）', cat: 'short', note: '08:55 提前鳴槍・限時 60 分・前段純平路推進' }
+  ]},
+  { gid: 'tokyo', title: '東京馬拉松 2027', cats: [
+    { rid: 'tokyo-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松', cat: '42k', note: '含一般／輪椅／雙人組；2027 第20屆起原 10.7K 組已併入全馬' }
+  ]},
+  { gid: 'boston', title: '波士頓馬拉松 2027', cats: [
+    { rid: 'boston-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松（Hopkinton → Boston）', cat: '42k', note: '愛國者日週一經典點對點（10:00 分波起跑・Wave 4 11:15）' },
+    { rid: 'boston-5k', label: '週六 5K', full: 'B.A.A. 5K（賽前週六・Back Bay 折返）', cat: 'short', note: '週六 08:00 鳴槍・Commonwealth Ave 折返進正宗 Boylston 終點線' }
+  ]},
+  { gid: 'london', title: '倫敦馬拉松 2027', cats: [
+    { rid: 'london-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松', cat: '42k', note: 'Blackheath 分色起跑・白金漢宮衝線（週六為青少年 Mini Marathon）' }
+  ]},
+  { gid: 'sydney', title: '雪梨馬拉松 2027', cats: [
+    { rid: 'sydney-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松（42.2K 全長）', cat: '42k', note: '世界第七大馬（06:30 分波）・港灣大橋 → 百年公園 → 歌劇院' },
+    { rid: 'sydney-10k', label: '10K', full: 'TCS Sydney Marathon 10K（港灣大橋 → 歌劇院）', cat: 'short', note: '06:45 左右分波・過港灣大橋下坡沿 Barangaroo／植物園直進歌劇院' }
+  ]},
+  { gid: 'berlin', title: '柏林馬拉松 2027', cats: [
+    { rid: 'berlin-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松（高速環線）', cat: '42k', note: '09:15 分 4 波出發・淨限時 6h15・穿過布蘭登堡門' },
+    { rid: 'berlin-5k', label: '週六 5K', full: 'GENERALI 5K（賽前週六・波茨坦廣場 → 布蘭登堡門）', cat: 'short', note: '週六 10:00 鳴槍・預演柏馬正宗最後 5 公里・淨限時 60 分' }
+  ]},
+  { gid: 'chicago', title: '芝加哥馬拉松 2027', cats: [
+    { rid: 'chicago-marathon', label: '42.2K 全馬', full: '42.195K 全程馬拉松（29 區環線）', cat: '42k', note: 'Grant Park 同點起終・07:30 起跑・淨限時 6h30' },
+    { rid: 'chicago-5k', label: '週六 5K', full: 'Abbott Chicago 5K（賽前週六・Grant Park → Loop）', cat: 'short', note: '週六 07:30 鳴槍・穿梭芝加哥摩天大樓核心區至 Wacker & Adams' }
+  ]},
+  { gid: 'sunmoonlake', title: '日月潭環湖馬拉松 2027', cats: [
+    { rid: 'sunmoonlake-29k-2026', label: '29K 環湖', full: '29K 超半馬環湖組（向山環湖一圈）', cat: 'short', note: '06:35 鳴槍・限時 4h30（文武廟・玄奘寺・頭社三坡）' },
+    { rid: 'sunmoonlake-42k-2026', label: '42.2K 全馬', full: '42.195K 全程馬拉松組（環湖＋台21線 75.4K 折返）', cat: '42k', note: '06:30 鳴槍・限時 6h30（過頭社南延往武登折返，後段大爬升）' },
+    { rid: 'sunmoonlake-6k-2026', label: '6K 健走', full: '6K 活力健走組（湖畔自行車道 → 水社壩折返）', cat: 'short', note: '06:40 鳴槍・限時 2h30（專屬平緩湖畔自行車道）' }
+  ]},
+  { gid: 'yangmingshan', title: '陽明山國家公園馬拉松 2027', cats: [
+    { rid: 'yangmingshan-21k-2026', label: '21.1K 半馬', full: '21.0975K 半程馬拉松組（中山樓 ⇄ 馬槽橋前）', cat: 'short', note: '06:00 鳴槍・限時 4h（冷水坑 → 陽金公路折返）' },
+    { rid: 'yangmingshan-42k-2026', label: '42.2K 全馬', full: '42.195K 全程馬拉松組（中山樓 ⇄ 金山）', cat: '42k', note: '06:00 鳴槍・限時 6h（前半下陽金，後半回爬 16K）' },
+    { rid: 'yangmingshan-5k-2026', label: '5K 路跑', full: '5K 路跑組（中山樓 ⇄ 菁山路101巷折返）', cat: 'short', note: '06:30 鳴槍・限時 2h（轉進菁山路101巷獨立山坡折返）' }
+  ]},
+  { gid: 'nyc', title: '紐約市馬拉松 2027', cats: [
+    { rid: 'nyc-marathon-2027', label: '42.2K 全馬', full: '42.195K 全程馬拉松（五區經典賽道）', cat: '42k', note: '主賽日週日 09:10 起 5 波出發・史坦頓島 → 中央公園' },
+    { rid: 'nyc-5k', label: '週六 5K', full: 'Abbott Dash 5K（賽前週六・聯合國總部 → 中央公園終點）', cat: 'short', note: '週六 08:30 鳴槍・沿 42街 → 第六大道搶先踏過紐馬終點線' }
+  ]}
+];
+const GROUP_OF = {};
+for (const g of EVENT_GROUPS) for (const c of g.cats) GROUP_OF[c.rid] = g;
+function getRaceGroup(rid) {
+  if (GROUP_OF[rid]) return GROUP_OF[rid];
+  const r = (window.RACES || []).find(x => x.id === rid);
+  return { gid: rid, title: (r && r.name) || rid, cats: [{ rid, label: r ? (Math.round(r.distance_m / 100) / 10 + 'K') : '', full: (r && r.name) || rid, cat: (r && r.distance_m >= 40000) ? '42k' : 'short', note: '' }] };
 }
-function getRaceCat(r) {
-  const cats = getRaceCats(r), p = racePrefs(r.id);
-  return cats.find(c => c.id === p.regCat) || cats[0];
+function getHomeGroups() {
+  const byId = Object.fromEntries((window.RACES || []).map(r => [r.id, r]));
+  const seen = new Set(), out = [];
+  for (const g of EVENT_GROUPS) {
+    const cats = g.cats.filter(c => byId[c.rid]);
+    if (cats.length) {
+      cats.forEach(c => seen.add(c.rid));
+      out.push({ gid: g.gid, title: g.title, cats });
+    }
+  }
+  for (const r of (window.RACES || [])) if (!seen.has(r.id)) out.push(getRaceGroup(r.id));
+  return out;
 }
-function saveRaceCat(rid, cid) {
+const _grpSel = {};
+function getGroupRid(grp, filter) {
+  const act = activeRace();
+  const live = act && grp.cats.find(c => c.rid === act);
+  if (live) return live.rid;
+  const saved = _grpSel[grp.gid] || racePrefs(grp.gid).regCat;
+  let picked = grp.cats.find(c => c.rid === saved) || grp.cats[0];
+  if ((filter === '42k' || filter === 'short') && picked.cat !== filter) {
+    picked = grp.cats.find(c => c.cat === filter) || picked;
+  }
+  return picked.rid;
+}
+function saveGroupRid(gid, rid) {
+  _grpSel[gid] = rid;
   if (SELFTEST) return;
-  if (NATIVE) Android.setPref(rid, 'regCat', cid);
-  else lset(rid + '.regCat', cid);
+  if (NATIVE) Android.setPref(gid, 'regCat', rid);
+  else lset(gid + '.regCat', rid);
 }
 const RACE_STYLE = {
   'kyoto-2027': { loc: '🇯🇵 日本京都', col: '#c9a7ff', route: '西京極 → 嵐山・鴨川 → 平安神宮' },
+  'kyoto-pair1-2027': { loc: '🇯🇵 日本京都', col: '#a882ff', route: '西京極 → 嵐山・きぬかけの路 → 府立植物園' },
+  'kyoto-pair2-2027': { loc: '🇯🇵 日本京都', col: '#7ec8ff', route: '府立植物園 → 鴨川・今出川 → 平安神宮' },
+  'kyoto-wheel-2027': { loc: '🇯🇵 日本京都', col: '#3ddc97', route: '西京極 → 四条通 → 嵐山清滝道三条' },
   'tokyo-marathon': { loc: '🇯🇵 日本東京', col: '#5ab8ff', route: '東京都廳 → 淺草・銀座 → 東京站前' },
   'nyc-marathon-2027': { loc: '🇺🇸 美國紐約', col: '#ffc24a', route: '史坦頓島 → 五區跨橋 → 中央公園' },
+  'nyc-5k': { loc: '🇺🇸 美國紐約', col: '#3ddc97', route: '聯合國總部 → 42街・第六大道 → 中央公園終點' },
   'boston-marathon': { loc: '🇺🇸 美國波士頓', col: '#5ab8ff', route: 'Hopkinton → Wellesley・心碎坡 → Boylston St' },
+  'boston-5k': { loc: '🇺🇸 美國波士頓', col: '#2dd4bf', route: 'Boston Common → Comm Ave 折返 → Boylston 終點' },
   'london-marathon': { loc: '🇬🇧 英國倫敦', col: '#ff6b5e', route: 'Blackheath → 倫敦塔橋・金絲雀碼頭 → 白金漢宮' },
   'sydney-marathon': { loc: '🇦🇺 澳洲雪梨', col: '#2dd4bf', route: 'North Sydney → 港灣大橋・百年公園 → 雪梨歌劇院' },
+  'sydney-10k': { loc: '🇦🇺 澳洲雪梨', col: '#5ab8ff', route: 'North Sydney → 港灣大橋 → Barangaroo・歌劇院' },
   'berlin-marathon': { loc: '🇩🇪 德國柏林', col: '#ffc24a', route: '勝利紀念柱 → 亞歷山大廣場・波茨坦 → 布蘭登堡門' },
+  'berlin-5k': { loc: '🇩🇪 德國柏林', col: '#ff8a4c', route: '波茨坦廣場 → 菩提樹下 → 布蘭登堡門' },
   'chicago-marathon': { loc: '🇺🇸 美國芝加哥', col: '#3ddc97', route: 'Grant Park → 林肯公園・唐人街 → 羅斯福坡' },
+  'chicago-5k': { loc: '🇺🇸 美國芝加哥', col: '#5ab8ff', route: 'Grant Park → The Loop 摩天街區 → Wacker & Adams' },
   'sunmoonlake-29k-2026': { loc: '🇹🇼 南投日月潭', col: '#2dd4bf', route: '向山環湖一圈（文武廟・玄奘寺・頭社三坡）' },
-  'yangmingshan-21k-2026': { loc: '🇹🇼 台北陽明山', col: '#3ddc97', route: '中山樓 ⇄ 馬槽橋折返（不進金山）' },
-  'yangmingshan-42k-2026': { loc: '🇹🇼 台北陽明山', col: '#ff6b5e', route: '中山樓 ⇄ 金山折返（後半 16K 長爬）' }
+  'sunmoonlake-42k-2026': { loc: '🇹🇼 南投日月潭', col: '#ff6b5e', route: '環湖＋頭社延伸台21線 75.4K 折返（大爬升 +1037 m）' },
+  'sunmoonlake-6k-2026': { loc: '🇹🇼 南投日月潭', col: '#3ddc97', route: '向山 → 湖畔自行車道 → 水社壩折返' },
+  'yangmingshan-21k-2026': { loc: '🇹🇼 台北陽明山', col: '#3ddc97', route: '中山樓 ⇄ 馬槽橋前折返（不進金山）' },
+  'yangmingshan-42k-2026': { loc: '🇹🇼 台北陽明山', col: '#ff6b5e', route: '中山樓 ⇄ 金山折返（後半 16K 長爬）' },
+  'yangmingshan-5k-2026': { loc: '🇹🇼 台北陽明山', col: '#ffc24a', route: '中山樓 → 新園一號橋 → 菁山路101巷折返' }
 };
 function raceProfile(r) {
-  const cats = getRaceCats(r), sel = getRaceCat(r);
-  const km = sel.km, limitMin = sel.limit_min;
+  const grp = getRaceGroup(r.id), cats = grp.cats;
+  const sel = cats.find(c => c.rid === r.id) || cats[0];
+  const km = r.distance_m / 1000, limitMin = r.time.limit_min;
   const st = RACE_STYLE[r.id] || { loc: (r.time.tz === 'Asia/Taipei' ? '🇹🇼 ' : '🌏 ') + (r.time.tz_short || ''), col: '#5ab8ff', route: (r.start_name || '') + ' → ' + (r.finish_name || '') };
-  const icon = `<div class="ricon">${ITEM_ICONS[r.id] || ITEM_ICONS.metro}</div>`;
+  const svgIco = ITEM_ICONS[r.id] || ITEM_ICONS[cats[0].rid] || ITEM_ICONS.metro;
+  const icon = `<div class="ricon">${svgIco}</div>`;
   const distBadge = sel.label;
   const distCat = sel.cat;
-  const allCats = [...new Set(cats.filter(c => !c.link && (c.route || c.km >= 20)).map(c => c.cat))].join(' ');
+  const allCats = [...new Set(cats.map(c => c.cat))].join(' ');
   const region = r.time.tz === 'Asia/Taipei' ? 'tw' : 'intl';
   const raw = (r.route && r.route.elev) || [0, 0];
   const n = raw.length, es = raw.map((_, i) => { let s = 0; for (let k = -2; k <= 2; k++) s += raw[Math.max(0, Math.min(n - 1, i + k))]; return s / 5; });
   let gain = 0; for (let i = 3; i < n; i += 3) if (es[i] > es[i - 3]) gain += es[i] - es[i - 3];
   gain = Math.round(gain);
   const minE = Math.round(Math.min(...es)), maxE = Math.round(Math.max(...es)), span = Math.max(35, maxE - minE);
-  const terr = gain >= 900 ? '硬派山馬' : gain >= 550 ? '山路陡坡' : gain >= 350 ? '環湖三坡' : gain >= 140 ? '起伏多坡' : '高速平路';
+  const terr = gain >= 900 ? '硬派山馬' : gain >= 550 ? '山路陡坡' : gain >= 350 ? '環湖三坡' : gain >= 140 ? '起伏多坡' : gain >= 50 ? '微丘起伏' : '高速平路';
   const step = Math.max(1, Math.floor(n / 48)), pts = [];
   for (let i = 0; i < n; i += step) pts.push([Math.round(i / (n - 1) * 240), Math.round(39 - (es[i] - minE) / span * 23)]);
   pts.push([240, Math.round(39 - (es[n - 1] - minE) / span * 23)]);
   const line = 'M' + pts.map(p => p[0] + ',' + p[1]).join('L');
   const area = line + 'L240,42L0,42Z';
   const svg = `<div class="rprof"><svg viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true"><path d="${area}" fill="${st.col}" fill-opacity="0.18"/><path d="${line}" fill="none" stroke="${st.col}" stroke-width="2"/></svg><div class="rplab"><span>⛰ 海拔 ${minE}–${maxE} m</span><span>最高 ${maxE} m</span></div></div>`;
-  return { km, limitMin, cats, sel, allCats, st, icon, distBadge, distCat, region, gain, terr, svg };
+  return { km, limitMin, grp, cats, sel, allCats, st, icon, distBadge, distCat, region, gain, terr, svg };
 }
 
 window.R = null;
@@ -964,89 +998,79 @@ function renderHome() {
     const pill = st ? `<span class="pill ${st[1]}">${st[0]}</span>` : '';
     return `<div class="rnext"><span>${same ? '' : '下一屆 ' + esc(ymdTxt(it.race)) + (it.race_est ? '（預估）' : '') + '・'}報名：${esc(it.entry_short || it.entry)}${it.entry_est ? '（預估）' : ''}</span>${pill}</div>`;
   };
-  const sorted = [...window.RACES].sort((a, b) => {
-    const ga = Date.parse(a.time.gun), gb = Date.parse(b.time.gun);
-    const pa = now > ga + a.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
-    const pb = now > gb + b.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
+  const byId = Object.fromEntries((window.RACES || []).map(r => [r.id, r]));
+  const groups = getHomeGroups().sort((a, b) => {
+    const ra = byId[a.cats[0].rid], rb = byId[b.cats[0].rid];
+    const ga = Date.parse(ra.time.gun), gb = Date.parse(rb.time.gun);
+    const pa = now > ga + ra.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
+    const pb = now > gb + rb.time.limit_min * 60000 + 3 * 3600e3 ? 1 : 0;
     return pa !== pb ? pa - pb : ga - gb;
   });
   let curFilter = 'all';
   const openMore = new Set();
   function drawRaceList() {
     nextDone = false;
-    $('raceList').innerHTML = sorted.map(r => {
+    $('raceList').innerHTML = groups.map(grp => {
+      const selRid = getGroupRid(grp, curFilter);
+      const r = byId[selRid] || byId[grp.cats[0].rid];
       const g = Date.parse(r.time.gun), end = g + r.time.limit_min * 60000, off = tzOffMs(r), p = racePrefs(r.id);
       const pf = raceProfile(r);
-      const isOpen = openMore.has(r.id);
+      const isOpen = openMore.has(grp.gid);
       const curIt = (r.schedule && r.schedule.items || []).find(it => it.race === r.time.gun.slice(0, 10));
       const isEst = curIt ? curIt.race_est : false;
-      const when = dateTxtTz(g, off, true) + ' ' + (pf.sel.gun_txt || clkTz(g, off));
+      const when = dateTxtTz(g, off, true) + ' ' + clkTz(g, off);
       const live = act === r.id, fin = p.finished, past = !live && (fin || now > end + 3 * 3600e3);
-      const ncut = pf.sel.route ? r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length : 0;
-      const tgt = pf.sel.route ? (p.target || r.params.target.default) : pf.sel.def_target;
-      const tgt2 = pf.sel.route && p.target2 > tgt ? p.target2 : 0;
+      const ncut = r.cutoffs.filter(c => c.km < r.distance_m / 1000 - 0.01).length;
+      const tgt = p.target || r.params.target.default;
+      const tgt2 = p.target2 > tgt ? p.target2 : 0;
       const paceSec = Math.round(tgt * 60 / pf.km), paceStr = Math.floor(paceSec / 60) + ':' + p2(paceSec % 60);
       const limMin = pf.limitMin, limStr = (limMin % 60 ? hm(limMin) : (limMin / 60) + '小時');
       const catsHTML = pf.cats.length > 1
-        ? `<div class="rcats" role="group" aria-label="報名組別">${pf.cats.map(c => `<button type="button" class="rcat${c.id === pf.sel.id ? ' on' : ''}" data-pick="${esc(r.id)}" data-cid="${esc(c.id)}">${esc(c.label)}</button>`).join('')}</div>`
+        ? `<div class="rcats" role="group" aria-label="報名組別">${pf.cats.map(c => `<button type="button" class="rcat${c.rid === r.id ? ' on' : ''}" data-pick="${esc(grp.gid)}" data-rid="${esc(c.rid)}">${esc(c.label)}</button>`).join('')}</div>`
         : '';
       const specHTML = `<div class="rspec">` +
         `<div><div class="t">總爬升</div><div class="v">+${pf.gain}m</div><div class="s">${pf.terr}</div></div>` +
         `<div><div class="t">目標時間</div><div class="v">${tgt2 ? `<span class="tgt-rng">${hm(tgt)}–${hm(tgt2)}</span>` : hm(tgt)}</div><div class="s">均速 ${paceStr}/K</div></div>` +
-        `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${pf.sel.route ? (ncut ? ncut + ' 個中途關' : '無中途關門') : '依組別計時'}</div></div>` +
+        `<div><div class="t">時限・關門</div><div class="v">限 ${limStr}</div><div class="s">${ncut ? ncut + ' 個中途關' : '無中途關門'}</div></div>` +
         `</div>`;
-      const moreBtn = `<button type="button" class="rmore${isOpen ? ' on' : ''}" data-more="${esc(r.id)}" aria-expanded="${isOpen}">${isOpen ? 'more ▴' : 'more ▾'}</button>`;
-      const routeSub = pf.sel.note || pf.st.route;
+      const moreBtn = `<button type="button" class="rmore${isOpen ? ' on' : ''}" data-more="${esc(grp.gid)}" aria-expanded="${isOpen}">${isOpen ? 'more ▴' : 'more ▾'}</button>`;
+      const routeSub = pf.st.route;
       if (!past) {
         const isNext = !nextDone; nextDone = true;
         const d = g - now, cd = d > 86400e3 ? '<b>' + Math.ceil(d / 86400e3) + '</b><span>天後</span>' : d > 0 ? '<b>' + hm(d / 60000) + '</b><span>後鳴槍</span>' : '<b>今天</b><span>比賽中</span>';
-        return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-rid="${esc(r.id)}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+        return `<div class="rcard${isNext ? ' next' : ''}" style="--rc:${pf.st.col}" data-gid="${esc(grp.gid)}" data-rid="${esc(r.id)}" data-go="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
           `<div class="rtop">${live ? '<span class="pill live">定位中</span>' : isNext ? '<span class="pill ok">近期首選</span>' : ''}<span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}・${esc(when)}${isEst ? '（預估）' : ''}</span></div>` +
-          `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rright"><div class="rcd">${cd}</div>${moreBtn}</div></div>` +
+          `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(grp.title)}</div><div class="rsub">${esc(routeSub)}</div></div></div><div class="rright"><div class="rcd">${cd}</div>${moreBtn}</div></div>` +
           `<div class="rmore-body"${isOpen ? '' : ' hidden'}>${catsHTML}${pf.svg}${specHTML}${nx(r)}</div></div>`;
       }
       const nxt = schedNext(r, today), nxtDays = nxt ? Math.ceil((Date.parse(nxt.race + 'T06:00:00+08:00') - now) / 86400e3) : null;
-      return `<div class="rcard" style="--rc:${pf.st.col}" data-rid="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
+      return `<div class="rcard" style="--rc:${pf.st.col}" data-gid="${esc(grp.gid)}" data-rid="${esc(r.id)}" data-reg="${pf.region}" data-cat="${pf.distCat}" data-cats="${esc(pf.allCats)}">` +
         `<div class="rtop"><span class="pill">${fin ? '已完賽' : '本屆已結束'}</span><span class="pill cat">${esc(pf.distBadge)}</span><span>${esc(pf.st.loc)}</span></div>` +
-        `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(r.name)}</div><div class="rsub">${esc(routeSub)}</div></div></div>` +
+        `<div class="rmid"><div class="rhead">${pf.icon}<div style="min-width:0"><div class="rname">${esc(grp.title)}</div><div class="rsub">${esc(routeSub)}</div></div></div>` +
         `<div class="rright"><div class="rcd">${fin && fin.t != null ? '<div class="rres">' + hms(fin.t) + '</div>' : nxtDays > 0 ? '<b>' + nxtDays + '</b><span>天後下一屆</span>' : ''}</div>${moreBtn}</div></div>` +
         `<div class="rmore-body"${isOpen ? '' : ' hidden'}>${catsHTML}${pf.svg}${specHTML}${nx(r)}` +
         `<div class="grid2"><button type="button" class="small" data-go="${esc(r.id)}" data-page="review">回顧紀錄</button><button type="button" class="small" data-go="${esc(r.id)}">下屆準備／模擬</button></div></div></div>`;
     }).join('');
     $('raceList').querySelectorAll('[data-more]').forEach(b => b.onclick = e => {
       e.stopPropagation();
-      const id = b.dataset.more;
-      if (openMore.has(id)) openMore.delete(id); else openMore.add(id);
+      const gid = b.dataset.more;
+      if (openMore.has(gid)) openMore.delete(gid); else openMore.add(gid);
       drawRaceList();
-      applyFilter(curFilter);
+      syncFilterDom();
     });
     $('raceList').querySelectorAll('[data-pick]').forEach(b => b.onclick = e => {
       e.stopPropagation();
-      const rid = b.dataset.pick, cid = b.dataset.cid;
-      const r = (window.RACES || []).find(x => x.id === rid);
-      const cat = r && getRaceCats(r).find(c => c.id === cid);
-      if (cat && cat.link) {
-        saveRaceCat(cat.link, cat.id);
-        openMore.delete(rid);
-        openMore.add(cat.link);
-        const tr = (window.RACES || []).find(x => x.id === cat.link);
-        const tpf = tr && raceProfile(tr);
-        const vis = curFilter === 'all' || (tpf && (tpf.region === curFilter || tpf.distCat === curFilter || tpf.allCats.split(' ').includes(curFilter)));
-        if (!vis) curFilter = 'all';
-        drawRaceList();
-        applyFilter(curFilter);
-        const targetCard = $('raceList').querySelector('[data-rid="' + cat.link + '"]');
-        if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      saveRaceCat(rid, cid);
+      const gid = b.dataset.pick, rid = b.dataset.rid;
+      saveGroupRid(gid, rid);
+      const picked = groups.find(g => g.gid === gid)?.cats.find(c => c.rid === rid);
+      if (picked && (curFilter === '42k' || curFilter === 'short') && picked.cat !== curFilter) curFilter = 'all';
       drawRaceList();
-      applyFilter(curFilter);
+      syncFilterDom();
     });
     $('raceList').querySelectorAll('[data-go]').forEach(b => b.onclick = () => goRace(b.dataset.go, b.dataset.page));
   }
-  function applyFilter(f) {
-    curFilter = f;
+  function syncFilterDom() {
+    const f = curFilter;
     $('raceFilters').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.rf === f));
     let shown = 0;
     [...$('raceList').children].forEach(c => {
@@ -1056,6 +1080,11 @@ function renderHome() {
       if (match) shown++;
     });
     $('raceCountNote').textContent = '共 ' + shown + ' 場';
+  }
+  function applyFilter(f) {
+    curFilter = f;
+    drawRaceList();
+    syncFilterDom();
   }
   drawRaceList();
   $('raceFilters').querySelectorAll('button').forEach(b => b.onclick = () => applyFilter(b.dataset.rf));
@@ -2104,30 +2133,25 @@ function renderStatic() {
   const pf = raceProfile(R), sel = pf.sel;
   document.title = R.short + '｜Run Navigator';
   $('topName').textContent = R.short; $('prepName').textContent = R.name;
-  $('prepIcon').innerHTML = `<div class="ricon lg" style="--rc:${pf.st.col}">${ITEM_ICONS[R.id] || ''}</div>`;
+  $('prepIcon').innerHTML = `<div class="ricon lg" style="--rc:${pf.st.col}">${ITEM_ICONS[R.id] || ITEM_ICONS[pf.cats[0].rid] || ''}</div>`;
   const rcSel = $('regCat'), rcNote = $('regCatNote');
-  rcSel.innerHTML = pf.cats.map(c => `<option value="${esc(c.id)}">${esc(c.full)}</option>`).join('');
-  rcSel.value = sel.id;
-  function syncRegCatUI(cat) {
-    const lim = cat.limit_min, gunTxt = cat.gun_txt || clk(GUN);
-    $('prepSub').textContent = dateTxt(GUN) + ' ' + gunTxt + ' 鳴槍（' + R.time.tz_label + '）・' + (lim % 60 ? fmtHM(lim) : lim / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
-    if (!cat.route) {
-      rcNote.hidden = false;
-      rcNote.textContent = '已選「' + cat.full + '」：' + cat.note + '。GPS 導航、海拔剖面與水站目前以主賽道為準。';
-    } else if (pf.cats.length > 1 && cat.note) {
-      rcNote.hidden = false;
-      rcNote.textContent = cat.note;
-    } else {
-      rcNote.hidden = true;
-    }
+  rcSel.innerHTML = pf.cats.map(c => `<option value="${esc(c.rid)}">${esc(c.full)}</option>`).join('');
+  rcSel.value = R.id;
+  $('prepSub').textContent = dateTxt(GUN) + ' ' + clk(GUN) + ' 鳴槍（' + R.time.tz_label + '）・' + (LIMIT % 60 ? fmtHM(LIMIT) : LIMIT / 60 + ' 小時') + '關門・' + R.finish_name + '終點';
+  if (pf.cats.length > 1 && sel.note) {
+    rcNote.hidden = false;
+    rcNote.textContent = sel.note;
+  } else if (sel.note) {
+    rcNote.hidden = false;
+    rcNote.textContent = sel.note;
+  } else {
+    rcNote.hidden = true;
   }
-  syncRegCatUI(sel);
   rcSel.onchange = () => {
-    const picked = pf.cats.find(c => c.id === rcSel.value);
-    if (!picked) return;
-    if (picked.link) { saveRaceCat(picked.link, picked.id); goRace(picked.link); return; }
-    saveRaceCat(R.id, picked.id);
-    syncRegCatUI(picked);
+    const newRid = rcSel.value;
+    if (!newRid || newRid === R.id) return;
+    saveGroupRid(pf.grp.gid, newRid);
+    goRace(newRid);
   };
   $('checkin').textContent = R.checkin || '';
   $('schedCard').innerHTML = schedHTML(R); $('schedCard').hidden = !R.schedule;

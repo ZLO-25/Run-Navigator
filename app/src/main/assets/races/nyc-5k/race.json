@@ -1,0 +1,253 @@
+{
+  "format": 1,
+  "id": "nyc-5k",
+  "name": "紐約 Abbott Dash 5K 2027",
+  "short": "NYC 5K",
+  "kind": "race",
+  "start_name": "聯合國總部（1st Ave）",
+  "finish_name": "中央公園 67街終點",
+  "time": {
+    "tz": "America/New_York",
+    "tz_label": "美東時間",
+    "tz_short": "美東",
+    "gun": "2027-11-06T08:30:00-05:00",
+    "limit_min": 90
+  },
+  "distance_m": 5000,
+  "route": {
+    "source": "Abbott Dash to the Finish Line 5K 官方街道路線（UN 1st Ave → 42nd St → 6th Ave → 中央公園 W 67th 終點）＋ SRTM 30m DEM",
+    "out_and_back": false
+  },
+  "checkin": "賽前週六 08:30 鳴槍（聯合國總部 → 中央公園馬拉松終點）",
+  "params": {
+    "target": {
+      "default": 30,
+      "options": [
+        {
+          "v": 20
+        },
+        {
+          "v": 25
+        },
+        {
+          "v": 30
+        },
+        {
+          "v": 35
+        },
+        {
+          "v": 45
+        },
+        {
+          "v": 60
+        }
+      ]
+    },
+    "delay": {
+      "default": 0,
+      "options": [
+        {
+          "v": 0
+        },
+        {
+          "v": 10
+        },
+        {
+          "v": 20
+        }
+      ],
+      "note": "精英 08:30 先開跑，大眾波次陸續於 08:45 左右出發。"
+    }
+  },
+  "landmarks": [
+    {
+      "n": "起",
+      "name": "聯合國總部（1st Ave & E 42nd St）",
+      "km": 0,
+      "note": "從 UN 大樓前西轉沿 42 街直切曼哈頓中城！"
+    },
+    {
+      "n": "1",
+      "name": "Grand Central／Bryant Park（42nd & 6th Ave）",
+      "km": 1.4,
+      "note": "右轉 6th Ave 北上直衝中央公園南口，微幅上坡！"
+    },
+    {
+      "n": "2",
+      "name": "中央公園南口（59th St）",
+      "km": 2.9,
+      "note": "進入中央公園 East Drive，開始公園微丘陵起伏。"
+    },
+    {
+      "n": "終",
+      "name": "中央公園 W 67th St（紐馬終點線）",
+      "km": 5.0,
+      "cut": true,
+      "note": "搶先踏過紐約馬拉松終點線！約 15–20分/mi 收尾速度。"
+    }
+  ],
+  "sections": [
+    {
+      "a": 0,
+      "b": 1.4,
+      "from": "聯合國總部",
+      "to": "Bryant Park 6th Ave",
+      "terr": "沿 42nd St 穿過大中央車站緩起伏",
+      "act": "都市高樓 GPS 易微飄，按體感配速"
+    },
+    {
+      "a": 1.4,
+      "b": 2.9,
+      "from": "6th Ave",
+      "to": "中央公園南口",
+      "terr": "第六大道長直路北上微爬升（12 m → 24 m）",
+      "act": "節奏穩步進公園"
+    },
+    {
+      "a": 2.9,
+      "b": 5.0,
+      "from": "中央公園入口",
+      "to": "W 67th St 紐馬終點",
+      "terr": "公園內微丘陵進正宗終點線",
+      "act": "享受加油人群順進終點"
+    }
+  ],
+  "cutoffs": [
+    {
+      "km": 5.0,
+      "name": "終點（約 20:00/mi 收尾・90 分內）",
+      "min": 90
+    }
+  ],
+  "aid": {
+    "labels": {
+      "w": "水"
+    },
+    "say": {
+      "w": "水"
+    },
+    "legend": [
+      [
+        "w",
+        "水站（進公園與終點區）"
+      ]
+    ],
+    "stations": [
+      {
+        "n": 1,
+        "km": 3.0,
+        "name": "中央公園入口前補水",
+        "s": "w"
+      }
+    ]
+  },
+  "gels": [],
+  "plan": {
+    "model": "grade",
+    "adjust": [
+      {
+        "from": 0,
+        "to": 0.5,
+        "x": 1.03,
+        "why": "MANHATTAN 42街人多起步"
+      }
+    ],
+    "fatigue": {
+      "from_km": 3.5,
+      "x": 0.03
+    },
+    "tight_hint": ""
+  },
+  "finish": {
+    "radius_m": 80,
+    "min_frac": 0.95
+  },
+  "text": {
+    "pre_start": "紐約馬拉松前一日週六經典 5K：從 UN 總部穿過大中央車站與第六大道衝進中央公園紐馬終點線！",
+    "plan_note": "海拔 12–25 m、小幅爬升進中央公園，跟隔日全馬的 5 大橋長途完全不同路線。",
+    "cut_title_note": "NYRR ~90 分清場完成",
+    "cut_note": "5K 以後波出發後按 NYRR ~15–20 分/mi 步速收尾。",
+    "prep_warn": "曼哈頓 42 街與第六大道高樓區 GPS 訊號可能小飄，過了 59 街進公園便恢復清晰。",
+    "aid_note": "5K 短距離為主，主要補水集中在中央公園終點區。",
+    "gel_pre": [
+      "起跑前",
+      "不用帶膠，早餐後輕鬆完賽"
+    ],
+    "gel_note": "請注意週六早上尚未切換冬令時間（夏令轉換在週日凌晨 2 點，隔天跑全馬時才要調慢 1 小時）。",
+    "map_note": "點到點都市穿梭線：UN 東河畔 → 42街橫貫 → 第六大道 → 中央公園。",
+    "phases": [
+      [
+        "0–1.4K",
+        "UN → 第六大道",
+        "穿越 42 街與大中央車站"
+      ],
+      [
+        "1.4–5.0K",
+        "第六大道 → 中央公園終點",
+        "緩坡上到中央公園踏過紐馬終點線"
+      ]
+    ],
+    "tips_title": "NYC Dash 5K 提醒",
+    "tips": [
+      "賽前週六舉行，適合做週日全馬的抖腳熱身或給沒抽中全馬的同行親友一起過紐馬終點拱門。",
+      "起跑在 UN 前（42街/1大道）不需渡輪或早起 3 小時，可輕鬆搭地鐵前來。"
+    ]
+  },
+  "schedule": {
+    "rule": "每年 11 月第 1 個週日全馬前一天週六（2027 屆為 11/6）",
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-11-06",
+        "race_est": true,
+        "race_note": "第三方整理一致，NYRR 尚未公告",
+        "entry": "抽籤報名約 2027/2 上旬開放約 3 週，3 月初抽籤（2026 屆：2/4–2/25，3/4 抽）",
+        "entry_short": "約 2027/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋2026 屆的抽籤時程",
+        "src": [
+          [
+            "FOX 5 NY：2026 屆報名時程",
+            "https://www.fox5ny.com/news/sign-up-nyc-marathon-2026"
+          ],
+          [
+            "timeanddate：歷年日期",
+            "https://www.timeanddate.com/holidays/us/new-york-city-marathon"
+          ],
+          [
+            "FatMarathoner：2027 報名方式",
+            "https://fatmarathoner.com/?p=9008"
+          ]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-11-04",
+        "race_est": true,
+        "entry": "約 2028/2 抽籤報名、3 月初抽",
+        "entry_short": "約 2028/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋往年抽籤時程"
+      },
+      {
+        "year": 2029,
+        "race": "2029-11-03",
+        "race_est": true,
+        "entry": "約 2029/2 抽籤報名、3 月初抽",
+        "entry_short": "約 2029/2 抽籤報名",
+        "entry_est": true,
+        "basis": "11 月第 1 個週日＋往年抽籤時程"
+      }
+    ],
+    "note": "抽籤很難中（2026 屆約 24 萬人申請）。抽不到還有兩條路：慈善名額（募款）或官方合作旅行社的國際套票。",
+    "weekday": 5
+  },
+  "sources": [
+    {
+      "item": "Abbott Dash 5K",
+      "src": "NYRR 官方路線（1st Ave UN → 42nd St → 6th Ave → 中央公園 W 67th 終點；08:30 開跑）",
+      "trust": "高"
+    }
+  ]
+}

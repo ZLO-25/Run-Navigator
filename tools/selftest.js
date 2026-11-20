@@ -57,7 +57,18 @@ const { chromium } = require('playwright');
     await p.waitForTimeout(250);
     (await overflow(p)).forEach(x => errs.push(x));
     const txt = await p.textContent('#raceList');
-    for (const r of races) if (!txt.includes(r.name)) errs.push('首頁清單沒有 ' + r.name);
+    const missingItems = await p.evaluate(() => {
+      const miss = [];
+      for (const g of getHomeGroups()) {
+        const card = document.querySelector(`[data-gid="${g.gid}"]`);
+        if (!card || !card.textContent.includes(g.title)) miss.push('群組主卡 ' + g.title);
+      }
+      for (const r of window.RACES) {
+        if (!document.querySelector(`[data-go="${r.id}"], [data-pick][data-rid="${r.id}"]`)) miss.push(r.name);
+      }
+      return miss;
+    });
+    for (const m of missingItems) errs.push('首頁清單沒有 ' + m);
     if (!(await p.isVisible('#bGoMetro'))) errs.push('首頁沒有跑步節拍器入口');
     if (!(await p.isVisible('#bHomeMetroPlay'))) errs.push('首頁沒有直接打拍按鈕');
     const sameRow = await p.evaluate(() => {
@@ -67,85 +78,96 @@ const { chromium } = require('playwright');
     });
     if (!sameRow) errs.push('直接打拍與 170–190 捷徑應在同一行');
     const iconCount = await p.locator('#raceList .ricon svg').count();
-    if (iconCount !== races.length) errs.push('首頁賽事特色圖示數量不符：' + iconCount);
+    if (iconCount !== 10) errs.push('首頁賽事卡片應統一為 10 場（實際 ' + iconCount + '）');
     if ((await p.locator('#homeMetroIcon svg').count()) !== 1) errs.push('首頁節拍器沒有特色圖示');
-    await p.click('[data-more="sunmoonlake-29k-2026"]');
+    // 測試日月潭卡片組別切換（29K → 42.2K → 6K），確認海拔、爬升與路線即時更新
+    await p.click('[data-more="sunmoonlake"]');
     await p.waitForTimeout(100);
-    if ((await p.getAttribute('[data-more="sunmoonlake-29k-2026"]', 'aria-expanded')) !== 'true') errs.push('首頁 more 展開失敗');
+    if ((await p.getAttribute('[data-more="sunmoonlake"]', 'aria-expanded')) !== 'true') errs.push('首頁 more 展開失敗');
     (await overflow(p)).forEach(x => errs.push(x));
-    await p.click('[data-pick="sunmoonlake-29k-2026"][data-cid="42k"]');
+    const sml29Elev = await p.textContent('[data-gid="sunmoonlake"] .rplab');
+    await p.click('[data-pick="sunmoonlake"][data-rid="sunmoonlake-42k-2026"]');
     await p.waitForTimeout(100);
-    if (!(await p.textContent('#raceList')).includes('42.2K 全馬')) errs.push('日月潭切換 42.2K 全馬失敗');
-    await p.click('[data-more="sunmoonlake-29k-2026"]');
+    const sml42Card = await p.textContent('[data-gid="sunmoonlake"]');
+    const sml42Elev = await p.textContent('[data-gid="sunmoonlake"] .rplab');
+    if (!sml42Card.includes('42.2K 全馬') || sml42Elev === sml29Elev) errs.push('日月潭切 42.2K 全馬未更新海拔與路線資訊');
+    await p.click('[data-pick="sunmoonlake"][data-rid="sunmoonlake-6k-2026"]');
     await p.waitForTimeout(100);
-    if ((await p.getAttribute('[data-more="sunmoonlake-29k-2026"]', 'aria-expanded')) !== 'false') errs.push('首頁 more 收合失敗');
+    const sml6Elev = await p.textContent('[data-gid="sunmoonlake"] .rplab');
+    if (!(await p.textContent('[data-gid="sunmoonlake"]')).includes('6K 健走') || sml6Elev === sml42Elev) errs.push('日月潭切 6K 健走未更新海拔與路線資訊');
+    await p.click('[data-more="sunmoonlake"]');
+    await p.waitForTimeout(100);
+    if ((await p.getAttribute('[data-more="sunmoonlake"]', 'aria-expanded')) !== 'false') errs.push('首頁 more 收合失敗');
     (await overflow(p)).forEach(x => errs.push(x));
     const metroOnTop = await p.evaluate(() => {
       const m = document.getElementById('bGoMetro'), l = document.getElementById('raceList');
       return m && l && m.getBoundingClientRect().top < l.getBoundingClientRect().top;
     });
     if (!metroOnTop) errs.push('日常訓練應置於賽事清單上方');
-    const catSyncErrs = await p.evaluate(() => {
+    const groupCheckErrs = await p.evaluate(() => {
       const out = [];
+      const gs = getHomeGroups();
+      if (gs.length !== 10) out.push('getHomeGroups 數量應為 10，實際 ' + gs.length);
       for (const r of window.RACES) {
-        const c = getRaceCats(r)[0];
-        const g = Date.parse(r.time.gun), off = tzOffMs(r), d = new Date(g + off);
-        const gun = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
-        if (c.limit_min !== r.time.limit_min) out.push(r.id + ' 時限不一致');
-        if (c.def_target !== r.params.target.default) out.push(r.id + ' 預設目標不一致');
-        if (c.gun_txt && c.gun_txt !== gun) out.push(r.id + ' 鳴槍不一致 ' + c.gun_txt + '!=' + gun);
+        const pf = raceProfile(r);
+        if (!pf.grp || !pf.sel) out.push(r.id + ' 缺少對應賽事群組');
       }
       return out;
     });
-    errs.push(...catSyncErrs);
-    if (!txt.includes('06:35')) errs.push('首頁日月潭應顯示 06:35 鳴槍');
+    errs.push(...groupCheckErrs);
+    if (!txt.includes('6:35')) errs.push('首頁日月潭應顯示 6:35 鳴槍');
     await ctx.close();
-    // 報名組別持久性：選組別 → 重新載入 → 仍是剛選的組別（獨立無痕 context，不寫回主環境）
+    // 報名組別持久性＋陽明山統一卡片＋準備頁切換連動計畫與地圖
     {
       const rCtx = await open('home', 390);
       await rCtx.p.waitForTimeout(200);
-      await rCtx.p.click('[data-more="kyoto-2027"]');
-      await rCtx.p.click('[data-pick="kyoto-2027"][data-cid="pair1"]');
+      await rCtx.p.click('[data-more="kyoto"]');
+      await rCtx.p.click('[data-pick="kyoto"][data-rid="kyoto-pair1-2027"]');
       await rCtx.p.reload();
       await rCtx.p.waitForTimeout(200);
-      const homeCardTxt = await rCtx.p.textContent('[data-go="kyoto-2027"]');
+      const homeCardTxt = await rCtx.p.textContent('[data-gid="kyoto"]');
       if (!homeCardTxt.includes('接力1棒 27.6K')) errs.push('首頁重載後報名組別跳回預設');
-      await rCtx.p.click('[data-go="kyoto-2027"]');
+      await rCtx.p.click('[data-go="kyoto-pair1-2027"]');
       await rCtx.p.waitForLoadState('load');
       await rCtx.p.waitForTimeout(200);
-      if ((await rCtx.p.inputValue('#regCat')) !== 'pair1') errs.push('進入準備頁時報名組別未帶入 pair1');
-      await rCtx.p.selectOption('#regCat', 'pair2');
-      await rCtx.p.reload();
+      if ((await rCtx.p.inputValue('#regCat')) !== 'kyoto-pair1-2027') errs.push('進入準備頁時報名組別未帶入 kyoto-pair1-2027');
+      await rCtx.p.selectOption('#regCat', 'kyoto-pair2-2027');
+      await rCtx.p.waitForLoadState('load');
       await rCtx.p.waitForTimeout(200);
-      if ((await rCtx.p.inputValue('#regCat')) !== 'pair2') errs.push('準備頁重載後報名組別未保留 pair2');
-      // 陽明山跨卡切換＋篩選檢查：即使 42K 先選過 5K，從半馬卡點 42.2K 全馬↗ 仍切回 42K（不再卡在 5K）
+      if ((await rCtx.p.inputValue('#regCat')) !== 'kyoto-pair2-2027') errs.push('準備頁切換接力2棒失敗');
+      await rCtx.p.click('#tMap');
+      if (!(await rCtx.p.getAttribute('#mapimg', 'src')).includes('kyoto-pair2-2027/map.png')) errs.push('接力2棒地圖未切換至專用 map.png');
+      // 陽明山只有一張統一卡片，切 21K → 42K → 5K 海拔、路線與點擊進入都正確
       await rCtx.p.evaluate(() => goRace(null));
       await rCtx.p.waitForLoadState('load');
       await rCtx.p.waitForTimeout(200);
-      await rCtx.p.click('[data-more="yangmingshan-42k-2026"]');
-      await rCtx.p.click('[data-pick="yangmingshan-42k-2026"][data-cid="5k"]');
-      await rCtx.p.click('[data-more="yangmingshan-21k-2026"]');
-      await rCtx.p.click('[data-pick="yangmingshan-21k-2026"][data-cid="5k"]');
-      await rCtx.p.click('[data-pick="yangmingshan-21k-2026"][data-cid="42k"]');
-      await rCtx.p.waitForTimeout(150);
-      const yms42Txt = await rCtx.p.textContent('[data-rid="yangmingshan-42k-2026"]');
-      if (!yms42Txt.includes('42.2K 全馬') || yms42Txt.includes('06:30 鳴槍')) errs.push('陽明山從半馬切 42.2K 全馬失敗');
-      if ((await rCtx.p.getAttribute('[data-more="yangmingshan-42k-2026"]', 'aria-expanded')) !== 'true') errs.push('切到陽明山全馬後應自動展開 more');
+      const ymsCards = await rCtx.p.locator('[data-gid="yangmingshan"]').count();
+      if (ymsCards !== 1) errs.push('陽明山在首頁應只放一張卡片（實際 ' + ymsCards + '）');
+      await rCtx.p.click('[data-more="yangmingshan"]');
+      const ym21Elev = await rCtx.p.textContent('[data-gid="yangmingshan"] .rplab');
+      await rCtx.p.click('[data-pick="yangmingshan"][data-rid="yangmingshan-5k-2026"]');
+      await rCtx.p.waitForTimeout(100);
+      const ym5Elev = await rCtx.p.textContent('[data-gid="yangmingshan"] .rplab');
+      if (ym5Elev === ym21Elev || !(await rCtx.p.textContent('[data-gid="yangmingshan"]')).includes('6:30')) errs.push('陽明山切 5K 後未更新真實海拔或 6:30 鳴槍');
+      await rCtx.p.click('[data-pick="yangmingshan"][data-rid="yangmingshan-42k-2026"]');
+      await rCtx.p.waitForTimeout(100);
+      if ((await rCtx.p.getAttribute('[data-gid="yangmingshan"]', 'data-go')) !== 'yangmingshan-42k-2026') errs.push('陽明山切 42K 後點擊目標未更新為 42K');
       await rCtx.p.click('[data-rf="42k"]');
       const vis42 = await rCtx.p.evaluate(() => [...document.querySelectorAll('#raceList > .rcard')].filter(c => !c.hidden).map(c => c.dataset.rid));
-      if (vis42.includes('yangmingshan-21k-2026')) errs.push('全馬 42K 篩選不應包含陽明山半馬');
+      if (vis42.length !== 10 || !vis42.includes('yangmingshan-42k-2026')) errs.push('全馬 42K 篩選應將陽明山切到 42K 且顯示 10 場');
       await rCtx.p.click('[data-rf="short"]');
       const visShort = await rCtx.p.evaluate(() => [...document.querySelectorAll('#raceList > .rcard')].filter(c => !c.hidden).map(c => c.dataset.rid));
-      if (visShort.includes('yangmingshan-42k-2026') || visShort.includes('boston-marathon')) errs.push('半馬・29K 篩選不應包含全馬或週六 5K 賽事');
+      if (visShort.includes('tokyo-marathon') || visShort.includes('london-marathon') || visShort.length !== 8) errs.push('半馬・短距離篩選應排除純全馬場次（東京／倫敦），實際 ' + visShort.length);
       await rCtx.p.click('[data-rf="all"]');
-      await rCtx.p.click('[data-rid="yangmingshan-42k-2026"] .rname');
+      await rCtx.p.click('[data-gid="yangmingshan"] .rname');
       await rCtx.p.waitForLoadState('load');
       await rCtx.p.waitForTimeout(200);
-      if ((await rCtx.p.inputValue('#regCat')) !== '42k') errs.push('進入陽明山全馬後 regCat 應為 42k');
-      await rCtx.p.selectOption('#regCat', '21k');
+      if ((await rCtx.p.inputValue('#regCat')) !== 'yangmingshan-42k-2026') errs.push('進入陽明山全馬後 regCat 應為 yangmingshan-42k-2026');
+      await rCtx.p.selectOption('#regCat', 'yangmingshan-5k-2026');
       await rCtx.p.waitForLoadState('load');
       await rCtx.p.waitForTimeout(200);
-      if (!rCtx.p.url().includes('yangmingshan-21k-2026') || (await rCtx.p.inputValue('#regCat')) !== '21k') errs.push('準備頁從陽明山全馬切半馬應回到 21k');
+      await rCtx.p.click('#tMap');
+      if (!rCtx.p.url().includes('yangmingshan-5k-2026') || !(await rCtx.p.getAttribute('#mapimg', 'src')).includes('yangmingshan-5k-2026/map.png')) errs.push('準備頁從陽明山全馬切 5K 應換地圖與賽道');
       await rCtx.ctx.close();
     }
     const h = await open('home&selftest', 390);
@@ -442,7 +464,7 @@ const { chromium } = require('playwright');
       });
       await p.reload();
       await p.waitForTimeout(200);
-      await p.click('[data-more="kyoto-2027"]');
+      await p.click('[data-more="kyoto"]');
       await p.waitForTimeout(100);
       zErrs.push(...errs);
       const homeCard = await p.textContent('[data-go="kyoto-2027"]');
