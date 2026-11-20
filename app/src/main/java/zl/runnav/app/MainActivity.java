@@ -2,22 +2,14 @@ package zl.runnav.app;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.AudioAttributes;
-import android.media.AudioFormat;
-import android.media.AudioTrack;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
 import android.provider.Settings;
-import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -58,10 +50,12 @@ public class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         GpsService.listener = json -> runOnUiThread(() -> web.evaluateJavascript("window.onNativeState&&window.onNativeState(" + json + ")", null));
+        MetroService.listener = json -> runOnUiThread(() -> web.evaluateJavascript("window.onMetroState&&window.onMetroState(" + json + ")", null));
+        web.evaluateJavascript("window.onMetroState&&window.onMetroState(" + MetroService.stateJson() + ")", null);
         applyKeepOn();
     }
-    @Override protected void onPause() { super.onPause(); GpsService.listener = null; }
-    @Override protected void onDestroy() { if (!GpsService.running) stopMetro(); super.onDestroy(); }
+    @Override protected void onPause() { super.onPause(); GpsService.listener = null; MetroService.listener = null; }
+    @Override protected void onDestroy() { super.onDestroy(); }
 
     void applyKeepOn() {
         if (sp.getBoolean("keepOn", false)) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -105,94 +99,6 @@ public class MainActivity extends Activity {
     static final java.util.Set<String> BOOLS = new java.util.HashSet<>(java.util.Arrays.asList("vib", "tts", "kmv", "stopv", "keepOn", "mvib"));
     SharedPreferences race(String id) { return GpsService.racePrefs(this, id); }
 
-    // ---------- 原生節拍器（AudioTrack 取樣級精準計時＋WakeLock，鎖屏放口袋也不掉拍、不打斷語音） ----------
-    static volatile int mBpm = 0, mAcc = 2, mGen = 0;
-    static volatile String mSnd = "wood";
-    static volatile boolean mVib = false;
-    static volatile long mStopAt = 0;
-
-    static synchronized void stopMetro() { mBpm = 0; mStopAt = 0; mGen++; }
-
-    static synchronized void startMetro(Context ctx, int bpm, int acc, String snd, boolean vibOn, int remainSec) {
-        if (bpm <= 0) { stopMetro(); return; }
-        boolean wasRunning = mBpm > 0;
-        mBpm = Math.max(120, Math.min(240, bpm));
-        mAcc = Math.max(1, acc);
-        mSnd = snd == null ? "wood" : snd;
-        mVib = vibOn;
-        mStopAt = remainSec > 0 ? System.currentTimeMillis() + remainSec * 1000L : 0;
-        if (wasRunning) return;
-        final int myGen = ++mGen;
-        final Context app = ctx.getApplicationContext();
-        Thread t = new Thread(() -> {
-            final int SR = 22050;
-            AudioTrack at = null;
-            Vibrator vb = null;
-            PowerManager.WakeLock wl = null;
-            try {
-                PowerManager pm = (PowerManager) app.getSystemService(POWER_SERVICE);
-                wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runnav:metro");
-                wl.acquire(6 * 3600_000L);
-                vb = Build.VERSION.SDK_INT >= 31 ? ((VibratorManager) app.getSystemService(VIBRATOR_MANAGER_SERVICE)).getDefaultVibrator() : (Vibrator) app.getSystemService(VIBRATOR_SERVICE);
-                int minBuf = AudioTrack.getMinBufferSize(SR, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-                at = new AudioTrack.Builder()
-                    .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
-                    .setAudioFormat(new AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_PCM_16BIT).setSampleRate(SR).setChannelMask(AudioFormat.CHANNEL_OUT_MONO).build())
-                    .setBufferSizeInBytes(Math.max(minBuf, 4096))
-                    .setTransferMode(AudioTrack.MODE_STREAM)
-                    .build();
-                at.play();
-                short[] chunk = new short[512];
-                long beat = 0;
-                while (mGen == myGen && mBpm > 0) {
-                    long sa = mStopAt;
-                    if (sa > 0 && System.currentTimeMillis() >= sa) {
-                        synchronized (MainActivity.class) { if (mGen == myGen) { mBpm = 0; mStopAt = 0; mGen++; } }
-                        if (vb != null) { try { vb.vibrate(VibrationEffect.createWaveform(new long[]{0, 300, 120, 300}, -1)); } catch (Exception ignored) { } }
-                        break;
-                    }
-                    int b = mBpm, a = mAcc;
-                    String s = mSnd;
-                    boolean isAcc = a > 1 && (beat % a == 0);
-                    if (mVib && vb != null) {
-                        try { vb.vibrate(VibrationEffect.createOneShot(isAcc ? 25 : 15, isAcc ? 180 : 100)); } catch (Exception ignored) { }
-                    }
-                    int total = Math.max(2205, Math.round(SR * 60.0f / b));
-                    int clickLen = "off".equals(s) ? 0 : ("soft".equals(s) ? 320 : 450);
-                    double freq = "beep".equals(s) ? (isAcc ? 1320.0 : 880.0) : "soft".equals(s) ? (isAcc ? 720.0 : 540.0) : (isAcc ? 1150.0 : 860.0);
-                    double decay = "beep".equals(s) ? 180.0 : "soft".equals(s) ? 90.0 : 105.0;
-                    double amp = isAcc ? 0.95 : 0.68;
-                    int pos = 0;
-                    while (pos < total && mGen == myGen && mBpm > 0) {
-                        int curTotal = Math.max(2205, Math.round(SR * 60.0f / Math.max(120, mBpm)));
-                        if (curTotal < total) total = curTotal;
-                        int n = Math.min(chunk.length, total - pos);
-                        for (int i = 0; i < n; i++) {
-                            int idx = pos + i;
-                            if (idx < clickLen) {
-                                double ph = 2.0 * Math.PI * freq * idx / SR;
-                                double w = Math.sin(ph) + ("wood".equals(s) ? 0.32 * Math.sin(2.0 * ph) : 0.0);
-                                double env = Math.sin(Math.PI * Math.min(1.0, idx / 24.0) * 0.5) * Math.exp(-idx / decay);
-                                int v = (int) Math.round(w * env * amp * 24000);
-                                chunk[i] = (short) Math.max(-32767, Math.min(32767, v));
-                            } else chunk[i] = 0;
-                        }
-                        at.write(chunk, 0, n);
-                        pos += n;
-                    }
-                    beat++;
-                }
-            } catch (Exception ignored) {
-                synchronized (MainActivity.class) { if (mGen == myGen) { mBpm = 0; mGen++; } }
-            } finally {
-                if (at != null) { try { at.stop(); at.release(); } catch (Exception ignored) { } }
-                if (wl != null && wl.isHeld()) { try { wl.release(); } catch (Exception ignored) { } }
-            }
-        }, "runnav-metro");
-        t.setDaemon(true);
-        t.start();
-    }
-
     class Bridge {
         /** 開始定位這一場。另一場正在定位時不會啟動，回傳那一場的 id（畫面會先請你停止它）。 */
         @JavascriptInterface public String start(String id) {
@@ -200,7 +106,7 @@ public class MainActivity extends Activity {
             if (!act.isEmpty() && !act.equals(id)) return act;
             runOnUiThread(() -> startRace(id)); return "";
         }
-        @JavascriptInterface public void stop() { stopMetro(); GpsService.stop(MainActivity.this); }
+        @JavascriptInterface public void stop() { MetroService.stop(MainActivity.this); GpsService.stop(MainActivity.this); }
         @JavascriptInterface public boolean isRunning() { return GpsService.running; }
         /** 正在定位的是哪一場（沒有就是空字串） */
         @JavascriptInterface public String activeRace() { return GpsService.running ? sp.getString("active", "") : ""; }
@@ -235,8 +141,17 @@ public class MainActivity extends Activity {
             if ("keepOn".equals(k)) runOnUiThread(MainActivity.this::applyKeepOn);
         }
         @JavascriptInterface public void setMetro(int bpm, int acc, String snd, boolean vibOn, int remainSec) {
-            startMetro(MainActivity.this, bpm, acc, snd, vibOn, remainSec);
+            if (bpm <= 0) { MetroService.stop(MainActivity.this); return; }
+            MetroService.startOrUpdate(MainActivity.this, bpm, acc, snd, vibOn, remainSec);
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED && !sp.getBoolean("askedNotifM", false)) {
+                    sp.edit().putBoolean("askedNotifM", true).apply();
+                    requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIF);
+                }
+                askIgnoreBattery();
+            });
         }
+        @JavascriptInterface public String getMetroState() { return MetroService.stateJson(); }
         /** 畫面算好的路線計畫（路線、區段、關門、水站、每點計畫分鐘），存進那一場自己的儲存格，背景服務用同一份 */
         @JavascriptInterface public void setCourse(String json) {
             try {
