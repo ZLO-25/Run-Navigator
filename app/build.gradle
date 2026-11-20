@@ -7,8 +7,8 @@ android {
         applicationId 'zl.runnav.app'   // 跟舊的京都、日月潭 App 不同，三支可以並存
         minSdk 29          // Android 10+；Pixel 7 / 8 Pro 都遠高於此
         targetSdk 34
-        versionCode 15
-        versionName '0.15'   // 修陽明山 21K/42K 跨卡片切換與篩選（不再卡在 5K）
+        versionCode 17
+        versionName '0.17'   // 節拍器升級獨立前景服務 MetroService（鎖屏/背景不停）＋賽事背景省電與語音協調
     }
     signingConfigs {
         release {

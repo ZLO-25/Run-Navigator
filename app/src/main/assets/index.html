@@ -674,14 +674,14 @@ function harvestAllPbs() {
   return res.pbs;
 }
 function activeRace() { try { return NATIVE ? Android.activeRace() : ''; } catch (e) { return ''; } }
-function goRace(id, page) { Metro.stop(); location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
+function goRace(id, page) { if (id || window.R) Metro.stop(); location.hash = id ? 'race=' + encodeURIComponent(id) + (page ? '&page=' + page : '') : 'home'; location.reload(); }
 
-/* ---------- 共用節拍器引擎（練習頁＆比賽頁共用；APK 走原生 AudioTrack 取樣精準計時，網頁走 Web Audio） ---------- */
+/* ---------- 共用節拍器引擎（練習頁＆比賽頁共用；APK 走原生 MetroService 前景服務，網頁走 Web Audio） ---------- */
 const MSND_TXT = { wood: '清脆木魚', beep: '電子嗶聲', soft: '柔和滴答', off: '靜音' };
 const MACC_TXT = { 2: '每 2 拍強音', 4: '每 4 拍強音', 1: '平拍' };
 const Metro = {
   on: false, bpm: 180, acc: 2, snd: 'wood', vib: false, dur: 0,
-  beat: 0, elapsedMs: 0, startedAt: 0, timer: null, actx: null, onBeat: null, onDone: null,
+  beat: 0, elapsedMs: 0, startedAt: 0, timer: null, actx: null, onBeat: null, onDone: null, onSync: null,
   load(p) {
     this.bpm = Math.max(140, Math.min(210, Number(p.mbpm) || 180));
     this.acc = [1, 2, 4].includes(Number(p.macc)) ? Number(p.macc) : 2;
@@ -694,6 +694,31 @@ const Metro = {
       const rem = this.on && this.dur > 0 ? Math.max(1, Math.ceil((this.dur * 60000 - this.totalMs()) / 1000)) : 0;
       try { Android.setMetro(this.on ? this.bpm : 0, this.acc, this.snd, this.vib, rem); } catch (e) { }
     }
+  },
+  pullNative() {
+    if (!(NATIVE && window.Android && Android.getMetroState && !SELFTEST)) return false;
+    try { return this.applyNative(JSON.parse(Android.getMetroState() || '{}')); } catch (e) { return false; }
+  },
+  applyNative(st) {
+    if (!st || typeof st.on !== 'boolean') return false;
+    if (st.on) {
+      this.bpm = Number(st.bpm) || this.bpm;
+      this.acc = Number(st.acc) || this.acc;
+      this.snd = MSND_TXT[st.snd] ? st.snd : this.snd;
+      this.vib = !!st.vib;
+      this.beat = Number(st.beat) || 0;
+      this.elapsedMs = 0;
+      this.startedAt = Date.now() - (Number(st.elapsedMs) || 0);
+      if (!this.on) { this.on = true; if (!document.hidden) this.resched(); }
+      if (this.onSync) this.onSync();
+      return true;
+    } else if (this.on) {
+      this.on = false;
+      if (this.timer) { clearInterval(this.timer); this.timer = null; }
+      if (this.onSync) this.onSync();
+      return true;
+    }
+    return false;
   },
   click(isAcc) {
     if (SELFTEST) return;
@@ -759,6 +784,15 @@ const Metro = {
   totalMs() { return this.elapsedMs + (this.on ? Date.now() - this.startedAt : 0); },
   zone(b) { return b < 165 ? '輕鬆慢跑' : b < 175 ? '穩定長跑' : b <= 185 ? '標準步頻' : '高頻推進'; }
 };
+window.onMetroState = st => Metro.applyNative(st);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (NATIVE && window.Android && Android.setMetro && Metro.timer) { clearInterval(Metro.timer); Metro.timer = null; }
+  } else {
+    Metro.pullNative();
+    if (Metro.on && !Metro.timer) Metro.resched();
+  }
+});
 /* 時區：用鳴槍時間字串裡的 +09:00 / +08:00 */
 function tzOffMs(r) { const m = /([+-])(\d\d):?(\d\d)$/.exec(r.time.gun); return m ? (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3])) * 60000 : 0; }
 const WD = '日一二三四五六';
@@ -928,7 +962,8 @@ function renderHome() {
   const P0 = racePrefs((window.RACES[0] || {}).id || '_');
   if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
   Metro.load(P0);
-  if (!activeRace()) Metro.syncNative();
+  Metro.onSync = syncHomeMetro;
+  Metro.pullNative();
   $('pgHome').hidden = false;
   $('homeMetroIcon').innerHTML = ITEM_ICONS.metro;
   $('icoFreeRun').innerHTML = ITEM_ICONS.freerun;
@@ -948,8 +983,9 @@ function renderHome() {
     const p = $('homeMetroPulse');
     if (p) { p.className = 'mpulse on' + (isAcc ? ' acc' : ''); setTimeout(() => { p.className = 'mpulse'; }, 110); }
   };
+  Metro.onSync = syncHomeMetro;
   syncHomeMetro();
-  $('bGoMetro').onclick = () => { Metro.stop(); location.hash = 'metro'; location.reload(); };
+  $('bGoMetro').onclick = () => { location.hash = 'metro'; location.reload(); };
   $('bHomeMetroPlay').onclick = () => { if (Metro.on) Metro.stop(); else Metro.start(Metro.bpm); syncHomeMetro(); };
   $('homeMetroChips').querySelectorAll('button').forEach(b => b.onclick = () => {
     Metro.setBpm(Number(b.dataset.hmbpm)); gset('_', 'mbpm', Metro.bpm); syncHomeMetro();
@@ -1065,7 +1101,8 @@ function renderHome() {
 function renderMetroPage() {
   const P0 = racePrefs((window.RACES[0] || {}).id || '_');
   if (P0.theme) document.documentElement.setAttribute('data-theme', P0.theme);
-  Metro.load(P0); Metro.syncNative();
+  Metro.load(P0);
+  Metro.pullNative();
   document.title = '跑步節拍器｜Run Navigator';
   $('topbar').hidden = false; $('topName').textContent = '跑步節拍器';
   $('bBack').onclick = () => goRace(null);
@@ -1100,6 +1137,7 @@ function renderMetroPage() {
     gset('_', 'mbpm', Metro.bpm);
     syncUI();
   }
+  Metro.onSync = () => { buildPads(); syncUI(); syncTime(); };
   buildPads(); syncUI(); syncTime();
   Metro.onBeat = (b, isAcc) => {
     const pads = $('mBeats').children, n = pads.length, idx = b % n;
@@ -2041,7 +2079,7 @@ for (const [id, k] of [['bVib', 'vib'], ['bTts', 'tts'], ['bKmv', 'kmv'], ['bSto
 toggles();
 $('bTestVib').onclick = () => { if (NATIVE) Android.testVibrate(); else { try { navigator.vibrate([200, 100, 200]); } catch (e) { } } };
 $('bTestTts').onclick = () => { if (NATIVE) Android.testSpeak(); else if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance('語音測試，18公里，比計畫快2分10秒'); u.lang = 'zh-TW'; if (zhVoice) u.voice = zhVoice; speechSynthesis.speak(u); } };
-if (NATIVE) { $('rowKeep').hidden = false; $('bGps').textContent = '開始定位'; if (Android.activeRace() === RID) { mode = 'gps'; gpsMsg = ''; if (S.raceBpm > 0 && !Metro.on) { Metro.start(S.raceBpm); syncRaceMetro(); } } }
+if (NATIVE) { $('rowKeep').hidden = false; $('bGps').textContent = '開始定位'; Metro.onSync = syncRaceMetro; Metro.pullNative(); if (Android.activeRace() === RID) { mode = 'gps'; gpsMsg = ''; if (S.raceBpm > 0 && !Metro.on) { Metro.start(S.raceBpm); syncRaceMetro(); } } }
 $('bTheme').onclick = () => {
   const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
   const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', nx); pset('theme', nx);

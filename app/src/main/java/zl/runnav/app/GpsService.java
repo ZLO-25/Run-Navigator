@@ -5,8 +5,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
@@ -23,6 +25,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.widget.RemoteViews;
 
 import org.json.JSONException;
@@ -44,8 +47,11 @@ public class GpsService extends Service implements LocationListener {
     static volatile Listener listener;
     static volatile boolean running;
     static volatile boolean courseDirty = true;
+    static volatile boolean ttsSpeaking = false;
+    private static volatile long ttsSpeakAt = 0;
 
     private LocationManager lm;
+    private PowerManager pm;
     private PowerManager.WakeLock wl;
     private Vibrator vib;
     private TextToSpeech tts; private boolean ttsReady;
@@ -56,10 +62,20 @@ public class GpsService extends Service implements LocationListener {
     private Tracker T;
 
     // 狀態
-    double acc = -1; long lastFix = 0, lastSave = 0, lastNotif = 0;
+    double acc = -1; long lastFix = 0, lastGpsFix = 0, lastSave = 0, lastNotif = 0;
     int satsUsed = 0, satsSeen = 0; long lastAnyFix = 0;
     boolean finished = false;
+    private boolean fusedOn = false;
     private GnssStatus.Callback gnssCb;
+    private final LocationListener fusedCb = p -> handleLocation(p, false);
+    private final BroadcastReceiver screenOnRx = new BroadcastReceiver() {
+        @Override public void onReceive(Context ctx, Intent in) {
+            if (!running) return;
+            updateNotif();
+            lastNotif = System.currentTimeMillis();
+            pushState();
+        }
+    };
     String lastAlert = ""; long lastAlertAt = 0;
     double lastSplitS = 0; int lastKm = -1, lastSec = -1; boolean stopped = false;
 
@@ -68,13 +84,28 @@ public class GpsService extends Service implements LocationListener {
     @Override public void onCreate() {
         super.onCreate();
         pref = getSharedPreferences("pref", MODE_PRIVATE);
+        pm = (PowerManager) getSystemService(POWER_SERVICE);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 31) vib = ((VibratorManager) getSystemService(VIBRATOR_MANAGER_SERVICE)).getDefaultVibrator();
         else vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        tts = new TextToSpeech(this, st -> { if (st == TextToSpeech.SUCCESS) { int r = tts.setLanguage(Locale.TAIWAN); ttsReady = r >= 0; tts.setSpeechRate(1.05f); } });
+        tts = new TextToSpeech(this, st -> {
+            if (st == TextToSpeech.SUCCESS) {
+                int r = tts.setLanguage(Locale.TAIWAN);
+                ttsReady = r >= 0;
+                tts.setSpeechRate(1.05f);
+                tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                    @Override public void onStart(String u) { ttsSpeakAt = System.currentTimeMillis(); ttsSpeaking = true; }
+                    @Override public void onDone(String u) { ttsSpeaking = false; }
+                    @Override public void onError(String u) { ttsSpeaking = false; }
+                });
+            }
+        });
         NotificationManager nm = getSystemService(NotificationManager.class);
         NotificationChannel ch = new NotificationChannel(CH, getString(R.string.notif_channel), NotificationManager.IMPORTANCE_LOW);
         ch.setShowBadge(false); ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); nm.createNotificationChannel(ch);
+        IntentFilter f = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(screenOnRx, f, Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(screenOnRx, f);
     }
 
     /** 換到某一場賽事：讀它自己的計畫、位置、完賽狀態 */
@@ -99,7 +130,7 @@ public class GpsService extends Service implements LocationListener {
                 rs.edit().putLong("start", System.currentTimeMillis()).remove("splits").remove("finished").apply();
                 finished = false; buzz(new long[]{0, 300, 100, 300}); speak("開始計時，加油", true);
             } else finish("manual");           // 畫面「我完賽了」
-            updateNotif(); push(state()); return START_STICKY;
+            updateNotif(); pushState(); return START_STICKY;
         }
         String rid = in == null ? null : in.getStringExtra(EXTRA_RACE);
         if (rid == null || rid.isEmpty()) rid = pref.getString("active", "");
@@ -110,12 +141,10 @@ public class GpsService extends Service implements LocationListener {
         Notification n = buildNotif("正在搜尋 GPS…", "請到空曠處", null, null);
         if (Build.VERSION.SDK_INT >= 29) startForeground(1, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION); else startForeground(1, n);
         try {
-            PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
             if (wl == null) { wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runnav:gps"); wl.acquire(10 * 3600_000L); }
             lm.removeUpdates(this);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this, Looper.getMainLooper());
-            if (Build.VERSION.SDK_INT >= 31 && lm.hasProvider(LocationManager.FUSED_PROVIDER))
-                lm.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 1000, 0, this, Looper.getMainLooper());
+            setFused(true);
             if (gnssCb == null) {
                 gnssCb = new GnssStatus.Callback() {
                     @Override public void onSatelliteStatusChanged(GnssStatus s) { int u = 0, k = s.getSatelliteCount(); for (int i = 0; i < k; i++) if (s.usedInFix(i)) u++; satsUsed = u; satsSeen = k; }
@@ -129,46 +158,68 @@ public class GpsService extends Service implements LocationListener {
         return START_STICKY;
     }
 
-    /** 每秒：重讀計畫（若畫面改過）、檢查停下、推狀態給畫面、每 5 秒更新通知列 */
+    /** 未完成首次鎖定或 GPS 訊號中斷超過 8 秒時開啟 FUSED_PROVIDER 備援；穩定後關閉以省電 */
+    private void setFused(boolean on) {
+        if (Build.VERSION.SDK_INT < 31 || !lm.hasProvider(LocationManager.FUSED_PROVIDER)) return;
+        if (on == fusedOn) return;
+        try {
+            if (on) lm.requestLocationUpdates(LocationManager.FUSED_PROVIDER, 3000, 0, fusedCb, Looper.getMainLooper());
+            else lm.removeUpdates(fusedCb);
+            fusedOn = on;
+        } catch (Exception ignored) { }
+    }
+
+    /** 每秒：重讀計畫（若畫面改過）、檢查停下、僅在螢幕亮起或有觀察者時更新通知與畫面 */
     private final Runnable tickR = new Runnable() { @Override public void run() {
         if (courseDirty) loadCourse();
         long now = System.currentTimeMillis();
-        if (!finished) checkStop(now);
-        if (now - lastNotif > 5000) { updateNotif(); lastNotif = now; }
-        push(state()); h.postDelayed(this, 1000);
+        if (ttsSpeaking && now - ttsSpeakAt > 8000) ttsSpeaking = false;
+        if (!finished) {
+            checkStop(now);
+            boolean needFused = T == null || !T.hasHist || (now - lastGpsFix > 8000);
+            if (needFused != fusedOn) setFused(needFused);
+        }
+        boolean screenOn = pm == null || pm.isInteractive();
+        if (screenOn && now - lastNotif > 5000) { updateNotif(); lastNotif = now; }
+        pushState(); h.postDelayed(this, 1000);
     } };
     private final Runnable stopR = this::stopSelf;
 
     @Override public void onDestroy() {
-        running = false; h.removeCallbacks(tickR); h.removeCallbacks(stopR);
-        MainActivity.stopMetro();
+        running = false; ttsSpeaking = false; h.removeCallbacks(tickR); h.removeCallbacks(stopR);
+        MetroService.stop(this);
+        setFused(false);
+        try { unregisterReceiver(screenOnRx); } catch (Exception ignored) { }
         try { lm.removeUpdates(this); if (gnssCb != null) lm.unregisterGnssStatusCallback(gnssCb); } catch (Exception ignored) { }
         if (wl != null && wl.isHeld()) wl.release();
         if (tts != null) tts.shutdown();
         pref.edit().remove("active").apply();
-        push(state());
+        Listener l = listener; if (l != null) l.onState(state());
         super.onDestroy();
     }
     @Override public IBinder onBind(Intent i) { return null; }
 
     // ---------- GPS → 路線里程 ----------
-    @Override public void onLocationChanged(Location p) {
+    @Override public void onLocationChanged(Location p) { handleLocation(p, true); }
+    private void handleLocation(Location p, boolean isGps) {
         if (T == null || finished) return;
         long now = System.currentTimeMillis();
+        if (!isGps && now - lastGpsFix < 3000) return;   // GPS 正常定位時略過 FUSED 雜訊點
+        if (isGps) lastGpsFix = now;
         lastAnyFix = now;
         if (p.getAccuracy() > 80) { if (acc < 0 || now - lastFix > 10000) acc = p.getAccuracy(); return; }
         acc = p.getAccuracy(); lastFix = now;
         int r = T.fix(now, p.getLongitude(), p.getLatitude(), p.getAccuracy(), elapsedMin());
         if (r == Tracker.SKIP) return;
         if (r == Tracker.OFF) {
-            if (!lastAlert.equals("away")) { speak("你目前不在賽道上", true); lastAlert = "away"; lastAlertAt = now; }
-            push(state()); return;
+            if (!lastAlert.equals("away")) { speak("你目前不在賽道上", true); lastAlert = "away"; lastAlertAt = now; updateNotif(); lastNotif = now; }
+            pushState(); return;
         }
         if (now - lastSave > 20_000) { rs.edit().putFloat("pos", (float) T.curS).putLong("posT", now).apply(); lastSave = now; }
         checkSplits(now);
-        if (elapsedMin() >= 0 && T.atFinish()) { finish("auto"); push(state()); return; }
+        if (elapsedMin() >= 0 && T.atFinish()) { finish("auto"); pushState(); return; }
         checkVoice(now); checkAlerts(now);
-        push(state());
+        pushState();
     }
     @Override public void onProviderDisabled(String p) { push("{\"err\":\"gpsoff\"}"); }
     @Override public void onProviderEnabled(String p) { }
@@ -184,10 +235,11 @@ public class GpsService extends Service implements LocationListener {
             rs.edit().putString("finished", f.toString()).putFloat("pos", (float) T.curS).putLong("posT", now).apply();
         } catch (JSONException ignored) { }
         finished = true;
-        MainActivity.stopMetro();
+        MetroService.stop(this);
+        setFused(false);
         buzz(new long[]{0, 500, 150, 500});
         speak("完賽！" + (el >= 0 ? "淨時間" + sayHMS(el * 60) + "。" : "") + "定位會自動停止，辛苦了。", true);
-        try { lm.removeUpdates(this); } catch (Exception ignored) { }
+        try { lm.removeUpdates(this); if (gnssCb != null) { lm.unregisterGnssStatusCallback(gnssCb); gnssCb = null; } } catch (Exception ignored) { }
         updateNotif(); lastNotif = now;
         h.postDelayed(stopR, 20_000);
     }
@@ -333,6 +385,7 @@ public class GpsService extends Service implements LocationListener {
             return o.toString();
         } catch (JSONException e) { return "{}"; }
     }
+    void pushState() { Listener l = listener; if (l != null) l.onState(state()); }
     void push(String json) { Listener l = listener; if (l != null) l.onState(json); }
 
     // ---------- 通知列（鎖屏可見）----------
