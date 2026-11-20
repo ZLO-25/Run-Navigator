@@ -1,0 +1,236 @@
+{
+  "format": 1,
+  "id": "chicago-5k",
+  "name": "芝加哥 Abbott 5K 2027",
+  "short": "Chicago 5K",
+  "kind": "race",
+  "start_name": "Grant Park (Ida B. Wells)",
+  "finish_name": "Wacker Dr & Adams St",
+  "time": {
+    "tz": "America/Chicago",
+    "tz_label": "芝加哥時間",
+    "tz_short": "芝加哥",
+    "gun": "2027-10-09T07:30:00-05:00",
+    "limit_min": 75
+  },
+  "distance_m": 5000,
+  "route": {
+    "source": "Abbott Chicago 5K 市中心環線（Grant Park Ida B. Wells → Loop → Wacker & Adams 終點）＋ SRTM DEM",
+    "out_and_back": false
+  },
+  "checkin": "賽前週六 07:30 鳴槍（Grant Park 起跑 → 市中心 Loop）",
+  "params": {
+    "target": {
+      "default": 30,
+      "options": [
+        {
+          "v": 20
+        },
+        {
+          "v": 25
+        },
+        {
+          "v": 30
+        },
+        {
+          "v": 35
+        },
+        {
+          "v": 45
+        }
+      ]
+    },
+    "delay": {
+      "default": 0,
+      "options": [
+        {
+          "v": 0
+        },
+        {
+          "v": 5
+        },
+        {
+          "v": 15
+        }
+      ],
+      "note": "07:30 大眾起跑，須維持約 15:00/mi（~9:19/K）步速以免受限 45 分清場。"
+    }
+  },
+  "landmarks": [
+    {
+      "n": "起",
+      "name": "Grant Park (Ida B. Wells Dr)",
+      "km": 0,
+      "note": "07:30 從 Grant Park 西向切入芝加哥摩天樓核心區！"
+    },
+    {
+      "n": "1",
+      "name": "Franklin & Randolph (2.2K)",
+      "km": 2.2,
+      "note": "貫穿金融與劇院高樓區，注意路口轉彎多、GPS 微飄正常。"
+    },
+    {
+      "n": "2",
+      "name": "Michigan Ave & Monroe (3.8K)",
+      "km": 3.8,
+      "note": "穿回密西根大道與千禧公園外圍再西轉。"
+    },
+    {
+      "n": "終",
+      "name": "Wacker Dr & Adams St（終點）",
+      "km": 5.0,
+      "cut": true,
+      "note": "終點緊鄰芝加哥河與 Willis Tower 旁！限時跟緊 15 分/mi 步速。"
+    }
+  ],
+  "sections": [
+    {
+      "a": 0,
+      "b": 2.2,
+      "from": "Grant Park",
+      "to": "Franklin & Randolph",
+      "terr": "極平市中心街道（178–183 m）",
+      "act": "順暢熱身"
+    },
+    {
+      "a": 2.2,
+      "b": 3.8,
+      "from": "Loop 北端",
+      "to": "Michigan & Monroe",
+      "terr": "平路多轉彎",
+      "act": "高樓屏蔽下留意公里牌與體感"
+    },
+    {
+      "a": 3.8,
+      "b": 5.0,
+      "from": "Michigan Ave",
+      "to": "Wacker & Adams 終點",
+      "terr": "筆直平路衝線",
+      "act": "穩穩進終點"
+    }
+  ],
+  "cutoffs": [
+    {
+      "km": 5.0,
+      "name": "終點（約 45 分收尾步速＋波延遲 75 分）",
+      "min": 75
+    }
+  ],
+  "aid": {
+    "labels": {
+      "w": "水"
+    },
+    "say": {
+      "w": "水"
+    },
+    "legend": [
+      [
+        "w",
+        "水站（起終點區域）"
+      ]
+    ],
+    "stations": [
+      {
+        "n": 1,
+        "km": 2.5,
+        "name": "Loop 中點補水（估）",
+        "s": "w",
+        "est": true
+      }
+    ]
+  },
+  "gels": [],
+  "plan": {
+    "model": "grade",
+    "adjust": [],
+    "fatigue": {
+      "from_km": 3.5,
+      "x": 0.02
+    },
+    "tight_hint": ""
+  },
+  "finish": {
+    "radius_m": 80,
+    "min_frac": 0.95
+  },
+  "text": {
+    "pre_start": "芝馬週末週六 07:30 鳴槍！從 Grant Park 直插 The Loop 高樓群於 Wacker & Adams 衝線。",
+    "plan_note": "極平坦 178–183 m 賽道（芝加哥海拔高度），但路線走 Loop 金融西側而非全馬那樣跑林肯公園／唐人街。",
+    "cut_title_note": "須守住約 15:00/mi（~9:20/K）步速",
+    "cut_note": "官方規定末波通過起跑線後 45 分關閉賽道，建議設定在 45 分內穩穩跑完。",
+    "prep_warn": "Loop 摩天大樓區高架捷運下方會短暫影響手錶／手機 GPS 定位。",
+    "aid_note": "5K 短距離為主，終點區供應水與完賽補給。",
+    "gel_pre": [
+      "起跑前",
+      "不用帶膠"
+    ],
+    "gel_note": "10 月初芝加哥湖畔清晨可能吹冷風，帶輕防風外套。",
+    "map_note": "Grant Park 出發進入 The Loop 市中心九宮格街道。",
+    "phases": [
+      [
+        "0–2.2K",
+        "Grant Park 進西 Loop",
+        "橫切南 Loop 與金融街區"
+      ],
+      [
+        "2.2–5.0K",
+        "密西根大道進 Wacker 終點",
+        "多轉彎進入 Willis Tower 旁終點"
+      ]
+    ],
+    "tips_title": "Chicago 5K 提醒",
+    "tips": [
+      "雖僅 5K 但市中心道路需準時重開（15:00/mi 關門），跑或快走都要注意時間。",
+      "這場與週日全馬起點相近但終點設在市區 Wacker & Adams。"
+    ]
+  },
+  "schedule": {
+    "rule": "每年 10 月芝加哥馬拉松前一日週六（2027 屆為 10/9）",
+    "checked": "2026-11-15",
+    "items": [
+      {
+        "year": 2027,
+        "race": "2027-10-09",
+        "race_est": false,
+        "entry": "2027 屆抽籤 2026/10/8–10/29（已截止），2026/12/8 公布抽籤結果；尚可走慈善募款",
+        "entry_short": "抽籤 12/8 公布結果",
+        "entry_est": false,
+        "open": "2026-10-08",
+        "close": "2026-10-29",
+        "src": [
+          [
+            "Bank of America Chicago Marathon 官方",
+            "https://www.chicagomarathon.com/"
+          ]
+        ]
+      },
+      {
+        "year": 2028,
+        "race": "2028-10-07",
+        "race_est": true,
+        "entry": "預計 2027/10 中旬至 11 月初開放抽籤，12 月上旬公布",
+        "entry_short": "約 2027/10 中抽籤",
+        "entry_est": true,
+        "basis": "哥倫布日前一個週日＋2027 屆報名時程"
+      },
+      {
+        "year": 2029,
+        "race": "2029-10-06",
+        "race_est": true,
+        "entry": "預計 2028/10 中旬至 11 月初開放抽籤（同上）",
+        "entry_short": "約 2028/10 中抽籤",
+        "entry_est": true,
+        "basis": "哥倫布日前一個週日＋往年抽籤時程"
+      }
+    ],
+    "note": "六／七大馬中抽籤中籤率相對較高（僅次於或接近柏林）、且路線極平坦、時間標準達標者還可直接取得保證名額。",
+    "weekday": 5
+  },
+  "sources": [
+    {
+      "item": "Abbott Chicago 5K",
+      "src": "Chicago 5K 官方資訊（07:30 開跑、Grant Park Ida B. Wells → Loop → Wacker & Adams、15:00/mi / 45 分清場）",
+      "trust": "高"
+    }
+  ]
+}
